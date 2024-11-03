@@ -3,6 +3,7 @@ import logging
 from app.db.postgresql_connection import check_connection
 from app.db.redis_connection import check_redis_connection
 
+
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(levelname)s - %(message)s', filename='app.log')
 health_check_router = APIRouter()
@@ -19,3 +20,4 @@ async def health_check():
         "postgres": f"{postgres}",
         "redis": f"{redis}"
     }
+    

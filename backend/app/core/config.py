@@ -5,11 +5,11 @@ class Settings(BaseSettings):
     port: int
     debug: bool = True
     
-    db_user: str = 'postgres'
-    db_password: str = 'admin'
-    db_host: str = 'postgres'
-    db_port: int = 5432
-    db_name: str = 'postgres'
+    db_user: str
+    db_password: str
+    db_host: str
+    db_port: int
+    db_name: str
     
     redis_host: str
     redis_port: int
