@@ -5,7 +5,7 @@ from app.db.base_models import BaseTable
 class User(BaseTable):
     __tablename__ = 'users'
     username = Column(String, index=True, unique=True, nullable=False)
-    password = Column(String, index=True, unique=True ,nullable=False)
+    password = Column(String, index=True ,nullable=False)
     user_description = Column(String, index=True, nullable=True)
     user_avatar = Column(String, index=True, nullable=True)
 

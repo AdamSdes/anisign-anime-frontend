@@ -24,3 +24,9 @@ class SignUpRequestSchema(UserSchema):
     #     if 'password' in values and v != values['password']:
     #         raise ValueError("Passwords do not match")
     #     return v
+
+class UserDetailSchema(UserSchema):
+    id: int
+    username: str
+    user_description: Optional[str]
+    user_avatar: Optional[str]

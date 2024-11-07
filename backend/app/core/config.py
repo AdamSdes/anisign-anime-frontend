@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     
     redis_host: str
     redis_port: int
+    
+    secret_key: str
+    jwt_algorithm: str
+    access_token_expire_minutes: int
 
     class Config:
         env_file = ".env"
