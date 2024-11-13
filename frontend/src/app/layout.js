@@ -2,7 +2,8 @@ import './globals.css';
 
 import {Montserrat} from 'next/font/google';
 import { AuthProvider } from '@/context/AuthContext';
-import Footer from "@/shared/ui/Footer/Footer"; // Импортируем AuthProvider
+import Footer from "@/shared/ui/Footer/Footer";
+import { Providers } from './redux/provider';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -21,11 +22,11 @@ export default function RootLayout({children}) {
         <link rel="icon" href="/logo.png" />
       </head>
       <body className="min-h-screen flex flex-col">
-      <AuthProvider>
+      <Providers>
         <main className="flex-grow">
           {children}
         </main>
-      </AuthProvider>
+      </Providers>
       <Footer />
       </body>
       </html>

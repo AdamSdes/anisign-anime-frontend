@@ -4,7 +4,7 @@ import AnimeList from "@/widgets/AnimeList/AnimeList";
 import FilterSidebar from "@/widgets/AnimeList/FilterSidebar";
 import Paginations from "@/widgets/AnimeList/Pagination";
 import Navbar from "@/widgets/Header/Header";
-import Report from "@/featers/Report/Report";
+import Report from "@/features/Report/Report";
 import SearchBar from "@/widgets/AnimeList/SearchBar";
 
 
