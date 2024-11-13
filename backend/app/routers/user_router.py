@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 from app.auth.jwt_auth import JWTAuth
-from app.schemas.auth_schemas import Token
+from app.schemas.auth_schemas import Token , RefreshToken
 from app.db.models import User
 from app.services.user_service import get_current_user_from_token
 
@@ -57,5 +57,11 @@ async def login_for_token(form_data: Annotated[OAuth2PasswordRequestForm, Depend
     service = UserService(db)
     user = await service.authenticate_user(form_data.username, form_data.password)
     access_token = await auth.create_access_token({"sub": user.username})
+    return Token(access_token=access_token, token_type="bearer")
+
+@user_router.post("/refresh-token")
+async def refresh_token(refresh_token: RefreshToken, db: AsyncSession = Depends(get_session)) -> Token:
+    auth = JWTAuth()
+    access_token = await auth.refresh_access_token(refresh_token)
     return Token(access_token=access_token, token_type="bearer")
 
