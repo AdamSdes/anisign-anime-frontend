@@ -15,54 +15,13 @@ import jwtDecode from '@/functions/jwtDecode';
 
 export function Auth() {
 
-    console.log(jwtDecode('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MTIzNCIsImV4cCI6MTczMTU4NDgxN30.XLPclzWiTsaMo9FKRT8ewVHwj5hqogQvSWwblL-KhNA'))
-
-    async function getUsers() {
-    
-        try {
-            const response = await fetch('http://localhost:8000/user/?page=1&limit=10', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-    
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Помилка сервера:', errorData);
-                return;
-            }
-    
-            const data = await response.json();
-            console.log('Відповідь сервера:', data);
-    
-            return data;
-        } catch (error) {
-            console.error('Помилка:', error);
-        }
-    }
-    
-    // Виклик функції
-    getUsers();
-
-
-
-
-
-
-
-
-
-
-
     // Стан для логіну та паролю
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [username, setUsername] = useState('test1234');
+    const [password, setPassword] = useState('test1234');
 
     // Ініціалізація мутації для логіну
     const [login, { isLoading }] = useLoginMutation();
     const dispatch = useDispatch();
-    // const router = useRouter(); 
 
     const [isChecked, setIsChecked] = useState(false);
     const toggleChecked = () => setIsChecked(!isChecked);
@@ -82,6 +41,7 @@ export function Auth() {
         try {
             // Викликаємо мутацію login і передаємо дані для авторизації
             const userData = await login({ username, password }).unwrap();
+            console.log('userData', userData);
             dispatch(setCredentials({ ...userData, username }));
         } catch (error) {
             console.log('Помилка при handleSubmit', error);
@@ -100,7 +60,6 @@ export function Auth() {
 
     useEffect(() => {
         if (isAuthenticatedState) {
-        // router.push('/');
         console.log('USER LOGGED IN')
         }
       }, [isAuthenticatedState]);
