@@ -52,16 +52,22 @@ async def delete_user(user_id: int):
     pass
 
 @user_router.post("/token")
-async def login_for_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: AsyncSession = Depends(get_session)) -> Token:
+async def login_for_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: AsyncSession = Depends(get_session)):
     auth = JWTAuth()
     service = UserService(db)
     user = await service.authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+        )
     access_token = await auth.create_access_token({"sub": user.username})
-    return Token(access_token=access_token, token_type="bearer")
+    refresh_token = await auth.create_refresh_token({"sub": user.username})
+    return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
 @user_router.post("/refresh-token")
 async def refresh_token(refresh_token: RefreshToken, db: AsyncSession = Depends(get_session)) -> Token:
     auth = JWTAuth()
-    access_token = await auth.refresh_access_token(refresh_token)
-    return Token(access_token=access_token, token_type="bearer")
+    access_token = await auth.refresh_access_token(refresh_token.refresh_token)
+    return access_token
 

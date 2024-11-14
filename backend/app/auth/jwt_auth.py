@@ -42,22 +42,14 @@ class JWTAuth():
             to_encode, self.secret_key, algorithm=self.algorithm)
         return encoded_jwt
 
-    async def verify_token(self, token: str, token_type: str = "access") -> dict:
+    async def refresh_access_token(self, refresh_token: str) -> Token:
         try:
-            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
-            if token_type == "access":
-                if datetime.utcnow() > datetime.fromtimestamp(payload.get("exp")):
-                    raise HTTPException(status_code=401, detail="Access token expired")
-            elif token_type == "refresh":
-                if datetime.utcnow() > datetime.fromtimestamp(payload.get("exp")):
-                    raise HTTPException(status_code=401, detail="Refresh token expired")
-            return payload
+            payload = jwt.decode(refresh_token, self.secret_key, self.algorithm)
+            username: str = payload.get("sub")
+            if username is None:
+                raise JWTError()
+            new_access_token = await self.create_access_token({"sub": username})
+            new_refresh_token = await self.create_refresh_token({"sub": username})
+            return Token(access_token=new_access_token, refresh_token=new_refresh_token, token_type="bearer")
         except JWTError:
-            raise HTTPException(status_code=401, detail="Invalid token")
-
-    async def refresh_access_token(self, refresh_token: RefreshToken) -> Token:
-        refresh_token_dict = refresh_token.dict()
-        refresh_token = refresh_token_dict.get("refresh_token")
-        payload = await self.verify_token(refresh_token, token_type="refresh")
-        new_access_token = await self.create_access_token(data={"sub": payload.get("sub")})
-        return new_access_token
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
