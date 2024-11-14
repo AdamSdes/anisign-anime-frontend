@@ -11,7 +11,50 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setCredentials, logOut} from '@/features/auth/authSlice';
 import { useLoginMutation } from '@/features/auth/authApiSlice';
 
+import jwtDecode from '@/functions/jwtDecode';
+
 export function Auth() {
+
+    console.log(jwtDecode('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MTIzNCIsImV4cCI6MTczMTU4NDgxN30.XLPclzWiTsaMo9FKRT8ewVHwj5hqogQvSWwblL-KhNA'))
+
+    async function getUsers() {
+    
+        try {
+            const response = await fetch('http://localhost:8000/user/?page=1&limit=10', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Помилка сервера:', errorData);
+                return;
+            }
+    
+            const data = await response.json();
+            console.log('Відповідь сервера:', data);
+    
+            return data;
+        } catch (error) {
+            console.error('Помилка:', error);
+        }
+    }
+    
+    // Виклик функції
+    getUsers();
+
+
+
+
+
+
+
+
+
+
+
     // Стан для логіну та паролю
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -46,14 +89,14 @@ export function Auth() {
     };
 
     //debug auto logout
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            dispatch(logOut());
-            console.log('Session expired, logged out');
-        }, 60000);
+    // useEffect(() => {
+    //     const timer = setTimeout(() => {
+    //         dispatch(logOut());
+    //         console.log('Session expired, logged out');
+    //     }, 60000);
 
-        return () => clearTimeout(timer);
-    }, [dispatch]);
+    //     return () => clearTimeout(timer);
+    // }, [dispatch]);
 
     useEffect(() => {
         if (isAuthenticatedState) {

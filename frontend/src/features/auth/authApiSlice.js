@@ -24,9 +24,16 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 };
             }
         }),
+        getUserInfo: builder.query({
+            query: (userId) => ({
+                url: `/user/get-user/${userId}`,
+                method: 'GET',
+            })
+        }),
     })
 })
 
 export const {
-    useLoginMutation
+    useLoginMutation, 
+    useGetUserInfoQuery
 } = authApiSlice
