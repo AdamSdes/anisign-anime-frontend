@@ -27,10 +27,22 @@ async def get_all_users(page: int = 1, limit: int = 5,db: AsyncSession = Depends
     return users
 
 @user_router.get("/get-user/{user_id}")
-async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)): 
+async def get_user_by_id(user_id: UUID, db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)): 
     service = UserService(db)
-    user = await service.get_user_by_id(user_id)
-    return user
+    check = await service.check_user_permission_by_id(current_user.id, user_id)
+    if check:
+        user = await service.get_user_by_id(user_id)
+        return user
+    
+
+@user_router.get("/get-user-by-username/{username}")
+async def get_user_by_username(username: str, db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
+    service = UserService(db)
+    current_username = current_user.username
+    check = await service.check_user_permission_by_name(current_username, username)
+    if check:
+        user = await service.get_user_by_username(username)
+        return user
 
 @user_router.post("/create-user")
 async def create_user(user_data: SignUpRequestSchema, db: AsyncSession = Depends(get_session)):
