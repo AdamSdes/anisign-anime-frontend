@@ -1,5 +1,5 @@
 import Header from "@/widgets/Header/Header";
-import Report from "@/featers/Report/Report";
+import Report from "@/features/Report/Report";
 import AnimeCarousel from "@/widgets/Carousel/AnimeCarousel";
 import Calendar from "@/widgets/Calendar/Calendar";
 import Comments from "@/widgets/Comments/Comments";

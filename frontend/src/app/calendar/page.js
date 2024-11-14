@@ -1,5 +1,5 @@
 import Header from "@/widgets/Header/Header";
-import Report from "@/featers/Report/Report";
+import Report from "@/features/Report/Report";
 import CalendarList from "@/widgets/CalendarList/CalendarList";
 
 const Page = () => {

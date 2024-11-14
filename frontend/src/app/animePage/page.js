@@ -1,5 +1,5 @@
 import Header from "@/widgets/Header/Header";
-import Report from "@/featers/Report/Report";
+import Report from "@/features/Report/Report";
 import Footer from "@/shared/ui/Footer/Footer";
 import AnimeDetails from "@/widgets/AnimeDetails/AnimeDetails";
 import ImageGallery from "@/widgets/AnimeDetails/ImageGallery";
