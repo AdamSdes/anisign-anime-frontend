@@ -15,6 +15,7 @@ from app.auth.jwt_auth import JWTAuth
 from app.schemas.auth_schemas import Token , RefreshToken
 from app.db.models import User
 from app.services.user_service import get_current_user_from_token
+from fastapi import Response
 
 
 
@@ -83,3 +84,8 @@ async def refresh_token(refresh_token: RefreshToken, db: AsyncSession = Depends(
     access_token = await auth.refresh_access_token(refresh_token.refresh_token)
     return access_token
 
+@user_router.post("/set_refresh_token")
+async def set_refresh_token(refresh_token: RefreshToken, response: Response, db: AsyncSession = Depends(get_session)):
+    refresh_token = f"{refresh_token.refresh_token}"
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=True)
+    return {"message": "Refresh token встановлено"}

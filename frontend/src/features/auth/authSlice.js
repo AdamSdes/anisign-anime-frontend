@@ -1,16 +1,20 @@
 'use client';
 
+import jwtDecode from "@/functions/jwtDecode";
 import { createSlice } from "@reduxjs/toolkit";
+
 
 const authSlice = createSlice({
     name: 'auth',
-    initialState: { user: null, token: null },
+    initialState: { user: null, accessToken: null, refreshToken: null },
     reducers: {
-        setCredentials(state, action){
-            const {username, access_token} = action.payload;
+        setToken(state, action){
+            const { access_token, refresh_token} = action.payload;
+            const { sub } = jwtDecode(access_token);
 
-            state.user  = username;
-            state.token = access_token;
+            state.user         = sub;
+            state.accessToken  = access_token;
+            state.refreshToken = refresh_token;
         },
         logOut(state, action){
             state.user  = null;
@@ -19,7 +23,7 @@ const authSlice = createSlice({
     }
 });
 
-export const { setCredentials, logOut } = authSlice.actions;
+export const { setToken, logOut } = authSlice.actions;
 
 export default authSlice.reducer;
 

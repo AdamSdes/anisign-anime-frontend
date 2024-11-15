@@ -2,6 +2,7 @@
 
 import { apiSlice } from "@/app/api/apiSlice";
 
+//налаштування запитів
 export const authApiSlice = apiSlice.injectEndpoints({
     endpoints: builder => ({
         login: builder.mutation({
@@ -24,16 +25,27 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 };
             }
         }),
-        getUserInfo: builder.query({
-            query: (userId) => ({
-                url: `/user/get-user/${userId}`,
+        getUserByUsername: builder.query({
+            query: (username) => ({
+                url: `/user/get-user-by-username/${username}`,
                 method: 'GET',
             })
         }),
     })
 })
 
+//хуки для виклику запитів
 export const {
     useLoginMutation, 
-    useGetUserInfoQuery
+    useGetUserByUsernameQuery
 } = authApiSlice
+
+//санки для actions
+const loginThunk = authApiSlice.endpoints.login.initiate;
+const getUserByUsernameThunk = authApiSlice.endpoints.getUserByUsername.initiate;
+//registerThunk
+
+
+export {loginThunk, getUserByUsernameThunk}
+
+

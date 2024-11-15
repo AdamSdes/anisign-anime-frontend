@@ -8,21 +8,24 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { setCredentials, logOut} from '@/features/auth/authSlice';
-import { useLoginMutation } from '@/features/auth/authApiSlice';
+import { setToken, logOut} from '@/features/auth/authSlice';
+import { getUserByUsernameThunk, useLoginMutation } from '@/features/auth/authApiSlice';
+import { actionFullLogin } from '@/features/auth/authActions';
+
 
 import jwtDecode from '@/functions/jwtDecode';
 
 export function Auth() {
 
-    // Стан для логіну та паролю
+    // стан для логіну та паролю
     const [username, setUsername] = useState('test1234');
     const [password, setPassword] = useState('test1234');
 
-    // Ініціалізація мутації для логіну
+    // ініціалізація мутації для логіну
     const [login, { isLoading }] = useLoginMutation();
     const dispatch = useDispatch();
 
+    // стан для 'запамятати пароль'
     const [isChecked, setIsChecked] = useState(false);
     const toggleChecked = () => setIsChecked(!isChecked);
 
@@ -39,24 +42,27 @@ export function Auth() {
         }
 
         try {
-            // Викликаємо мутацію login і передаємо дані для авторизації
-            const userData = await login({ username, password }).unwrap();
-            console.log('userData', userData);
-            dispatch(setCredentials({ ...userData, username }));
+            // виклик мутації login і передача данних для авторизації
+            dispatch(actionFullLogin({ username, password }));
         } catch (error) {
             console.log('Помилка при handleSubmit', error);
         }
     };
 
-    //debug auto logout
+    // debug auto logout
     // useEffect(() => {
     //     const timer = setTimeout(() => {
     //         dispatch(logOut());
     //         console.log('Session expired, logged out');
-    //     }, 60000);
+    //     }, 10000);
 
     //     return () => clearTimeout(timer);
     // }, [dispatch]);
+
+    const handleTestClick = () => {
+        const username = 'test1234'
+        dispatch(getUserByUsernameThunk(username));
+    }
 
     useEffect(() => {
         if (isAuthenticatedState) {
@@ -148,6 +154,7 @@ export function Auth() {
                                         <img src="/sign-up.svg" className="w-[80px]" alt=""/>
                                     </AButton>
                                 </Link>
+                                <button onClick={handleTestClick}>Test</button>
                             </div>
                         </div>
                     </div>
