@@ -15,11 +15,11 @@ app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=["http://localhost:3000"],  
     allow_credentials=True,
     allow_methods=["*"],  
     allow_headers=["*"] 
- )
+)
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host=settings.host, port=settings.port, reload=settings.debug)
