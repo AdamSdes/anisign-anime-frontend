@@ -16,7 +16,7 @@ from app.schemas.auth_schemas import Token , RefreshToken
 from app.db.models import User
 from app.services.user_service import get_current_user_from_token
 from fastapi import Response
-from fastapi import Response
+
 
 
 user_router = APIRouter()
