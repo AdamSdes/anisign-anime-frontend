@@ -1,6 +1,6 @@
 from app.utils.utils import verify_password
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta , timezone
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from fastapi.security import HTTPBearer
@@ -10,6 +10,8 @@ from typing import Annotated
 from app.core.config import Settings
 from app.schemas.auth_schemas import Token , RefreshToken
 import logging
+from fastapi import Response
+
 
 settings = Settings()
 
@@ -44,7 +46,11 @@ class JWTAuth():
 
     async def refresh_access_token(self, refresh_token: str) -> Token:
         try:
-            payload = jwt.decode(refresh_token, self.secret_key, self.algorithm)
+            payload = jwt.decode(refresh_token, self.secret_key, algorithms=[self.algorithm])
+            exp = payload.get("exp")
+            if exp is None or datetime.fromtimestamp(exp, timezone.utc) < datetime.now(timezone.utc):
+                raise JWTError("Refresh Token has expired")
+            
             username: str = payload.get("sub")
             if username is None:
                 raise JWTError()

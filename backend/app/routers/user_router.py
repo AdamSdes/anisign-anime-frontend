@@ -81,8 +81,8 @@ async def login_for_token(form_data: Annotated[OAuth2PasswordRequestForm, Depend
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=True)
     return {"access_token": access_token, "refresh_token": "set in cookie", "token_type": "bearer"}
 
-@auth_router.post("/refresh-token")
-async def refresh_token(request: Request, db: AsyncSession = Depends(get_session)):
+@auth_router.get("/refresh-token")
+async def refresh_token(request: Request, response: Response, db: AsyncSession = Depends(get_session)):
     auth = JWTAuth()
     refresh_token = request.cookies.get("refresh_token")
     if not refresh_token:
@@ -91,11 +91,18 @@ async def refresh_token(request: Request, db: AsyncSession = Depends(get_session
             detail="Refresh token not found in cookies",
         )
     access_token = await auth.refresh_access_token(refresh_token)
-    return access_token
+    refresh_token =  access_token.refresh_token
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=True)
+    return {"access_token": access_token.access_token, "refresh_token": "reset in cookie", "token_type": "bearer"}
 
 @auth_router.post("/logout")
 async def logout(response: Response):
     response.delete_cookie(key="refresh_token")
     response.delete_cookie(key="access_token")
     return {"detail": "Logged out successfully"}
+
+@auth_router.get("/get-cookies")
+async def get_cookies(request: Request):
+    cookies = request.cookies
+    return cookies
 
