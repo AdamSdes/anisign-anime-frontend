@@ -3,7 +3,8 @@ import { setToken, logOut } from '../../features/auth/authSlice'
 
 const baseQuery = fetchBaseQuery({
     baseUrl: 'http://localhost:8000',
-    credentials: 'include',
+    //include якщо бек на іншому домені
+    credentials: 'same-origin',
     prepareHeaders: (headers, { getState }) => {
         const token = getState().auth.accessToken
         if (token) {

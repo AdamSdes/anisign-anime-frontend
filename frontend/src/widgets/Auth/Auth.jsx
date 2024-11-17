@@ -59,10 +59,12 @@ export function Auth() {
     //     return () => clearTimeout(timer);
     // }, [dispatch]);
 
-    const handleTestClick = () => {
-        const username = 'test1234'
-        dispatch(getUserByUsernameThunk(username));
-    }
+
+
+const handleTestClick = () => {
+    const username = 'test1234';
+    dispatch(getUserByUsernameThunk(username, { forceRefetch: true }));
+};
 
     useEffect(() => {
         if (isAuthenticatedState) {

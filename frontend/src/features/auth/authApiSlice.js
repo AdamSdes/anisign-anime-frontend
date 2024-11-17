@@ -16,7 +16,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 formData.append('password', credentials.password);
 
                 return {
-                    url: '/user/token',
+                    url: '/auth/token',
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
