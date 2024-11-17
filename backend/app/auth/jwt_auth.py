@@ -53,3 +53,5 @@ class JWTAuth():
             return Token(access_token=new_access_token, refresh_token=new_refresh_token, token_type="bearer")
         except JWTError:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
+    
+    
