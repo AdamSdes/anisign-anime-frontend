@@ -15,7 +15,7 @@ from app.auth.jwt_auth import JWTAuth
 from app.schemas.auth_schemas import Token , RefreshToken
 from app.db.models import User
 from app.services.user_service import get_current_user_from_token
-from fastapi import Response
+from fastapi import Response, Request
 
 
 
@@ -83,13 +83,20 @@ async def login_for_token(form_data: Annotated[OAuth2PasswordRequestForm, Depend
     return {"access_token": access_token, "refresh_token": "set in cookie", "token_type": "bearer"}
 
 @auth_router.post("/refresh-token")
-async def refresh_token(refresh_token: RefreshToken, db: AsyncSession = Depends(get_session)) -> Token:
+async def refresh_token(request: Request, db: AsyncSession = Depends(get_session)):
     auth = JWTAuth()
-    access_token = await auth.refresh_access_token(refresh_token.refresh_token)
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token not found in cookies",
+        )
+    access_token = await auth.refresh_access_token(refresh_token)
     return access_token
 
-@user_router.post("/set_refresh_token")
-async def set_refresh_token(refresh_token: RefreshToken, response: Response, db: AsyncSession = Depends(get_session)):
-    refresh_token = f"{refresh_token.refresh_token}"
-    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=True)
-    return {"message": "Refresh token встановлено"}
+@auth_router.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie(key="refresh_token")
+    response.delete_cookie(key="access_token")
+    return {"detail": "Logged out successfully"}
+
