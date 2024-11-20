@@ -1,16 +1,58 @@
 'use client'
 import Link from "next/link";
 import {useState} from 'react';
-
 import {Label} from "@/shared/shadcn-ui/label";
 import {AButton} from "@/shared/anisign-ui/Button";
 import {AInput} from "@/shared/anisign-ui/Input";
 import {ASwitch} from "@/shared/anisign-ui/Switch";
 
-const LoginForm = () => {
+import { useDispatch, useSelector } from 'react-redux';
+import { actionFullRegister } from '@/features/auth/authActions';
 
-    const [isVisible, setIsVisible] = useState(false); // Исправлено использование useState
-    const toggleVisibility = () => setIsVisible(!isVisible);
+const LoginForm = () => {
+    const dispatch = useDispatch();
+
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [hasAgreedToToS, setHasAgreedToToS] = useState(false);
+    const [error, setError] = useState('');
+
+    const isAuthenticated = useSelector(state => state.auth.token !== null);
+
+    const toggleVisibility = () => setIsPasswordVisible(!isPasswordVisible);
+    const toggleAgreedToToS = () => setHasAgreedToToS(!hasAgreedToToS);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        // додати додаткову валідацію на довжину і символи
+        if (!username || !password || !confirmPassword) {
+            setError('Все поля должны быть заполнены');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            setError('Пароли не совпадают');
+            return;
+        }
+
+        if (!hasAgreedToToS) {
+            setError('Вы должны согласиться с правилами сайта');
+            return;
+        }
+
+        setError('');
+
+        try {
+            // виклик запиту реєстрації
+            dispatch(actionFullRegister({ username, password, confirmPassword }));
+        } catch (error) {
+            console.log('Помилка при handleSubmit', error);
+            setError('Произошла ошибка при регистрации');
+        }
+    };
 
     return (
         <div className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[600px]">
@@ -45,7 +87,7 @@ const LoginForm = () => {
                     </div>
                     <div className="flex flex-col gap-[20px]">
                         <div className="grid gap-2">
-                            <AInput
+                            {/* <AInput
                                 type="email"
                                 placeholder="you@example.com"
                                 size='xl'
@@ -59,11 +101,13 @@ const LoginForm = () => {
                                               stroke-linejoin="round"/>
                                     </svg>
                                 }
-                            />
+                            /> */}
                             <AInput
                                 type="email"
                                 placeholder="Логин"
                                 size='xl'
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
                                 startContent={
                                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="18" viewBox="0 0 22 18"
                                          fill="none">
@@ -76,9 +120,11 @@ const LoginForm = () => {
                                 }
                             />
                             <AInput
-                                type={isVisible ? "text" : "password"}
+                                type={isPasswordVisible ? "text" : "password"}
                                 placeholder="Пароль"
                                 size='xl'
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 startContent={
                                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 18 20"
                                          fill="none">
@@ -93,7 +139,7 @@ const LoginForm = () => {
                                 endContent={
                                     <button className="focus:outline-none" type="button" onClick={toggleVisibility}
                                             aria-label="toggle password visibility">
-                                        {isVisible ? (
+                                        {isPasswordVisible ? (
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="14"
                                                  viewBox="0 0 20 14" fill="none">
                                                 <path
@@ -121,6 +167,8 @@ const LoginForm = () => {
                                 type="password"
                                 placeholder="Повторите Пароль"
                                 size='xl'
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
                                 startContent={
                                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 18 20"
                                          fill="none">
@@ -135,17 +183,21 @@ const LoginForm = () => {
                             />
                         </div>
                         <div className="flex items-center space-x-2">
-                            <ASwitch defaultSelected aria-label="Automatic updates"/>
+                            <ASwitch 
+                             selected={hasAgreedToToS}
+                             onChange={toggleAgreedToToS} 
+                             aria-label="Automatic updates"/>
                             <Label htmlFor="airplane-mode" className="opacity-70 font-normal">
                                 Согласен с <a className="text-[#B6D0F7т]" href="youtube.com">правилами</a> сайта</Label>
                         </div>
+                        <div className="text-center text-red-600">{error}</div>
                         <div className="flex gap-2">
-                            <AButton className='w-full'>Создать</AButton>
+                            <AButton className='w-full' onClick={handleSubmit}>Создать</AButton>
                             <Link href="/auth">
                                 <AButton href='/auth'
                                          className="h-[58px]"
                                          color="gray">
-                                    <img src="/left-icon.svg" className="w-[80px] w-[80px]" alt=""/>
+                                    <img src="/left-icon.svg" className="w-[80px]" alt=""/>
                                 </AButton>
                             </Link>
                         </div>

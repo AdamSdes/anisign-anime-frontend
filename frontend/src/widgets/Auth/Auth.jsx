@@ -1,66 +1,47 @@
-// 'use client';
+'use client';
 import { useEffect, useState } from 'react';
 import { Label } from "@/shared/shadcn-ui/label";
 import { AButton } from "@/shared/anisign-ui/Button";
 import { AInput } from "@/shared/anisign-ui/Input";
 import { ACheckbox } from "@/shared/anisign-ui/Checkbox";
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { setCredentials, logOut} from '@/features/auth/authSlice';
-import { useLoginMutation } from '@/features/auth/authApiSlice';
+import { actionFullLogin } from '@/features/auth/authActions';
 
 export function Auth() {
-    // Стан для логіну та паролю
+    const dispatch = useDispatch();
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [rememberPassword, setRememberPassword] = useState(false); // поміняти на 'запамятати мене'
+    const isAuthenticated = useSelector(state => state.auth.token !== null);
 
-    // Ініціалізація мутації для логіну
-    const [login, { isLoading }] = useLoginMutation();
-    const dispatch = useDispatch();
-    // const router = useRouter(); 
+    const toggleRememberPassword = () => setRememberPassword(!rememberPassword);
 
-    const [isChecked, setIsChecked] = useState(false);
-    const toggleChecked = () => setIsChecked(!isChecked);
-
-    const isAuthenticatedState = useSelector(state => state.auth.token !== null);
-
-    // Хендлер для форми
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Перевірка на порожні поля
         if (!username || !password) {
+            // потрібне повідомлення на сторінці
             console.log('Логін та пароль повинні бути заповнені');
             return;
         }
 
         try {
-            // Викликаємо мутацію login і передаємо дані для авторизації
-            const userData = await login({ username, password }).unwrap();
-            dispatch(setCredentials({ ...userData, username }));
+            // виклик запиту авторизації
+            dispatch(actionFullLogin({ username, password }));
         } catch (error) {
             console.log('Помилка при handleSubmit', error);
         }
     };
 
-    //debug auto logout
     useEffect(() => {
-        const timer = setTimeout(() => {
-            dispatch(logOut());
-            console.log('Session expired, logged out');
-        }, 60000);
-
-        return () => clearTimeout(timer);
-    }, [dispatch]);
-
-    useEffect(() => {
-        if (isAuthenticatedState) {
-        // router.push('/');
+        if (isAuthenticated) {
+            // тут мав би бути редірект на головну сторінку
         console.log('USER LOGGED IN')
         }
-      }, [isAuthenticatedState]);
+      }, [isAuthenticated]);
     
 
     return (
@@ -133,7 +114,7 @@ export function Auth() {
                             </div>
 
                             <div className='flex items-center space-x-2 w-full'>
-                                <ACheckbox onClick={toggleChecked} />
+                                <ACheckbox onClick={toggleRememberPassword} />
                                 <Label htmlFor="airplane-mode" className="opacity-70 font-normal">
                                     Запомнить пароль
                                 </Label>
