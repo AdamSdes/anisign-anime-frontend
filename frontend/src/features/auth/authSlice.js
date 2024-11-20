@@ -6,19 +6,20 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const authSlice = createSlice({
     name: 'auth',
-    initialState: { user: null, accessToken: null, refreshToken: null },
+    initialState: { user: null, accessToken: null },
     reducers: {
         setToken(state, action){
-            const { access_token, refresh_token} = action.payload;
+            const { access_token } = action.payload;
             const { sub } = jwtDecode(access_token);
 
             state.user         = sub;
             state.accessToken  = access_token;
-            state.refreshToken = refresh_token;
         },
         logOut(state, action){
             state.user  = null;
-            state.token = null;
+            state.accessToken = null;
+
+            console.log('USER LOGGED OUT');
         },
     }
 });

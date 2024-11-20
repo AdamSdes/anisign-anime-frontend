@@ -4,7 +4,7 @@ import { setToken, logOut } from '../../features/auth/authSlice'
 const baseQuery = fetchBaseQuery({
     baseUrl: 'http://localhost:8000',
     //include якщо бек на іншому домені
-    credentials: 'same-origin',
+    credentials: 'include',
     prepareHeaders: (headers, { getState }) => {
         const token = getState().auth.accessToken
         if (token) {
@@ -20,7 +20,7 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
     if (result?.error?.status === 401) {
         console.log('sending refresh token')
         // відправка рефреш токену для отримання нового аксес токену
-        const refreshResult = await baseQuery('/user/refresh-token', api, extraOptions)
+        const refreshResult = await baseQuery('/auth/refresh-token', api, extraOptions)
         console.log(refreshResult)
         if (refreshResult?.data) {
             const user = api.getState().auth.user

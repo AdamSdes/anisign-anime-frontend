@@ -1,24 +1,19 @@
-'use client'
-
-import { setToken } from "./authSlice";
-import { loginThunk, getUserByUsernameThunk } from "./authApiSlice";
+import { setToken, logOut } from "./authSlice";
+import { loginThunk, registerThunk } from "./authApiSlice";
 
 const actionFullLogin = ({ username, password }) =>
     async (dispatch) => {
         try {
-            const userData = await dispatch(loginThunk({ username, password }));
+            const userData = await dispatch(loginThunk({ username, password })).unwrap();
 
-            if (userData?.data?.access_token) {
-                dispatch(setToken({ ...userData.data }));
+            if (userData?.access_token) {
+                dispatch(setToken({ ...userData }));
 
+                // додати стягнення інфо про юзера
                 // const userInfo = await dispatch(getUserByUsernameThunk(username));
-                // console.log('userInfo', userInfo)
-
             } else {
-                if (userData?.error) {
-                    console.error('Помилка при авторизації:', userData.error);
-                    throw new Error(userData.error);
-                }
+                console.error('Помилка при авторизації: Невірні дані');
+                throw new Error('Невірні дані для авторизації');
             }
         } catch (error) {
             console.error('Помилка при виконанні actionFullLogin:', error);
@@ -26,4 +21,36 @@ const actionFullLogin = ({ username, password }) =>
         }
     }
 
-export { actionFullLogin }
+
+const actionFullRegister = ({ username, password, confirmPassword }) =>
+    async (dispatch) => {
+        try {
+            const registerResponse = await dispatch(registerThunk({ username, password, confirmPassword })).unwrap();
+
+            console.log('registerResponse', registerResponse);
+            if (registerResponse?.success) {
+                console.log("Реєстрація успішна:", registerResponse.data);
+
+                await dispatch(actionFullLogin({ username, password }));
+
+            } else {
+                throw new Error(registerResponse?.message || "Реєстрація не вдалася.");
+            }
+        } catch (error) {
+            console.error("Помилка при виконанні actionFullRegister:", error.message);
+            throw error;
+        }
+    };
+
+const actionFullLogout = () => async (dispatch) => {
+    try {
+        await dispatch(logoutThunk()).unwrap();
+        console.log("Логаут успішний.");
+
+        dispatch(logOut());
+    } catch (error) {
+        console.error("Помилка при виконанні actionFullLogout:", error.message);
+    }
+};
+
+export { actionFullLogin, actionFullRegister, actionFullLogout };
