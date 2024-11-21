@@ -6,7 +6,7 @@ import {Avatar} from "@nextui-org/avatar";
 import {Badge} from "@/shared/shadcn-ui/badge";
 import {AButton} from "@/shared/anisign-ui/Button";
 
-const Profile = async () => {
+const Profile = () => {
     return (
         <div className="anim-list-background h-[368px] p-6 relative">
             <div className="container mx-auto h-full">

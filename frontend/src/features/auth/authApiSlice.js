@@ -34,6 +34,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
                     password: credentials.password,
                     user_description: 'string',
                     user_avatar: 'string',
+                    //confirmPassword: credentials.confirmPassword
                 };
         
                 return {
@@ -53,6 +54,12 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 method: 'GET',
             })
         }),
+        getUserByUsername: builder.query({
+            query: (username) => ({
+                url: `/user/get-user-by-username/${username}`,
+                method: 'GET',
+            })
+        }),
     })
 })
 
@@ -60,8 +67,9 @@ export const authApiSlice = apiSlice.injectEndpoints({
 const loginThunk = authApiSlice.endpoints.login.initiate;
 const registerThunk = authApiSlice.endpoints.register.initiate;
 const logoutThunk = authApiSlice.endpoints.logout.initiate;
+const getUserByUsernameThunk = authApiSlice.endpoints.getUserByUsername.initiate;
 
-export { loginThunk, registerThunk, logoutThunk }
+export { loginThunk, registerThunk, logoutThunk, getUserByUsernameThunk }
 
 
 

@@ -8,6 +8,7 @@ import Link from 'next/link';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { actionFullLogin } from '@/features/auth/authActions';
+import { getUserByUsernameThunk } from '@/features/auth/authApiSlice';
 
 export function Auth() {
     const dispatch = useDispatch();
@@ -42,6 +43,11 @@ export function Auth() {
         console.log('USER LOGGED IN')
         }
       }, [isAuthenticated]);
+
+    const handleTest = (e) => {
+        e.preventDefault();
+        dispatch(getUserByUsernameThunk('test1234', { forceRefetch: true }));
+    }
     
 
     return (
@@ -127,6 +133,7 @@ export function Auth() {
                                         <img src="/sign-up.svg" className="w-[80px]" alt=""/>
                                     </AButton>
                                 </Link>
+                                <button onClick={handleTest}>test</button>
                             </div>
                         </div>
                     </div>
