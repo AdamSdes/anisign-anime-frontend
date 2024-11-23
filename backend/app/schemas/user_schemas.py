@@ -1,5 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel, Field, validator
+from uuid import UUID
 
 
 
@@ -11,13 +12,14 @@ class UserBaseSchema(BaseModel):
 class UserSchema(UserBaseSchema):
     user_description: Optional[str]
     user_avatar: Optional[str]
+
     
     
-class SignUpRequestSchema(UserSchema):
+class SignUpRequestSchema(UserBaseSchema):
     password: str = Field(..., min_length=8,
                           description="Password must be at least 8 characters long")
-    # confirm_password: Optional[str] = Field(
-    #     None, min_length=8, description="Password must be at least 8 characters long")
+    confirm_password: Optional[str] = Field(
+        None, min_length=8, description="Password must be at least 8 characters long")
 
     # @validator('confirm_password')
     # def passwords_match(cls, v, values, **kwargs):
@@ -25,8 +27,5 @@ class SignUpRequestSchema(UserSchema):
     #         raise ValueError("Passwords do not match")
     #     return v
 
-class UserDetailSchema(UserSchema):
-    id: int
-    username: str
-    user_description: Optional[str]
-    user_avatar: Optional[str]
+class UserDetailSchema(UserBaseSchema):
+    id: UUID

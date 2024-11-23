@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.postgresql_connection import get_session
 from fastapi import APIRouter, HTTPException, status
 from app.services.user_service import UserService
-from app.schemas.user_schemas import SignUpRequestSchema
+from app.schemas.user_schemas import SignUpRequestSchema ,UserDetailSchema
 from uuid import UUID
 from typing import List
 from pydantic import BaseModel
@@ -46,7 +46,7 @@ async def get_user_by_username(username: str, db: AsyncSession = Depends(get_ses
         return user
 
 @user_router.post("/create-user")
-async def create_user(user_data: SignUpRequestSchema, db: AsyncSession = Depends(get_session)):
+async def create_user(user_data: SignUpRequestSchema, db: AsyncSession = Depends(get_session)) -> UserDetailSchema:
     service = UserService(db)
     user = await service.create_user(user_data)
     return user

@@ -82,13 +82,23 @@ class UserService:
     async def get_all_users(self, page: int, limit: int):
         return await self.user_repository.get_all_users(page, limit)
     
-    async def create_user(self, user_data: SignUpRequestSchema) -> User:
-        hashed_password = await hash_password(user_data.password)
+    async def create_user(self, user_data: SignUpRequestSchema) -> UserDetailSchema:
         user_data_dict = user_data.dict()
-        user_data_dict.pop('confirm_password', None)
-        user_data_dict['password'] = hashed_password
-        user = await self.user_repository.create_user(user_data_dict)
-        return user
+        password = user_data_dict["password"]
+        confirm_password = user_data_dict["confirm_password"]
+        
+        # Перевірка, чи паролі однакові
+        if password != confirm_password:
+            raise HTTPException(status_code=400, detail="Passwords do not match")
+        
+        user_data_dict.pop("confirm_password")
+        check = await self.user_repository.get_user_by_username(user_data_dict["username"])
+        if not check:
+            user = await self.user_repository.create_user(user_data_dict)
+            user = UserDetailSchema(**user.__dict__)
+            return user
+        else:
+            raise HTTPException(status_code=400, detail="User already exists")
         
     async def authenticate_user(self, username: str, password: str) -> UserDetailSchema:
         user = await self.user_repository.get_user_by_username(username)
