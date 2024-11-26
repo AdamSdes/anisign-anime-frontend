@@ -1,5 +1,5 @@
 import { setToken, logOut } from "./authSlice";
-import { loginThunk, registerThunk } from "./authApiSlice";
+import { loginThunk, registerThunk, logoutThunk } from "./authApiSlice";
 
 const actionFullLogin = ({ username, password }) =>
     async (dispatch) => {
@@ -28,7 +28,7 @@ const actionFullRegister = ({ username, password, confirmPassword }) =>
             const registerResponse = await dispatch(registerThunk({ username, password, confirmPassword })).unwrap();
 
             console.log('registerResponse', registerResponse);
-            if (registerResponse?.success) {
+            if (registerResponse?.id) {
                 console.log("Реєстрація успішна:", registerResponse.data);
 
                 await dispatch(actionFullLogin({ username, password }));

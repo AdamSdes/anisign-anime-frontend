@@ -4,6 +4,8 @@ import {Montserrat} from 'next/font/google';
 import { AuthProvider } from '@/context/AuthContext';
 import Footer from "@/shared/ui/Footer/Footer";
 import { Providers } from './redux/provider';
+import { Toaster } from "sonner";
+
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -25,6 +27,7 @@ export default function RootLayout({children}) {
       <Providers>
         <main className="flex-grow">
           {children}
+          <Toaster />
         </main>
       </Providers>
       <Footer />

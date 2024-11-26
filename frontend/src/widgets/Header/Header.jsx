@@ -7,13 +7,17 @@ import { Kbd } from "@nextui-org/kbd";
 import { HiMenu, HiX } from 'react-icons/hi';
 import SearchModal from "@/shared/ui/SearchModal/SearchModal";
 
+import { useDispatch, useSelector } from 'react-redux';
+import { actionFullLogout } from '@/features/auth/authActions';
+
+
 
 export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Состояние для мобильного меню
     const navbarRef = useRef(null);
 
-
+    const isAuthenticated = useSelector(state => state.auth.accessToken !== null);
 
     useEffect(() => {
         const navbar = navbarRef.current;
@@ -45,6 +49,13 @@ export default function Navbar() {
         return () => window.removeEventListener('resize', handleResize);
     }, [isMobileMenuOpen]);
 
+
+    const dispatch = useDispatch();
+
+    const handleLogout = () => {
+        dispatch(actionFullLogout());
+    }
+
     return (
         <>
             <div ref={navbarRef}></div>
@@ -65,6 +76,7 @@ export default function Navbar() {
                                   className="text-[#CCBAE4] gap-1 font-semibold rounded-[12px] text-[14px] bg-[none] h-[48px] opacity-100 hover:opacity-60 transition-all duration-300">
                                 Список аниме
                             </Link>
+                            <button onClick={handleLogout} className='TEST'>TEST LOGOUT</button>
                         </div>
                     </div>
 
@@ -96,11 +108,13 @@ export default function Navbar() {
                             </DropdownMenu>
                         </ADropdown>
                         <img src="line.svg" alt="Line" className="hidden md:block" />
-                        <Link href="/auth">
+                        <Link href={isAuthenticated ? "/profile" : "/auth"}>
                             <AButton
                                 className="h-[50px] px-[25px]"
-                                size="md">
-                                Авторизация
+                                size="md"
+                                onClick={() => console.log(selectCurrentToken, isAuthenticated)}
+                                >
+                                {isAuthenticated ? 'Профиль' : 'Авторизация'}
                             </AButton>
                         </Link>
                     </div>

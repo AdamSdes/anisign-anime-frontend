@@ -32,9 +32,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 const body = {
                     username: credentials.username,
                     password: credentials.password,
-                    user_description: 'string',
-                    user_avatar: 'string',
-                    //confirmPassword: credentials.confirmPassword
+                    confirm_password: credentials.confirmPassword,
                 };
         
                 return {
@@ -51,7 +49,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
             query: () => ({
                 url: `/auth/logout/`,
                 //попросити романа поміняти метод на DELETE
-                method: 'GET',
+                method: 'POST',
             })
         }),
         getUserByUsername: builder.query({
