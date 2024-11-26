@@ -1,6 +1,6 @@
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine
 from alembic import context
 import asyncio
 
@@ -14,9 +14,9 @@ fileConfig(config.config_file_name)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from app.db.models import User ,Anime 
-from app.db.base_models import Base# Import your models here
-target_metadata = Base.metadata
+from app.db.models import User, Anime  # Ensure these imports are correct
+from app.db.base_models import BaseTable  # Ensure this import is correct
+target_metadata = BaseTable.metadata
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode."""

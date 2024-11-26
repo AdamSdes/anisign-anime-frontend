@@ -94,6 +94,7 @@ class UserService:
         user_data_dict.pop("confirm_password")
         check = await self.user_repository.get_user_by_username(user_data_dict["username"])
         if not check:
+            user_data_dict["password"] = await hash_password(password)
             user = await self.user_repository.create_user(user_data_dict)
             user = UserDetailSchema(**user.__dict__)
             return user
@@ -104,12 +105,13 @@ class UserService:
         user = await self.user_repository.get_user_by_username(username)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
-        entered_password = password
         current_password = user.password
-        check = await verify_password(entered_password, current_password)
+        check = await verify_password(password, current_password)
         if not check:
             raise HTTPException(status_code=400, detail="incorrect password")
         return user
+    
+    
     
     # async def create_user_from_token(self, email: str) -> UserDetailSchema:
     #     password_pref = 'auth0' + email.split("@")[0]
