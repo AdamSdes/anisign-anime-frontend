@@ -5,9 +5,7 @@ import {Label} from "@/shared/shadcn-ui/label";
 import {AButton} from "@/shared/anisign-ui/Button";
 import {AInput} from "@/shared/anisign-ui/Input";
 import {ASwitch} from "@/shared/anisign-ui/Switch";
-
 import { toast } from "sonner"
-
 import { redirect } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { actionFullRegister } from '@/features/auth/authActions';
