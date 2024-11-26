@@ -9,14 +9,16 @@ import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
 import { actionFullLogin } from '@/features/auth/authActions';
 import { getUserByUsernameThunk } from '@/features/auth/authApiSlice';
+import { redirect } from 'next/navigation';
 
 export function Auth() {
     const dispatch = useDispatch();
+    // const router = useRouter();
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [rememberPassword, setRememberPassword] = useState(false); // поміняти на 'запамятати мене'
-    const isAuthenticated = useSelector(state => state.auth.token !== null);
+    const isAuthenticated = useSelector(state => state.auth.accessToken !== null);
 
     const toggleRememberPassword = () => setRememberPassword(!rememberPassword);
 
@@ -40,7 +42,8 @@ export function Auth() {
     useEffect(() => {
         if (isAuthenticated) {
             // тут мав би бути редірект на головну сторінку
-        console.log('USER LOGGED IN')
+            redirect('/');
+            console.log('USER LOGGED IN')
         }
       }, [isAuthenticated]);
 
@@ -89,9 +92,9 @@ export function Auth() {
                                     onChange={(e) => setUsername(e.target.value)}
                                     startContent={
                                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="18" viewBox="0 0 22 18" fill="none">
-                                            <rect x="1" y="1" width="20" height="16" rx="5" stroke="#8B8B8B" stroke-width="1.5"/>
+                                            <rect x="1" y="1" width="20" height="16" rx="5" stroke="#8B8B8B" strokeWidth="1.5"/>
                                             <path d="M5 6L9.8 9.6C10.5111 10.1333 11.4889 10.1333 12.2 9.6L17 6"
-                                                stroke="#8B8B8B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                stroke="#8B8B8B" strokeWidth="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                     }
                                 />
@@ -103,10 +106,10 @@ export function Auth() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     startContent={
                                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 18 20" fill="none">
-                                            <rect x="1" y="7" width="16" height="12" rx="4" stroke="#8B8B8B" stroke-width="1.5"/>
-                                            <path d="M9 14L9 12" stroke="#8B8B8B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <rect x="1" y="7" width="16" height="12" rx="4" stroke="#8B8B8B" strokeWidth="1.5"/>
+                                            <path d="M9 14L9 12" stroke="#8B8B8B" strokeWidth="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                             <path d="M13 7V5C13 2.79086 11.2091 1 9 1V1C6.79086 1 5 2.79086 5 5L5 7"
-                                                stroke="#8B8B8B" stroke-width="1.5"/>
+                                                stroke="#8B8B8B" strokeWidth="1.5"/>
                                         </svg>
                                     }
                                     endContent={
