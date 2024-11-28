@@ -5,7 +5,7 @@ import { AButton } from "@/shared/anisign-ui/Button";
 import { AInput } from "@/shared/anisign-ui/Input";
 import { ACheckbox } from "@/shared/anisign-ui/Checkbox";
 import Link from 'next/link';
-
+import { toast } from "sonner"
 import { useDispatch, useSelector } from 'react-redux';
 import { actionFullLogin } from '@/features/auth/authActions';
 import { getUserByUsernameThunk } from '@/features/auth/authApiSlice';
@@ -17,17 +17,22 @@ export function Auth() {
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [rememberPassword, setRememberPassword] = useState(false); // поміняти на 'запамятати мене'
+    const [rememberMe, setRememberMe] = useState(false); //TO DO
+    const [error, setError] = useState('');
     const isAuthenticated = useSelector(state => state.auth.accessToken !== null);
 
-    const toggleRememberPassword = () => setRememberPassword(!rememberPassword);
+    const toggleRememberMe = () => setRememberMe(!rememberMe);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!username || !password) {
-            // потрібне повідомлення на сторінці
-            console.log('Логін та пароль повинні бути заповнені');
+            const errorMsg = 'Пожалуйста, заполните все поля перед регистрацией';
+            setError(errorMsg);
+            toast.success(errorMsg, {
+                // description: "Пожалуйста, заполните все поля перед регистрацией",
+                duration: 4000,
+            });
             return;
         }
 
@@ -41,9 +46,7 @@ export function Auth() {
 
     useEffect(() => {
         if (isAuthenticated) {
-            // тут мав би бути редірект на головну сторінку
             redirect('/');
-            console.log('USER LOGGED IN')
         }
       }, [isAuthenticated]);
 
@@ -123,9 +126,9 @@ export function Auth() {
                             </div>
 
                             <div className='flex items-center space-x-2 w-full'>
-                                <ACheckbox onClick={toggleRememberPassword} />
+                                <ACheckbox onClick={toggleRememberMe} />
                                 <Label htmlFor="airplane-mode" className="opacity-70 font-normal">
-                                    Запомнить пароль
+                                    Запомнить меня
                                 </Label>
                             </div>
 
