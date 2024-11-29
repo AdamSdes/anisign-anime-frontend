@@ -108,11 +108,11 @@ export default function Navbar() {
                             </DropdownMenu>
                         </ADropdown>
                         <img src="line.svg" alt="Line" className="hidden md:block" />
-                        <Link href={isAuthenticated ? "/profile" : "/auth"}>
+                        <Link 
+                        href={isAuthenticated ? "/profile" : "/auth"}>
                             <AButton
                                 className="h-[50px] px-[25px]"
                                 size="md"
-                                onClick={() => console.log(selectCurrentToken, isAuthenticated)}
                                 >
                                 {isAuthenticated ? 'Профиль' : 'Авторизация'}
                             </AButton>

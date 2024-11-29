@@ -5,9 +5,7 @@ import {Label} from "@/shared/shadcn-ui/label";
 import {AButton} from "@/shared/anisign-ui/Button";
 import {AInput} from "@/shared/anisign-ui/Input";
 import {ASwitch} from "@/shared/anisign-ui/Switch";
-
-import { toast } from "sonner"
-
+import { toast } from "sonner";
 import { redirect } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { actionFullRegister } from '@/features/auth/authActions';
@@ -20,7 +18,6 @@ const LoginForm = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [hasAgreedToToS, setHasAgreedToToS] = useState(false);
-    const [error, setError] = useState('');
 
     const isAuthenticated = useSelector(state => state.auth.accessToken !== null);
 
@@ -33,9 +30,7 @@ const LoginForm = () => {
         // Валідація полів
         if (!username || !password || !confirmPassword) {
             const errorMsg = 'Все поля должны быть заполнены';
-            setError(errorMsg);
-            toast(errorMsg, {
-                description: "Пожалуйста, заполните все поля перед регистрацией",
+            toast.error(errorMsg, {
                 duration: 4000,
             });
             return;
@@ -43,9 +38,7 @@ const LoginForm = () => {
     
         if (password !== confirmPassword) {
             const errorMsg = 'Пароли не совпадают';
-            setError(errorMsg);
-            toast(errorMsg, {
-                description: "Убедитесь, что пароли совпадают",
+            toast.error(errorMsg, {
                 duration: 4000,
             });
             return;
@@ -53,9 +46,7 @@ const LoginForm = () => {
     
         if (!hasAgreedToToS) {
             const errorMsg = 'Вы должны согласиться с правилами сайта';
-            setError(errorMsg);
-            toast(errorMsg, {
-                description: "Пожалуйста, подтвердите согласие с правилами",
+            toast.error(errorMsg, {
                 duration: 4000,
             });
             return;
@@ -65,16 +56,14 @@ const LoginForm = () => {
     
         try {
             // Запит реєстрації
-            await dispatch(actionFullRegister({ username, password, confirmPassword }));
-            toast("Регистрация прошла успешно!", {
-                description: "Добро пожаловать на сайт!",
+            await dispatch(actionFullRegister({ username, password, confirmPassword })); //rememberMe === false
+            toast.success("Регистрация прошла успешно!", {
                 duration: 4000,
             });
         } catch (error) {
-            console.log('Помилка при handleSubmit', error);
+            console.log('Error at handleSubmit', error);
             const errorMsg = 'Произошла ошибка при регистрации';
-            setError(errorMsg);
-            toast(errorMsg, {
+            toast.error(errorMsg, {
                 description: "Попробуйте еще раз позже или свяжитесь с поддержкой",
                 duration: 4000,
             });
@@ -223,7 +212,6 @@ const LoginForm = () => {
                             <Label htmlFor="airplane-mode" className="opacity-70 font-normal">
                                 Согласен с <a className="text-[#B6D0F7т]" href="youtube.com">правилами</a> сайта</Label>
                         </div>
-                        {/* <div className="text-center text-red-600">{error}</div> */}
                         <div className="flex gap-2">
                             <AButton className='w-full' onClick={handleSubmit}>Создать</AButton>
                             <Link href="/auth">

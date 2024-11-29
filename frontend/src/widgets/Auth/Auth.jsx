@@ -5,53 +5,69 @@ import { AButton } from "@/shared/anisign-ui/Button";
 import { AInput } from "@/shared/anisign-ui/Input";
 import { ACheckbox } from "@/shared/anisign-ui/Checkbox";
 import Link from 'next/link';
-
+import { toast } from "sonner";
 import { useDispatch, useSelector } from 'react-redux';
 import { actionFullLogin } from '@/features/auth/authActions';
-import { getUserByUsernameThunk } from '@/features/auth/authApiSlice';
+import { getUserByUsernameThunk } from '@/features/auth/authApiSlice'; //для стягненння інфи в хедер??
 import { redirect } from 'next/navigation';
 
 export function Auth() {
     const dispatch = useDispatch();
-    // const router = useRouter();
 
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [rememberPassword, setRememberPassword] = useState(false); // поміняти на 'запамятати мене'
+    const [username, setUsername] = useState('toxa2000');
+    const [password, setPassword] = useState('toxa2000');
+    const [rememberMe, setRememberMe] = useState(false);
     const isAuthenticated = useSelector(state => state.auth.accessToken !== null);
 
-    const toggleRememberPassword = () => setRememberPassword(!rememberPassword);
-
+    const toggleRememberMe = () => setRememberMe(!rememberMe);
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         if (!username || !password) {
-            // потрібне повідомлення на сторінці
-            console.log('Логін та пароль повинні бути заповнені');
+            const errorMsg = 'Все поля должны быть заполнены';
+            toast.error(errorMsg, {
+                duration: 4000,
+            });
             return;
         }
-
+    
         try {
-            // виклик запиту авторизації
-            dispatch(actionFullLogin({ username, password }));
+            // Виклик запиту авторизації
+            const result = await dispatch(actionFullLogin({ username, password })); //rememberMe
+    
+            if (result?.error) {
+                throw new Error(result.error.message);
+            }
+    
+            toast.success('Вы успешно вошли в систему!', {
+                duration: 4000,
+            });
         } catch (error) {
-            console.log('Помилка при handleSubmit', error);
+            console.log('Error at handleSubmit', error);
+    
+            // Обробка різних типів помилок
+            let errorMsg = 'Произошла ошибка при авторизации';
+    
+            if (error.response && error.response.status === 401) {
+                errorMsg = 'Неправильный логин или пароль';
+            } else if (error.response && error.response.status === 500) {
+                errorMsg = 'Ошибка сервера. Пожалуйста, попробуйте позже.';
+            } else if (error.message) {
+                errorMsg = error.message;
+            }
+    
+            toast.error(errorMsg, {
+                duration: 4000,
+            });
         }
     };
 
     useEffect(() => {
         if (isAuthenticated) {
-            // тут мав би бути редірект на головну сторінку
             redirect('/');
-            console.log('USER LOGGED IN')
         }
       }, [isAuthenticated]);
 
-    const handleTest = (e) => {
-        e.preventDefault();
-        dispatch(getUserByUsernameThunk('test1234', { forceRefetch: true }));
-    }
-    
 
     return (
         <div className="bg-[url('/bg/auth_bg.png')] bg-cover bg-center">
@@ -123,9 +139,9 @@ export function Auth() {
                             </div>
 
                             <div className='flex items-center space-x-2 w-full'>
-                                <ACheckbox onClick={toggleRememberPassword} />
+                                <ACheckbox onClick={toggleRememberMe} />
                                 <Label htmlFor="airplane-mode" className="opacity-70 font-normal">
-                                    Запомнить пароль
+                                    Запомнить меня
                                 </Label>
                             </div>
 
@@ -136,7 +152,6 @@ export function Auth() {
                                         <img src="/sign-up.svg" className="w-[80px]" alt=""/>
                                     </AButton>
                                 </Link>
-                                <button onClick={handleTest}>test</button>
                             </div>
                         </div>
                     </div>

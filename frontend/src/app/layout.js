@@ -27,7 +27,7 @@ export default function RootLayout({children}) {
       <Providers>
         <main className="flex-grow">
           {children}
-          <Toaster />
+          <Toaster richColors />
         </main>
       </Providers>
       <Footer />
