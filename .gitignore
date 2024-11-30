@@ -7,7 +7,7 @@ pycache/
 
 .vscode/
 .postgres/
-.alembic/versions/
+.alembic/
 *.log
 
 .env
