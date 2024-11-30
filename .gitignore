@@ -8,7 +8,7 @@ pycache/
 .vscode/
 .postgres/
 /backend/alembic/
-/backend/alembic/versions/
+/backend/alembic/*
 *.log
 
 .env
