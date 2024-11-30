@@ -14,8 +14,8 @@ import { redirect } from 'next/navigation';
 export function Auth() {
     const dispatch = useDispatch();
 
-    const [username, setUsername] = useState('toxa2000');
-    const [password, setPassword] = useState('toxa2000');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const isAuthenticated = useSelector(state => state.auth.accessToken !== null);
 
@@ -33,11 +33,7 @@ export function Auth() {
     
         try {
             // Виклик запиту авторизації
-            const result = await dispatch(actionFullLogin({ username, password })); //rememberMe
-    
-            if (result?.error) {
-                throw new Error(result.error.message);
-            }
+            await dispatch(actionFullLogin({ username, password })); //rememberMe
     
             toast.success('Вы успешно вошли в систему!', {
                 duration: 4000,

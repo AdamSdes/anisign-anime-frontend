@@ -10,8 +10,6 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 const formData = new URLSearchParams();
                 formData.append('username', credentials.username);
                 formData.append('password', credentials.password);
-
-                // попросити романа прибрати ці поля за можливості
                 formData.append('grant_type', '');
                 formData.append('scope', '');
                 formData.append('client_id', '');
@@ -26,7 +24,6 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 };
             }
         }),
-        // попросити романа поміняти цю залупу на форму у вигляді рядка
         register: builder.mutation({
             query: credentials => {
                 const body = {
@@ -69,28 +66,4 @@ const getUserByUsernameThunk = authApiSlice.endpoints.getUserByUsername.initiate
 
 export { loginThunk, registerThunk, logoutThunk, getUserByUsernameThunk }
 
-
-
-
-// очікуваний формат для реєстрації
-    // register: builder.mutation({
-    //     query: credentials => {
-    //         const formData = new URLSearchParams();
-    //         formData.append('username', credentials.username);
-    //         formData.append('password', credentials.password);
-    //         // formData.append('repeatPassword', credentials.confirmPassword);
-
-    //         // попросити романа прибрати ці поля за можливості
-    //         formData.append('user_description', 'string');
-    //         formData.append('user_avatar', 'string');
-
-    //         return {
-    //             url: '/user/create-user',
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/x-www-form-urlencoded',
-    //             },
-    //             body: formData.toString(),
-    //         };
-    //     }
-    // }),
+export const { useLazyGetUserByUsernameQuery } = authApiSlice;
