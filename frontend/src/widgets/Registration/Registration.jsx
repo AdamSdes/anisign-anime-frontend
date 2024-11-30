@@ -52,8 +52,6 @@ const LoginForm = () => {
             return;
         }
     
-        setError('');
-    
         try {
             // Запит реєстрації
             await dispatch(actionFullRegister({ username, password, confirmPassword })); //rememberMe === false

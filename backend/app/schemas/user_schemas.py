@@ -10,7 +10,6 @@ class UserBaseSchema(BaseModel):
 
 
 class UserSchema(UserBaseSchema):
-    user_description: Optional[str]
     user_avatar: Optional[str]
 
     
