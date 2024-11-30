@@ -7,7 +7,7 @@ import asyncio
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-
+#test
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 fileConfig(config.config_file_name)
@@ -17,6 +17,7 @@ fileConfig(config.config_file_name)
 from app.db.models import User, Anime  # Ensure these imports are correct
 from app.db.base_models import BaseTable  # Ensure this import is correct
 target_metadata = BaseTable.metadata
+
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode."""
