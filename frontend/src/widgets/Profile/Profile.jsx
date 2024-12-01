@@ -9,6 +9,7 @@ import {AButton} from "@/shared/anisign-ui/Button";
 import { useLazyGetUserByUsernameQuery } from '@/features/auth/authApiSlice';
 import { useSelector } from 'react-redux';
 import { redirect } from 'next/navigation';
+import MyDropzone from '@/features/dropzone/Dropzone';
 
 
 
@@ -34,11 +35,13 @@ const Profile = () => {
                 <div className="absolute bottom-0 left-0 mb-5 w-full max-w-[90%] lg:max-w-none lg:static lg:flex lg:justify-between lg:items-center gap-5" style={{ marginTop: '190px' }}>
                     {/* Аватар и информация о пользователе */}
                     <div className="flex flex-col lg:flex-row items-center mb-5 gap-5">
+                    <MyDropzone className="w-16 h-16 sm:w-20 sm:h-20 rounded-full">
                         <Avatar
                             src="https://gamek.mediacdn.vn/133514250583805952/2024/5/13/photo-1715575082069-1715575082737592043637.png"
                             className="w-16 h-16 sm:w-20 sm:h-20 rounded-full shadow-lg"
                             alt="User Avatar"
                         />
+                    </MyDropzone>
                         <div className="flex flex-col gap-2 text-center lg:text-left">
                             <p className="text-md sm:text-lg font-semibold text-white">{user?.username || '@AdamS'}</p>
                             {/* Бейджи */}

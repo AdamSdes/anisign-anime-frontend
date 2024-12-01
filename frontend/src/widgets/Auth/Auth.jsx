@@ -71,7 +71,7 @@ export function Auth() {
     };
 
     return (
-        <div className="bg-[url('/bg/auth_bg.png')] bg-cover bg-center">
+        <div className="bg-[url('/auth-bg.png')] bg-cover bg-center">
             <div className="flex items-center justify-end w-full h-screen">
                 <div
                     className="bg-[#060606] mr-[175px] p-[50px] rounded-[24px] w-[490px]"
