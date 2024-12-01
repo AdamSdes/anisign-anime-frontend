@@ -10,6 +10,49 @@ import SearchModal from "@/shared/ui/SearchModal/SearchModal";
 import { useDispatch, useSelector } from 'react-redux';
 import { actionFullLogout } from '@/features/auth/authActions';
 
+const UserLoggedNavBar = () => {
+    return (
+        <>
+        <div className="h-[50px] w-[50px] rounded-full overflow-hidden flex items-center justify-center">
+            <AButton
+                className="h-full w-full p-0 flex items-center justify-center"
+                size="md"
+                color="gray"
+            >
+                <img src="bell.svg" alt="notifications" className="h-[20px] w-[20px]" />
+            </AButton>
+        </div>
+        
+        <div className="h-[50px] w-[50px] rounded-full overflow-hidden flex items-center justify-center">
+            <Link 
+            className="h-full w-full flex items-center justify-center"
+            href="/profile">
+                <AButton
+                    className="h-full w-full p-0 flex items-center justify-center bg-[#D8D8D8]"
+                    size="md"
+                    color="gray"
+                >
+                    <img src="profile.svg" alt="notifications" className="h-[20px] w-[20px]" />
+                </AButton>
+            </Link>
+        </div>
+        </>
+    )
+}
+
+const UserNotLoggedNavBar = () => {
+    return (
+        <Link 
+        href="/auth">
+            <AButton
+                className="h-[50px] px-[25px]"
+                size="md"
+                >
+                Авторизация
+            </AButton>
+        </Link>
+    )
+}
 
 
 export default function Navbar() {
@@ -108,15 +151,12 @@ export default function Navbar() {
                             </DropdownMenu>
                         </ADropdown>
                         <img src="line.svg" alt="Line" className="hidden md:block" />
-                        <Link 
-                        href={isAuthenticated ? "/profile" : "/auth"}>
-                            <AButton
-                                className="h-[50px] px-[25px]"
-                                size="md"
-                                >
-                                {isAuthenticated ? 'Профиль' : 'Авторизация'}
-                            </AButton>
-                        </Link>
+                        {isAuthenticated ?
+                         <UserLoggedNavBar />
+                        :
+                        <UserNotLoggedNavBar />
+                        }
+                       
                     </div>
 
                     {/* Бургер-меню для мобильных устройств */}
