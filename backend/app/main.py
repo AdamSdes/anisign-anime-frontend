@@ -6,10 +6,12 @@ from .routers.anime_router import anime_router
 import uvicorn
 from .core.config import Settings
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 
 settings = Settings()
 app = FastAPI(debug=settings.debug)
-
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(health_check_router, prefix="/health", tags=["health_check"])
 app.include_router(user_router, prefix="/user", tags=["User"])
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
