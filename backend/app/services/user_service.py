@@ -11,7 +11,7 @@ from app.schemas.user_schemas import SignUpRequestSchema, UserDetailSchema ,User
 import bcrypt
 import logging
 from app.db.postgresql_connection import get_session 
-from fastapi import HTTPException
+from fastapi import HTTPException , File, UploadFile
 from app.db.models import User
 from uuid import UUID
 from app.utils.utils import verify_password, hash_password
@@ -24,9 +24,14 @@ from app.schemas.auth_schemas import TokenData
 from jose import JWTError
 from datetime import datetime
 from fastapi import status
+import os
+import shutil
+from fastapi.responses import FileResponse
 
 
 settings = Settings()
+
+UPLOAD_DIR = "./uploads/avatars/"
 
 
 async def get_current_user_from_token(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_session)) -> UserDetailSchema:
@@ -111,25 +116,33 @@ class UserService:
             raise HTTPException(status_code=400, detail="incorrect password")
         return user
     
+    async def update_avatar(self, user_id: UUID, file: UploadFile = File(...)):
+        if not os.path.exists(UPLOAD_DIR):
+            os.makedirs(UPLOAD_DIR)
+        file_location = f"{UPLOAD_DIR}{user_id}.png"
+        with open(file_location, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        user = self.user_repository.get_user_by_id(user_id)
+        if user:
+            result = await self.user_repository.update_avatar(user_id, file_location)
+            return result
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
+
+
+    async def get_avatar(self, user_id: UUID):
+        file_location = f"{UPLOAD_DIR}{user_id}.png"
+        if not os.path.exists(file_location):
+            raise HTTPException(status_code=404, detail="Avatar not found")
+        return FileResponse(file_location) 
+
+    async def change_nickname(self, user_id: UUID, nickname: str):
+        user = self.user_repository.get_user_by_id(user_id)
+        if user:
+            result = await self.user_repository.update_nickname(user_id, nickname)
+            return result
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
+        
     
     
-    # async def create_user_from_token(self, email: str) -> UserDetailSchema:
-    #     password_pref = 'auth0' + email.split("@")[0]
-    #     password = password_pref + "test"
-    #     new_user_data = {
-    #         "username": email.split("@")[0],
-    #         "email": email,
-    #         "password": password,
-    #         "confirm_password": password,
-    #         "first_name": email.split("@")[0],
-    #         "last_name": "yourlatname",
-    #     }
-    #     check_user_by_username = await self.get_user_by_username(new_user_data["username"])
-    #     if not check_user_by_username:
-    #         created_user = await self.create_user(SignUpRequestSchema(**new_user_data))
-    #     else:
-    #         new_user_data["username"] = new_user_data["username"] + "auth0"
-    #         created_user = await self.create_user(SignUpRequestSchema(**new_user_data))
-    #     return created_user
-        
-        

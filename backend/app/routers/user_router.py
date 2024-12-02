@@ -13,6 +13,7 @@ from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 from app.auth.jwt_auth import JWTAuth
+from fastapi import HTTPException , File, UploadFile
 from app.schemas.auth_schemas import Token , RefreshToken
 from app.db.models import User
 from app.services.user_service import get_current_user_from_token
@@ -24,12 +25,28 @@ user_router = APIRouter()
 
 @user_router.get("/")
 async def get_all_users(page: int = 1, limit: int = 5,db: AsyncSession = Depends(get_session)):
+    """
+    Get all users.
+
+    Retrieve users details will work if you are admin).
+
+    Returns the users details.
+    """
     service = UserService(db)
     users = await service.get_all_users(page, limit)
     return users
 
 @user_router.get("/get-user/{user_id}")
-async def get_user_by_id(user_id: UUID, db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)): 
+async def get_user_by_id(user_id: UUID, db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
+    """
+    Get a user by ID.
+
+    Retrieve user details by user ID if the current user has permission.
+
+    - **user_id**: The ID of the user to retrieve.
+
+    Returns the user's details if permission is granted.
+    """
     service = UserService(db)
     check = await service.check_user_permission_by_id(current_user.id, user_id)
     if check:
@@ -39,6 +56,15 @@ async def get_user_by_id(user_id: UUID, db: AsyncSession = Depends(get_session),
 
 @user_router.get("/get-user-by-username/{username}")
 async def get_user_by_username(username: str, db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
+    """
+    Get a user by username.
+
+    Retrieve user details by username if the current user has permission.
+
+    - **username**: The username of the user to retrieve.
+
+    Returns the user's details if permission is granted.
+    """
     service = UserService(db)
     current_username = current_user.username
     check = await service.check_user_permission_by_name(current_username, username)
@@ -48,22 +74,83 @@ async def get_user_by_username(username: str, db: AsyncSession = Depends(get_ses
 
 @user_router.post("/create-user")
 async def create_user(user_data: SignUpRequestSchema, db: AsyncSession = Depends(get_session)) -> UserDetailSchema:
+    """
+    Create a new user.
+    
+    Insert User data and create user from it.
+
+    Returns the created user's details.
+    """
     service = UserService(db)
     user = await service.create_user(user_data)
     return user
+
+@user_router.put("/update-my-nickname")
+async def update_nickname(nickname: str, db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
+    """
+    Update the nickname for the current user.
+
+    - **nickname**: The new nickname for the user.
+    - **current_user**: The current authenticated user.
+
+    Returns a success message.
+    """
+    service = UserService(db)
+    result = await service.change_nickname(current_user.id, nickname)
+    return result
     
 
-@user_router.put("/update-user{user_id}")
-async def update_user(user_id: int):
-    pass
+@user_router.put("/update-my-avatar")
+async def upload_avatar(file: UploadFile, db : AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
+    """
+    Update the current user avatar.
+
+    Upload and update the avatar for the current user.
+
+    - **file**: The avatar file to upload.
+    - **current_user**: The current authenticated user.
+
+    Returns a success message.
+    """
+    service = UserService(db)
+    result = await service.update_avatar(current_user.id, file)
+    return result
+
+@user_router.get("/get-my-avatar")
+async def get_my_avatar(db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
+    """
+    Get the current user's avatar.
+
+    Retrieve the avatar for the current user.
+
+    - **db**: The database session.
+    - **current_user**: The current authenticated user.
+
+    Returns the avatar file.
+    """
+    service = UserService(db)
+    avatar = await service.get_avatar(current_user.id)
+    return avatar
+    
 
 @user_router.delete("/delete-all")
 async def delete_all_users():
+    """
+    Delete all users from the database.
+
+    This endpoint is for administrative purposes and should be used with caution.
+    """
     pass
 
 @user_router.delete("/delete-user/{user_id}")
 async def delete_user(user_id: int):
+    """
+    Delete user by id from the database.
+
+    This endpoint is for administrative purposes and should be used with caution.
+    """
     pass
+
 
 auth_router = APIRouter()
 
@@ -108,17 +195,5 @@ async def get_cookies(request: Request):
     cookies = request.cookies
     return cookies
 
-
-@user_router.get("/save-anime-list-in-db",)
-async def save_anime_list_in_db(db: AsyncSession = Depends(get_session)):
-    service = AnimeService(db)
-    result = await service.save_anime_list_in_db()
-    return {"detail": f"{result}"}  
-
-@user_router.delete("/delete-all-anime")
-async def delete_all_anime(db: AsyncSession = Depends(get_session)):
-    service = AnimeService(db)
-    result = await service.delete_all()
-    return {"detail": f"{result}"}
     
 

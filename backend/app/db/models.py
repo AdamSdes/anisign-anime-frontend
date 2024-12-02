@@ -9,7 +9,6 @@ class User(BaseTable):
     password = Column(String, index=True ,nullable=False)
     user_avatar = Column(String, index=True, nullable=True)
 
-    
 
 class Anime(BaseTable):
     __tablename__ = 'anime'
