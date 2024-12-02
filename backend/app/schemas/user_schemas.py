@@ -11,6 +11,11 @@ class UserBaseSchema(BaseModel):
 
 class UserSchema(UserBaseSchema):
     user_avatar: Optional[str]
+    nickname: Optional[str]
+    id: UUID
+    
+class UserAvatar(UserBaseSchema):
+    user_avatar: Optional[str]
 
     
     

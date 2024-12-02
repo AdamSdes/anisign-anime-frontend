@@ -10,6 +10,9 @@ from jose import jwt, JWTError
 from app.db.postgresql_connection import get_session
 from app.auth.jwt_auth import oauth2_scheme
 from datetime import datetime
+from app.schemas.auth_schemas import TokenData
+from fastapi import HTTPException
+from app.schemas.user_schemas import UserSchema
 
 settings = Settings()
 
@@ -39,5 +42,21 @@ class UserRepository():
         await self.db.commit()
         await self.db.refresh(user)
         return user
+    
+    async def update_avatar(self, user_id: int, avatar_url: str):
+        user = await self.get_user_by_id(user_id)
+        if user:
+            user.user_avatar = avatar_url
+            await self.db.commit()
+            return {"message": "Avatar updated successfully"}
+        return {"message": "User not found"}
+        
+    async def update_nickname(self, user_id: int, nickname: str):
+        user = await self.get_user_by_id(user_id)
+        if user:
+            user.nickname = nickname
+            await self.db.commit()
+            return {"message": "Nickname updated successfully"}
+        return {"message": "User not found"}
     
     
