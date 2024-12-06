@@ -6,17 +6,34 @@ import {Avatar} from "@nextui-org/avatar";
 import {Badge} from "@/shared/shadcn-ui/badge";
 import {AButton} from "@/shared/anisign-ui/Button";
 
-import { useLazyGetUserByUsernameQuery } from '@/features/auth/authApiSlice';
+import { useLazyGetUserByUsernameQuery, useUploadAvatarMutation } from '@/features/auth/authApiSlice';
 import { useSelector } from 'react-redux';
 import { redirect } from 'next/navigation';
+import { toast } from "sonner";
 import MyDropzone from '@/features/dropzone/Dropzone';
 
 
-
 const Profile = () => {
-    const [getUserByUsername, { data: user, isLoading, isError }] = useLazyGetUserByUsernameQuery();
-    const username = useSelector(state => state.auth.user);
+    const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
+    const username = useSelector(state => state.auth.user.username);
+    // const avatarUrl = useSelector(state => state.auth.user.avatar);
     const isAuthenticated = useSelector(state => state.auth.accessToken !== null);
+    
+    const [getUserByUsername, { data: user}] = useLazyGetUserByUsernameQuery(); //брати урл аватару звідси чи зі стейту???
+    const [uploadAvatar] = useUploadAvatarMutation();
+
+    const handleAvatarUploadSuccess = () => {
+        toast.success('Файл успешно загружен', {
+            duration: 4000,
+        });
+    }
+
+    const handleAvatarUploadError = () => {
+        toast.error('Пройзошла ошибка', {
+            duration: 4000,
+        });
+    }
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -25,19 +42,21 @@ const Profile = () => {
             getUserByUsername(username);
         }
     }, [isAuthenticated, getUserByUsername]);
-
-
     
     return (
         <div className="anim-list-background h-[368px] p-6 relative">
             <div className="container mx-auto h-full">
-                {/* Блок с корректным позиционированием и отступом сверху */}
                 <div className="absolute bottom-0 left-0 mb-5 w-full max-w-[90%] lg:max-w-none lg:static lg:flex lg:justify-between lg:items-center gap-5" style={{ marginTop: '190px' }}>
                     {/* Аватар и информация о пользователе */}
                     <div className="flex flex-col lg:flex-row items-center mb-5 gap-5">
-                    <MyDropzone className="w-16 h-16 sm:w-20 sm:h-20 rounded-full">
+                    <MyDropzone 
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-full"
+                        onUpload={uploadAvatar} 
+                        onUploadSuccess={handleAvatarUploadSuccess}
+                        onUploadError={handleAvatarUploadError}
+                        >
                         <Avatar
-                            src="https://gamek.mediacdn.vn/133514250583805952/2024/5/13/photo-1715575082069-1715575082737592043637.png"
+                            src={user?.user_avatar ? `${BASE_URL}${user?.user_avatar}?t=${new Date().getTime()}` : ''}
                             className="w-16 h-16 sm:w-20 sm:h-20 rounded-full shadow-lg"
                             alt="User Avatar"
                         />

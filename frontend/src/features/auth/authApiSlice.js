@@ -58,12 +58,11 @@ export const authApiSlice = apiSlice.injectEndpoints({
         uploadAvatar: builder.mutation({
             query: (file) => {
                 const formData = new FormData();
-                formData.append("avatar", file);
+                formData.append("file", file);
 
                 return {
-                    //URL ??
-                    url: "/user/??",
-                    method: "POST",
+                    url: "/user/update-my-avatar",
+                    method: "PUT",
                     body: formData,
                 };
             },

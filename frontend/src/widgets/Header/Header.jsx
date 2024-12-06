@@ -11,6 +11,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { actionFullLogout } from '@/features/auth/authActions';
 
 const UserLoggedNavBar = () => {
+
+    const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+    const avatarUrl = useSelector(state => state.auth.user.avatar);
+
     return (
         <>
         <div className="h-[50px] w-[50px] rounded-full overflow-hidden flex items-center justify-center">
@@ -32,7 +36,8 @@ const UserLoggedNavBar = () => {
                     size="md"
                     color="gray"
                 >
-                    <img src="profile.svg" alt="notifications" className="h-[20px] w-[20px]" />
+                    <img src={BASE_URL+avatarUrl} alt="notifications" className="h-[20px] w-[20px]" />
+                    {/* <img src="profile.svg" alt="notifications" className="h-[20px] w-[20px]" /> */}
                 </AButton>
             </Link>
         </div>

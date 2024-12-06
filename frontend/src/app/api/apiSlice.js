@@ -3,8 +3,7 @@ import { setToken, logOut } from '../../features/auth/authSlice';
 
 
 const baseQuery = fetchBaseQuery({
-    baseUrl: 'http://localhost:8000',
-    //include для кукі
+    baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
     credentials: 'include',
     prepareHeaders: (headers, { getState }) => {
         const token = getState().auth.accessToken;
