@@ -26,6 +26,7 @@ class JWTAuth():
         self.algorithm = settings.jwt_algorithm
         self.access_token_expire_minutes = settings.access_token_expire_minutes
         self.refresh_token_expire_days = settings.refresh_token_expire_days
+        self.refresh_token_expire_days_long = settings.refresh_token_expire_days_long
 
     async def create_access_token(self, data: dict) -> Token:
         to_encode = data.copy()
@@ -36,9 +37,12 @@ class JWTAuth():
             to_encode, self.secret_key, algorithm=self.algorithm)
         return encoded_jwt
     
-    async def create_refresh_token(self, data: dict) -> Token:
+    async def create_refresh_token(self, data: dict, remember_me: bool) -> Token:
         to_encode = data.copy()
-        expire = datetime.utcnow() + timedelta(days=self.refresh_token_expire_days)
+        if remember_me == True:
+            expire = datetime.utcnow() + timedelta(days=self.refresh_token_expire_days_long)
+        else:
+            expire = datetime.utcnow() + timedelta(days=self.refresh_token_expire_days)
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(
             to_encode, self.secret_key, algorithm=self.algorithm)

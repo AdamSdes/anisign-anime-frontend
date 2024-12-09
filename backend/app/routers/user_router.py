@@ -155,7 +155,7 @@ async def delete_user(user_id: int):
 auth_router = APIRouter()
 
 @auth_router.post("/token")
-async def login_for_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response, db: AsyncSession = Depends(get_session)):
+async def login_for_token(remember_me: bool, form_data: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response, db: AsyncSession = Depends(get_session)):
     auth = JWTAuth()
     service = UserService(db)
     user = await service.authenticate_user(form_data.username, form_data.password)
@@ -164,8 +164,9 @@ async def login_for_token(form_data: Annotated[OAuth2PasswordRequestForm, Depend
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
+
     access_token = await auth.create_access_token({"sub": user.username})
-    refresh_token = await auth.create_refresh_token({"sub": user.username})
+    refresh_token = await auth.create_refresh_token({"sub": user.username}, remember_me)
     refresh_token = f"{refresh_token}"
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False)
     return {"access_token": access_token, "refresh_token": "set in cookie", "token_type": "bearer"}
