@@ -55,7 +55,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 method: 'GET',
             })
         }),
-        uploadAvatar: builder.mutation({
+        updateAvatar: builder.mutation({
             query: (file) => {
                 const formData = new FormData();
                 formData.append("file", file);
@@ -66,6 +66,12 @@ export const authApiSlice = apiSlice.injectEndpoints({
                     body: formData,
                 };
             },
+        }),
+        updateNickname: builder.mutation({
+            query: (nickname) => ({
+                url: `/user/update-my-nickname?nickname=${encodeURIComponent(nickname)}`,
+                method: "PUT",
+            }),
         }),
     })
 })
@@ -78,4 +84,4 @@ const getUserByUsernameThunk = authApiSlice.endpoints.getUserByUsername.initiate
 
 export { loginThunk, registerThunk, logoutThunk, getUserByUsernameThunk }
 
-export const { useLazyGetUserByUsernameQuery, useUploadAvatarMutation } = authApiSlice;
+export const { useLazyGetUserByUsernameQuery, useUpdateAvatarMutation, useUpdateNicknameMutation } = authApiSlice;

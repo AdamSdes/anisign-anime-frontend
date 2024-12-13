@@ -6,7 +6,7 @@ import {Avatar} from "@nextui-org/avatar";
 import {Badge} from "@/shared/shadcn-ui/badge";
 import {AButton} from "@/shared/anisign-ui/Button";
 
-import { useLazyGetUserByUsernameQuery, useUploadAvatarMutation } from '@/features/auth/authApiSlice';
+import { useLazyGetUserByUsernameQuery, useUpdateAvatarMutation, useUpdateNicknameMutation } from '@/features/auth/authApiSlice';
 import { useSelector } from 'react-redux';
 import { redirect } from 'next/navigation';
 import { toast } from "sonner";
@@ -21,12 +21,25 @@ const Profile = () => {
     const isAuthenticated = useSelector(state => state.auth.accessToken !== null);
     
     const [getUserByUsername, { data: user}] = useLazyGetUserByUsernameQuery(); //брати урл аватару звідси чи зі стейту???
-    const [uploadAvatar] = useUploadAvatarMutation();
+    const [updateAvatar] = useUpdateAvatarMutation();
+    const [updateNickname] = useUpdateNicknameMutation();
 
-    const handleAvatarUploadSuccess = () => {
+    const handleUpdateAvatarTest = async () => {
+        try {
+            const response = await updateNickname('toxa322').unwrap();
+            console.log("Nickname updated:", response);
+            toast.success("Nickname updated successfully!");
+        } catch (error) {
+            console.error("Error updating nickname:", error);
+            toast.error("Error updating nickname.");
+        }
+    };
+
+    const handleAvatarUploadSuccess = (success) => {
         toast.success('Файл успешно загружен', {
             duration: 4000,
         });
+        console.log(success);
     }
 
     const handleAvatarUploadError = () => {
@@ -51,7 +64,7 @@ const Profile = () => {
                     <div className="flex flex-col lg:flex-row items-center mb-5 gap-5">
                     <MyDropzone 
                         className="w-16 h-16 sm:w-20 sm:h-20 rounded-full"
-                        onUpload={uploadAvatar} 
+                        onUpload={updateAvatar} 
                         onUploadSuccess={handleAvatarUploadSuccess}
                         onUploadError={handleAvatarUploadError}
                         >
@@ -62,7 +75,9 @@ const Profile = () => {
                         />
                     </MyDropzone>
                         <div className="flex flex-col gap-2 text-center lg:text-left">
-                            <p className="text-md sm:text-lg font-semibold text-white">{user?.username || '@AdamS'}</p>
+                            <p className="text-md sm:text-lg font-semibold text-white"
+                            onClick={handleUpdateAvatarTest}
+                            >{user?.username || '@AdamS'}</p>
                             {/* Бейджи */}
                             <div className="flex gap-2 justify-center lg:justify-start">
                                 <Badge variant="outline" className="text-white">Новичок</Badge>

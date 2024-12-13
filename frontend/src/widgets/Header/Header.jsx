@@ -32,12 +32,16 @@ const UserLoggedNavBar = () => {
             className="h-full w-full flex items-center justify-center"
             href="/profile">
                 <AButton
-                    className="h-full w-full p-0 flex items-center justify-center bg-[#D8D8D8]"
+                    className="h-full w-full p-0 flex items-center justify-center bg-[#D8D8D8] rounded-full overflow-hidden"
                     size="md"
                     color="gray"
                 >
-                    <img src={BASE_URL+avatarUrl} alt="notifications" className="h-[20px] w-[20px]" />
-                    {/* <img src="profile.svg" alt="notifications" className="h-[20px] w-[20px]" /> */}
+                    <img 
+                        src={avatarUrl ? `${BASE_URL}${avatarUrl}` : ''}
+                        //default src
+                        alt="notifications" 
+                        className="h-full w-full object-cover rounded-full"
+                    />
                 </AButton>
             </Link>
         </div>
