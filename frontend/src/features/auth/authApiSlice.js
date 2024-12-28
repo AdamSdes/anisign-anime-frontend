@@ -10,12 +10,17 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 const formData = new URLSearchParams();
                 formData.append('username', credentials.username);
                 formData.append('password', credentials.password);
-                formData.append('grant_type', '');
+                formData.append('remember_me', credentials.rememberMe);
+                formData.append('grant_type', 'password');
                 formData.append('scope', '');
                 formData.append('client_id', '');
                 formData.append('client_secret', '');
+
+                const params = new URLSearchParams();
+                params.append('remember_me', credentials.rememberMe);
+
                 return {
-                    url: '/auth/token',
+                    url: `/auth/token?${params.toString()}`,
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',

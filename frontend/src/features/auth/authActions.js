@@ -1,10 +1,10 @@
 import { setToken, logOut } from "./authSlice";
 import { loginThunk, registerThunk, logoutThunk } from "./authApiSlice";
 
-const actionFullLogin = ({ username, password }) =>
+const actionFullLogin = ({ username, password, rememberMe }) =>
     async (dispatch) => {
         try {
-            const userData = await dispatch(loginThunk({ username, password })).unwrap();
+            const userData = await dispatch(loginThunk({ username, password, rememberMe })).unwrap();
 
             if (userData?.access_token) {
                 dispatch(setToken({ ...userData }));
