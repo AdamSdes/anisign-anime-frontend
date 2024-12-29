@@ -10,14 +10,13 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 const formData = new URLSearchParams();
                 formData.append('username', credentials.username);
                 formData.append('password', credentials.password);
-                formData.append('remember_me', credentials.rememberMe);
                 formData.append('grant_type', 'password');
                 formData.append('scope', '');
                 formData.append('client_id', '');
                 formData.append('client_secret', '');
 
                 const params = new URLSearchParams();
-                params.append('remember_me', credentials.rememberMe);
+                params.append('remember_me', credentials.rememberMe === undefined ? false : credentials.rememberMe);
 
                 return {
                     url: `/auth/token?${params.toString()}`,
@@ -36,9 +35,12 @@ export const authApiSlice = apiSlice.injectEndpoints({
                     password: credentials.password,
                     confirm_password: credentials.confirmPassword,
                 };
+
+                const params = new URLSearchParams();
+                params.append('remember_me', credentials.rememberMe === undefined ? false : credentials.rememberMe);
         
                 return {
-                    url: '/user/create-user',
+                    url: `/user/create-user?${params.toString()}`,
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

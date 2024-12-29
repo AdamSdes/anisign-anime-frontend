@@ -88,9 +88,10 @@ const LoginForm = () => {
                 <div className="mx-auto grid w-[360px] gap-[40px]">
                     <div className="flex gap-4 items-center">
                         <div className="flex justify-between items-center w-full">
-                            <h1 className="text-1xl font-bold">✌️ Добро пожаловать</h1>
+                            <h1 className="text-1xl font-bold">Добро пожаловать</h1>
                             <Link href="/">
                                 <AButton size="md" color="border">На сайт</AButton>
+                                <AButton size="md" color="border">СОСАТИ ХУЙ</AButton>
                             </Link>
                         </div>
                     </div>
