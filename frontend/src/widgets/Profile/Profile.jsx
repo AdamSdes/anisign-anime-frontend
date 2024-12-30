@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {Avatar} from "@nextui-org/avatar";
 import {Badge} from "@nextui-org/badge";
 import {Modal, ModalContent, ModalHeader, ModalBody, ModalFooter} from "@nextui-org/modal";
@@ -7,7 +7,7 @@ import {Input} from "@nextui-org/input";
 import {AButton} from "@/shared/anisign-ui/Button";
 import { toast } from "sonner";
 
-import { useLazyGetUserByUsernameQuery, useGetUserAvatarQuery, useUploadAvatarMutation } from '@/features/auth/authApiSlice';
+import { useLazyGetUserByUsernameQuery, useGetUserAvatarQuery, useUploadAvatarMutation, useChangePasswordMutation } from '@/features/auth/authApiSlice';
 import { useSelector } from 'react-redux';
 import { redirect } from 'next/navigation';
 import MyDropzone from '@/features/dropzone/Dropzone';
@@ -16,6 +16,7 @@ const Profile = () => {
     const [getUserByUsername, { data: user, isLoading, isError }] = useLazyGetUserByUsernameQuery();
     const { data: avatarUrl, isLoading: isAvatarLoading, error: avatarError, refetch: refetchAvatar } = useGetUserAvatarQuery();
     const [uploadAvatar] = useUploadAvatarMutation();
+    const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
     const username = useSelector(state => state.auth.user);
     const isAuthenticated = useSelector(state => state.auth.accessToken !== null);
     
@@ -54,7 +55,12 @@ const Profile = () => {
         }
 
         try {
-            // TODO: Добавить API запрос для смены пароля
+            await changePassword({
+                password: oldPassword,
+                newPassword: newPassword,
+                confirmPassword: confirmPassword
+            }).unwrap();
+            
             toast.success("Пароль успешно изменен");
             setIsOpen(false);
             // Очищаем поля
@@ -62,7 +68,7 @@ const Profile = () => {
             setNewPassword("");
             setConfirmPassword("");
         } catch (error) {
-            toast.error("Ошибка при смене пароля");
+            toast.error(error.data?.detail || "Ошибка при смене пароля");
         }
     };
 
@@ -105,23 +111,17 @@ const Profile = () => {
                                     />
                                 )}
                             </MyDropzone>
-                            <div className="flex flex-col gap-2 text-center lg:text-left">
-                                <p className="text-md sm:text-lg font-semibold text-white">{user?.username || '@AdamS'}</p>
-                                <div className="flex gap-2 justify-center lg:justify-start">
-                                    <Badge variant="bordered" className="text-white">Новичок</Badge>
-                                    <Badge
-                                        className="text-xs sm:text-sm text-black bg-gradient-to-r from-blue-400 to-pink-400"
-                                    >
-                                        PRO
-                                    </Badge>
-                                </div>
+                            <div>
+                                <h1 className="text-white text-2xl font-bold">{user?.username || username}</h1>
+                                <Badge content="" size="sm">
+                                    <p className="text-[#CCBAE4] text-sm">Новичок PRO</p>
+                                </Badge>
                             </div>
                         </div>
-                        <div className="flex justify-center lg:justify-end w-full lg:w-auto">
-                            <AButton 
-                                size='md' 
-                                color='gray' 
-                                className="py-[25px]"
+                        <div>
+                            <AButton
+                                className="h-[50px] px-[25px]"
+                                size="md"
                                 onClick={() => setIsOpen(true)}
                             >
                                 Сменить пароль
@@ -133,72 +133,54 @@ const Profile = () => {
 
             <Modal 
                 isOpen={isOpen} 
-                onClose={() => setIsOpen(false)}
-                classNames={{
-                    base: "bg-[#060606] text-white",
-                    closeButton: "text-white hover:bg-white/5",
-                }}
+                onOpenChange={setIsOpen}
+                placement="top-center"
             >
                 <ModalContent>
-                    <ModalHeader>
-                        <h2 className="text-xl font-bold">Смена пароля</h2>
-                    </ModalHeader>
-                    <ModalBody>
-                        <div className="flex flex-col gap-4">
-                            <Input
-                                type="password"
-                                label="Текущий пароль"
-                                value={oldPassword}
-                                onChange={(e) => setOldPassword(e.target.value)}
-                                placeholder="Введите текущий пароль"
-                                classNames={{
-                                    label: "text-white",
-                                    input: "text-white",
-                                }}
-                            />
-                            <Input
-                                type="password"
-                                label="Новый пароль"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                placeholder="Введите новый пароль"
-                                classNames={{
-                                    label: "text-white",
-                                    input: "text-white",
-                                }}
-                            />
-                            <Input
-                                type="password"
-                                label="Подтвердите новый пароль"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="Подтвердите новый пароль"
-                                classNames={{
-                                    label: "text-white",
-                                    input: "text-white",
-                                }}
-                            />
-                        </div>
-                    </ModalBody>
-                    <ModalFooter>
-                        <AButton
-                            size="md"
-                            color="gray"
-                            onClick={() => setIsOpen(false)}
-                        >
-                            Отмена
-                        </AButton>
-                        <AButton
-                            size="md"
-                            onClick={handleChangePassword}
-                        >
-                            Сохранить
-                        </AButton>
-                    </ModalFooter>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1">Смена пароля</ModalHeader>
+                            <ModalBody>
+                                <Input
+                                    autoFocus
+                                    label="Текущий пароль"
+                                    placeholder="Введите текущий пароль"
+                                    type="password"
+                                    variant="bordered"
+                                    value={oldPassword}
+                                    onChange={(e) => setOldPassword(e.target.value)}
+                                />
+                                <Input
+                                    label="Новый пароль"
+                                    placeholder="Введите новый пароль"
+                                    type="password"
+                                    variant="bordered"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                />
+                                <Input
+                                    label="Подтверждение пароля"
+                                    placeholder="Подтвердите новый пароль"
+                                    type="password"
+                                    variant="bordered"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                />
+                            </ModalBody>
+                            <ModalFooter>
+                                <AButton color="danger" variant="flat" onPress={onClose}>
+                                    Отмена
+                                </AButton>
+                                <AButton color="primary" onPress={handleChangePassword} isLoading={isChangingPassword}>
+                                    Изменить
+                                </AButton>
+                            </ModalFooter>
+                        </>
+                    )}
                 </ModalContent>
             </Modal>
         </>
     );
-}
+};
 
 export default Profile;

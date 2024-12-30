@@ -1,16 +1,45 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, DropdownTrigger, DropdownMenu, DropdownItem, Button } from "@nextui-org/react";
+import { Link, DropdownTrigger, DropdownMenu, DropdownItem, Button, Dropdown } from "@nextui-org/react";
 import { AButton } from "@/shared/anisign-ui/Button";
 import { ADropdown } from "@/shared/anisign-ui/Dropdown";
 import { Kbd } from "@nextui-org/kbd";
 import { HiMenu, HiX } from 'react-icons/hi';
+import { FiUser, FiLogOut } from 'react-icons/fi'; 
 import SearchModal from "@/shared/ui/SearchModal/SearchModal";
+import { Avatar } from "@nextui-org/avatar";
+import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { actionFullLogout } from '@/features/auth/authActions';
+import { useGetUserAvatarQuery } from '@/features/auth/authApiSlice';
 
 const UserLoggedNavBar = () => {
+    const { data: avatarUrl, isLoading: isAvatarLoading, refetch } = useGetUserAvatarQuery();
+    const dispatch = useDispatch();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    // Обновляем аватарку при изменении пути
+    useEffect(() => {
+        refetch();
+    }, [pathname, refetch]);
+
+    // Очищаем URL при размонтировании
+    useEffect(() => {
+        return () => {
+            if (avatarUrl && avatarUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(avatarUrl);
+            }
+        };
+    }, [avatarUrl]);
+
+    const handleLogout = () => {
+        dispatch(actionFullLogout());
+        router.push('/auth');
+    };
+
     return (
         <>
         <div className="h-[50px] w-[50px] rounded-full overflow-hidden flex items-center justify-center">
@@ -23,19 +52,51 @@ const UserLoggedNavBar = () => {
             </AButton>
         </div>
         
-        <div className="h-[50px] w-[50px] rounded-full overflow-hidden flex items-center justify-center">
-            <Link 
-            className="h-full w-full flex items-center justify-center"
-            href="/profile">
-                <AButton
-                    className="h-full w-full p-0 flex items-center justify-center bg-[#D8D8D8]"
-                    size="md"
-                    color="gray"
+        <Dropdown placement="bottom-end">
+            <DropdownTrigger>
+                <div className="h-[50px] w-[50px] rounded-full overflow-hidden flex items-center justify-center cursor-pointer">
+                    {isAvatarLoading ? (
+                        <div className="h-full w-full flex items-center justify-center bg-default-100">
+                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                    ) : (
+                        <Avatar
+                            isBordered
+                            src={avatarUrl || "https://gamek.mediacdn.vn/133514250583805952/2024/5/13/photo-1715575082069-1715575082737592043637.png"}
+                            className="h-full w-full transition-transform"
+                            alt="User Avatar"
+                            imgProps={{
+                                loading: "eager",
+                            }}
+                        />
+                    )}
+                </div>
+            </DropdownTrigger>
+            <DropdownMenu 
+                aria-label="Профиль пользователя"
+                className="w-[200px]"
+            >
+                <DropdownItem
+                    key="profile"
+                    startContent={<FiUser className="text-xl" />}
+                    onPress={() => router.push('/profile')}
                 >
-                    <img src="profile.svg" alt="notifications" className="h-[20px] w-[20px]" />
-                </AButton>
-            </Link>
-        </div>
+                    Профиль
+                </DropdownItem>
+                <DropdownItem
+                    key="logout"
+                    className="text-danger"
+                    color="danger"
+                    startContent={<FiLogOut className="text-xl" />}
+                    onPress={handleLogout}
+                >
+                    Выйти
+                </DropdownItem>
+            </DropdownMenu>
+        </Dropdown>
         </>
     )
 }
@@ -92,7 +153,6 @@ export default function Navbar() {
         return () => window.removeEventListener('resize', handleResize);
     }, [isMobileMenuOpen]);
 
-
     const dispatch = useDispatch();
 
     const handleLogout = () => {
@@ -119,7 +179,6 @@ export default function Navbar() {
                                   className="text-[#CCBAE4] gap-1 font-semibold rounded-[12px] text-[14px] bg-[none] h-[48px] opacity-100 hover:opacity-60 transition-all duration-300">
                                 Список аниме
                             </Link>
-                            <button onClick={handleLogout} className='TEST'>TEST LOGOUT</button>
                         </div>
                     </div>
 
@@ -236,6 +295,6 @@ export default function Navbar() {
                     </div>
                 )}
             </header>
-        </>
+        </> 
     );
 }

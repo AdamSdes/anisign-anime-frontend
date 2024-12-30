@@ -66,26 +66,36 @@ export const authApiSlice = apiSlice.injectEndpoints({
         getUserAvatar: builder.query({
             query: () => ({
                 url: '/user/get-my-avatar',
-                method: 'GET',
                 responseHandler: async (response) => {
                     const blob = await response.blob();
                     return URL.createObjectURL(blob);
                 },
             }),
-            providesTags: ['Avatar'],
-            keepUnusedDataFor: 0,
+            keepUnusedDataFor: 0, // Отключаем кэширование
+            providesTags: ['Avatar'], // Добавляем тег для инвалидации
         }),
         uploadAvatar: builder.mutation({
-            query: (file) => {
-                const formData = new FormData();
-                formData.append('file', file);
-                return {
-                    url: '/user/update-my-avatar',
-                    method: 'PUT',
-                    body: formData,
-                };
-            },
-            invalidatesTags: ['Avatar'],
+            query: (file) => ({
+                url: '/user/update-my-avatar',
+                method: 'PUT',
+                body: (() => {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    return formData;
+                })(),
+            }),
+            invalidatesTags: ['Avatar'], // Инвалидируем кэш аватарки после загрузки
+        }),
+        changePassword: builder.mutation({
+            query: ({ password, newPassword, confirmPassword }) => ({
+                url: `/user/change-my-password`,
+                method: 'POST',
+                params: {
+                    password,
+                    new_password: newPassword,
+                    confirm_password: confirmPassword
+                }
+            }),
         }),
     })
 })
@@ -98,4 +108,12 @@ const getUserByUsernameThunk = authApiSlice.endpoints.getUserByUsername.initiate
 
 export { loginThunk, registerThunk, logoutThunk, getUserByUsernameThunk }
 
-export const { useLazyGetUserByUsernameQuery, useUploadAvatarMutation, useGetUserAvatarQuery } = authApiSlice;
+export const {
+    useLoginMutation,
+    useLogoutMutation,
+    useSignupMutation,
+    useLazyGetUserByUsernameQuery,
+    useGetUserAvatarQuery,
+    useUploadAvatarMutation,
+    useChangePasswordMutation,
+} = authApiSlice;
