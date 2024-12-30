@@ -13,6 +13,7 @@ from datetime import datetime
 from app.schemas.auth_schemas import TokenData
 from fastapi import HTTPException
 from app.schemas.user_schemas import UserSchema
+from uuid import UUID
 
 settings = Settings()
 
@@ -21,7 +22,7 @@ class UserRepository():
     def __init__(self, db : AsyncSession):
         self.db = db
     
-    async def get_user_by_id(self, user_id: int) -> User:
+    async def get_user_by_id(self, user_id: UUID) -> User:
         user = await self.db.execute(select(User).where(User.id == user_id))
         user = user.scalars().first()
         return user
@@ -43,7 +44,7 @@ class UserRepository():
         await self.db.refresh(user)
         return user
     
-    async def update_avatar(self, user_id: int, avatar_url: str):
+    async def update_avatar(self, user_id: UUID, avatar_url: str):
         user = await self.get_user_by_id(user_id)
         if user:
             user.user_avatar = avatar_url
@@ -51,12 +52,20 @@ class UserRepository():
             return {"message": "Avatar updated successfully"}
         return {"message": "User not found"}
         
-    async def update_nickname(self, user_id: int, nickname: str):
+    async def update_nickname(self, user_id: UUID, nickname: str):
         user = await self.get_user_by_id(user_id)
         if user:
             user.nickname = nickname
             await self.db.commit()
             return {"message": "Nickname updated successfully"}
+        return {"message": "User not found"}
+    
+    async def update_password(self, user_id: UUID, password: str):
+        user = await self.get_user_by_id(user_id)
+        if user:
+            user.password = password
+            await self.db.commit()
+            return {"message": "Password updated successfully"}
         return {"message": "User not found"}
     
     

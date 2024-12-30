@@ -144,5 +144,19 @@ class UserService:
         else:
             raise HTTPException(status_code=404, detail="User not found")
         
-    
+    async def change_password(self, user_id: UUID, password: str, new_password: str, confirm_password: str):
+        user = await self.user_repository.get_user_by_id(user_id)
+        if user:
+            current_password = user.password
+            check = await verify_password(password, current_password)
+            if not check:
+                raise HTTPException(status_code=400, detail="incorrect password")
+            if new_password != confirm_password:
+                raise HTTPException(status_code=400, detail="Passwords do not match")
+            new_password = await hash_password(new_password)
+            result = await self.user_repository.update_password(user_id, new_password)
+            return result
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
+        
     
