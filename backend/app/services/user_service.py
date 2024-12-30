@@ -134,7 +134,7 @@ class UserService:
         file_location = f"{UPLOAD_DIR}{user_id}.png"
         if not os.path.exists(file_location):
             raise HTTPException(status_code=404, detail="Avatar not found")
-        return file_location
+        return FileResponse(file_location) 
 
     async def change_nickname(self, user_id: UUID, nickname: str):
         user = self.user_repository.get_user_by_id(user_id)
