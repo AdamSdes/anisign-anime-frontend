@@ -131,6 +131,17 @@ async def get_my_avatar(db: AsyncSession = Depends(get_session), current_user: U
     service = UserService(db)
     avatar = await service.get_avatar(current_user.id)
     return avatar
+
+@user_router.post("/change-my-password")
+async def change_password(password: str, new_password: str, confirm_password: str,db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
+    """
+    Change the current user's password.
+
+    Update the password for the current user.
+    """
+    service = UserService(db)
+    result = await service.change_password(current_user.id,password, new_password, confirm_password)
+    return result
     
 
 @user_router.delete("/delete-all")
@@ -150,6 +161,8 @@ async def delete_user(user_id: int):
     This endpoint is for administrative purposes and should be used with caution.
     """
     pass
+
+
 
 
 auth_router = APIRouter()
