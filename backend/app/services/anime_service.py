@@ -15,6 +15,10 @@ class AnimeService:
     def delete_all(self):
         return self.anime_repository.delete_all()
     
+    async def get_anime_list(self, page: int, limit: int):
+        result = await self.anime_repository.get_anime_list(page, limit)
+        return result
+    
     async def save_anime_list_in_db(self):
         api_token = self.settings.api_token
         url = f"https://kodikapi.com/list?token={api_token}&limit=100"

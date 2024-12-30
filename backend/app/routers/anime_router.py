@@ -26,4 +26,10 @@ async def delete_all_anime(db: AsyncSession = Depends(get_session)):
     service = AnimeService(db)
     result = await service.delete_all()
     return {"detail": f"{result}"}
+
+@anime_router.get("/get-anime-list")
+async def get_anime_list(page: int = 1, limit: int = 10, db: AsyncSession = Depends(get_session)):
+    service = AnimeService(db)
+    result = await service.get_anime_list(page, limit)
+    return result
     

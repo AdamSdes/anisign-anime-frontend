@@ -54,6 +54,11 @@ class AnimeRepository():
         await self.db.commit()
         return "All anime deleted successfully"
     
+    async def get_anime_list(self, page: int, limit: int):
+        query = select(Anime).limit(limit).offset((page - 1) * limit)
+        result = await self.db.execute(query)
+        return result.scalars().all()
+    
 #
 # class Anime(BaseTable):
     # __tablename__ = 'anime'
