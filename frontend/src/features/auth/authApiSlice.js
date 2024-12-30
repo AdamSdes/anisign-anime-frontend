@@ -4,6 +4,7 @@ import { apiSlice } from "@/app/api/apiSlice";
 
 //налаштування запитів
 export const authApiSlice = apiSlice.injectEndpoints({
+    tagTypes: ['Avatar'], // Добавляем тип тега
     endpoints: builder => ({
         login: builder.mutation({
             query: credentials => {
@@ -60,20 +61,41 @@ export const authApiSlice = apiSlice.injectEndpoints({
             query: (username) => ({
                 url: `/user/get-user-by-username/${username}`,
                 method: 'GET',
-            })
+            }),
+        }),
+        getUserAvatar: builder.query({
+            query: () => ({
+                url: '/user/get-my-avatar',
+                responseHandler: async (response) => {
+                    const blob = await response.blob();
+                    return URL.createObjectURL(blob);
+                },
+            }),
+            keepUnusedDataFor: 0, // Отключаем кэширование
+            providesTags: ['Avatar'], // Добавляем тег для инвалидации
         }),
         uploadAvatar: builder.mutation({
-            query: (file) => {
-                const formData = new FormData();
-                formData.append("avatar", file);
-
-                return {
-                    //URL ??
-                    url: "/user/??",
-                    method: "POST",
-                    body: formData,
-                };
-            },
+            query: (file) => ({
+                url: '/user/update-my-avatar',
+                method: 'PUT',
+                body: (() => {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    return formData;
+                })(),
+            }),
+            invalidatesTags: ['Avatar'], // Инвалидируем кэш аватарки после загрузки
+        }),
+        changePassword: builder.mutation({
+            query: ({ password, newPassword, confirmPassword }) => ({
+                url: `/user/change-my-password`,
+                method: 'POST',
+                params: {
+                    password,
+                    new_password: newPassword,
+                    confirm_password: confirmPassword
+                }
+            }),
         }),
     })
 })
@@ -86,4 +108,12 @@ const getUserByUsernameThunk = authApiSlice.endpoints.getUserByUsername.initiate
 
 export { loginThunk, registerThunk, logoutThunk, getUserByUsernameThunk }
 
-export const { useLazyGetUserByUsernameQuery, useUploadAvatarMutation } = authApiSlice;
+export const {
+    useLoginMutation,
+    useLogoutMutation,
+    useSignupMutation,
+    useLazyGetUserByUsernameQuery,
+    useGetUserAvatarQuery,
+    useUploadAvatarMutation,
+    useChangePasswordMutation,
+} = authApiSlice;
