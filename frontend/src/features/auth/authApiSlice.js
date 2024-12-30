@@ -4,6 +4,7 @@ import { apiSlice } from "@/app/api/apiSlice";
 
 //налаштування запитів
 export const authApiSlice = apiSlice.injectEndpoints({
+    tagTypes: ['Avatar'], // Добавляем тип тега
     endpoints: builder => ({
         login: builder.mutation({
             query: credentials => {
@@ -60,20 +61,31 @@ export const authApiSlice = apiSlice.injectEndpoints({
             query: (username) => ({
                 url: `/user/get-user-by-username/${username}`,
                 method: 'GET',
-            })
+            }),
+        }),
+        getUserAvatar: builder.query({
+            query: () => ({
+                url: '/user/get-my-avatar',
+                method: 'GET',
+                responseHandler: async (response) => {
+                    const blob = await response.blob();
+                    return URL.createObjectURL(blob);
+                },
+            }),
+            providesTags: ['Avatar'],
+            keepUnusedDataFor: 0,
         }),
         uploadAvatar: builder.mutation({
             query: (file) => {
                 const formData = new FormData();
-                formData.append("avatar", file);
-
+                formData.append('file', file);
                 return {
-                    //URL ??
-                    url: "/user/??",
-                    method: "POST",
+                    url: '/user/update-my-avatar',
+                    method: 'PUT',
                     body: formData,
                 };
             },
+            invalidatesTags: ['Avatar'],
         }),
     })
 })
@@ -86,4 +98,4 @@ const getUserByUsernameThunk = authApiSlice.endpoints.getUserByUsername.initiate
 
 export { loginThunk, registerThunk, logoutThunk, getUserByUsernameThunk }
 
-export const { useLazyGetUserByUsernameQuery, useUploadAvatarMutation } = authApiSlice;
+export const { useLazyGetUserByUsernameQuery, useUploadAvatarMutation, useGetUserAvatarQuery } = authApiSlice;

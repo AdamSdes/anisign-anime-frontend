@@ -1,7 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { setToken, logOut } from '../../features/auth/authSlice';
 
-
 const baseQuery = fetchBaseQuery({
     baseUrl: 'http://localhost:8000',
     //include для кукі
@@ -39,5 +38,6 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
 
 export const apiSlice = createApi({
     baseQuery: baseQueryWithReauth,
+    tagTypes: ['Avatar'], 
     endpoints: builder => ({})
-})
+});
