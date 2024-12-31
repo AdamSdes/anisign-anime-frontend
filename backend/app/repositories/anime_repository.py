@@ -4,46 +4,50 @@ from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 from app.db.models import Anime
+import logging
+from datetime import datetime
+from sqlalchemy.exc import SQLAlchemyError
+from dateutil import parser
+
 
 class AnimeRepository():
     def __init__(self, db : AsyncSession):
         self.db = db
         
-    async def save_anime_list(self, items):
-        for item in items:
-            title = item.get("title", "")
-            existing_anime = await self.db.execute(select(Anime).filter_by(title=title))
-            existing_anime = existing_anime.scalars().first()
-            
-            if existing_anime is None:
-                anime = Anime(
-                    title=title,
-                    description=item.get("description", ""),
-                    anime_images=item.get("screenshots", []),
-                    rating=item.get("rating", 0),
-                    year=item.get("year", 0),
-                    created_at=item.get("created_at", ""),
-                    last_season=item.get("last_season", 0),
-                    last_episode=item.get("last_episode", 0),
-                    episodes_count=item.get("episodes_count", 0),
-                    imdb_id=item.get("imdb_id", ""),
-                    shikimori_id=item.get("shikimori_id", ""),
-                    quality=item.get("quality", ""),
-                    other_title=item.get("other_title", ""),
-                    link=item.get("link", ""),
-                    id_kodik=item.get("id", "")
-                )
-                self.db.add(anime)
-            else:
-                # Optionally, update the existing record if needed
-                pass
+    async def get_anime_list(self, page: int, limit: int):
+        query = select(Anime).limit(limit).offset((page - 1) * limit)
+        result = await self.db.execute(query)
+        return result.scalars().all()
+    
+    async def get_anime_by_id(self, anime_id: str):
+        anime = await self.db.execute(select(Anime).where(Anime.anime_id == anime_id))
+        anime = anime.scalars().first()
+        return anime
         
-        try:
-            await self.db.commit()
-        except IntegrityError as error:
-            await self.db.rollback()
-            raise error
-
+    async def save_anime_list(self, animes: list):
+        for anime in animes:
+            try:
+                # Convert date strings to datetime.date objects
+                date_fields = ['aired_on', 'released_on', 'createdAt', 'updatedAt', 'nextEpisodeAt']
+                for field in date_fields:
+                    if anime.get(field) and anime[field]:
+                        try:
+                            anime[field] = parser.parse(anime[field]).date()
+                        except (ValueError, parser.ParserError) as e:
+                            logging.error(f"Error parsing date for field {field} in anime {anime}: {e}")
+                            anime[field] = None
+                
+                self.db.add(Anime(**anime))
+                await self.db.commit()
+            except IntegrityError as e:
+                await self.db.rollback()
+                logging.error(f"Duplicate entry for anime: {anime['english']}, Error: {e}")
+                continue  # Skip the duplicate entry and continue with the next one
+            except SQLAlchemyError as e:
+                await self.db.rollback()
+                logging.error(f"Error while saving anime: {anime}, Error: {e}")
+                return f"Error while saving anime list: {e}"
+        
         return "Anime list saved successfully"
     
     
@@ -54,10 +58,6 @@ class AnimeRepository():
         await self.db.commit()
         return "All anime deleted successfully"
     
-    async def get_anime_list(self, page: int, limit: int):
-        query = select(Anime).limit(limit).offset((page - 1) * limit)
-        result = await self.db.execute(query)
-        return result.scalars().all()
     
 #
 # class Anime(BaseTable):
