@@ -11,6 +11,7 @@ const transformValue = (key, value) => {
     const transformations = {
         kind: {
             tv: 'ТВ Сериал',
+            tv_special: 'ТВ Спешл',
             movie: 'Фильм',
             ova: 'OVA',
             ona: 'ONA',

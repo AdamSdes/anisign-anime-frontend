@@ -6,6 +6,7 @@ const transformValue = (key, value) => {
     const transformations = {
         kind: {
             tv: 'ТВ Сериал',
+            tv_special: 'ТВ Спешл',
             movie: 'Фильм',
             ova: 'OVA',
             ona: 'ONA',
@@ -72,7 +73,7 @@ const AnimeCard = ({ anime }) => {
                 </Link>
             </div>
             <div className="flex flex-col gap-1">
-                <Link href={`/anime/${anime.id}`}>
+                <Link href={`/anime/${anime.anime_id}`}>
                     <h3 className="font-semibold text-[14px] line-clamp-2 hover:text-primary transition-colors">
                         {(anime.russian || anime.russian).length > 24 
                             ? (anime.russian || anime.russian).substring(0, 24) + '...'

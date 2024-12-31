@@ -1,20 +1,10 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import AnimeCard from './AnimeCard';
 
-const container = {
-    hidden: { opacity: 0 },
-    show: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1
-        }
-    }
-};
-
-const item = {
+const fadeIn = {
     hidden: { 
         opacity: 0,
         y: 20
@@ -23,7 +13,7 @@ const item = {
         opacity: 1,
         y: 0,
         transition: {
-            duration: 0.5,
+            duration: 0.6,
             ease: "easeOut"
         }
     }
@@ -31,7 +21,7 @@ const item = {
 
 const AnimeCardSkeleton = ({ index }) => (
     <motion.div
-        variants={item}
+        variants={fadeIn}
         initial="hidden"
         animate="show"
         className="relative group"
@@ -51,9 +41,10 @@ const AnimeCardSkeleton = ({ index }) => (
 const AnimeList = () => {
     const [animeList, setAnimeList] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [hoveredId, setHoveredId] = useState(null);
     const searchParams = useSearchParams();
     const currentPage = Number(searchParams.get('page')) || 1;
-    const limit = 500;
+    const limit = 20;
 
     useEffect(() => {
         const fetchAnime = async () => {
@@ -74,33 +65,36 @@ const AnimeList = () => {
 
     if (loading) {
         return (
-            <motion.div 
-                variants={container}
-                initial="hidden"
-                animate="show"
-                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6"
-            >
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
                 {[...Array(limit)].map((_, index) => (
                     <AnimeCardSkeleton key={index} index={index} />
                 ))}
-            </motion.div>
+            </div>
         );
     }
 
     return (
         <div className="space-y-6">
-            <motion.div 
-                variants={container}
-                initial="hidden"
-                animate="show"
-                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6"
-            >
-                {animeList.map((anime, index) => (
-                    <motion.div key={anime.id} variants={item}>
-                        <AnimeCard anime={anime} />
-                    </motion.div>
-                ))}
-            </motion.div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                <AnimatePresence>
+                    {animeList.map((anime) => (
+                        <motion.div 
+                            key={anime.id}
+                            variants={fadeIn}
+                            initial="hidden"
+                            animate={{
+                                opacity: hoveredId === null || hoveredId === anime.id ? 1 : 0.3,
+                                y: 0,
+                                transition: { duration: 0.3 }
+                            }}
+                            onHoverStart={() => setHoveredId(anime.id)}
+                            onHoverEnd={() => setHoveredId(null)}
+                        >
+                            <AnimeCard anime={anime} />
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+            </div>
         </div>
     );
 };
