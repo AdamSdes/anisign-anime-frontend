@@ -32,4 +32,10 @@ async def get_anime_list(page: int = 1, limit: int = 10, db: AsyncSession = Depe
     service = AnimeService(db)
     result = await service.get_anime_list(page, limit)
     return result
+
+@anime_router.get("/{anime_id}")
+async def get_anime_by_id(anime_id: str, db: AsyncSession = Depends(get_session)):
+    service = AnimeService(db)
+    result = await service.get_anime_by_id(anime_id)
+    return result
     
