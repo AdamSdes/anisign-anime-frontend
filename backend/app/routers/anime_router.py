@@ -19,7 +19,7 @@ anime_router = APIRouter()
 async def save_anime_list_in_db(db: AsyncSession = Depends(get_session)):
     service = AnimeService(db)
     result = await service.save_anime_list_in_db()
-    return {"detail": f"{result}"}  
+    return result
 
 @anime_router.delete("/delete-all-anime")
 async def delete_all_anime(db: AsyncSession = Depends(get_session)):

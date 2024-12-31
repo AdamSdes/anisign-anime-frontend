@@ -48,7 +48,7 @@ class AnimeRepository():
                 logging.error(f"Error while saving anime: {anime}, Error: {e}")
                 return f"Error while saving anime list: {e}"
         
-        return "Anime list saved successfully"
+        return {'message':"Anime list saved successfully"}
     
     
     
