@@ -4,7 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
     :root {
         --background: 0 0% 100%;
@@ -70,17 +69,45 @@
     body {
         font-family: 'Montserrat', sans-serif;
         background: #060606;
+        position: relative;
+        overflow-y: scroll;
     }
 }
 
-html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow-x: hidden;
+/* Кастомный скроллбар */
+body::-webkit-scrollbar {
+  width: 1px;
+  background-color: transparent;
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: rgba(39, 39, 42, 0.6);
+  border-radius: 4px;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: rgba(63, 63, 70, 0.8);
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(39, 39, 42, 0.6) transparent;
 }
 
 
+body {
+  overflow-y: overlay;
+  margin-right: 0 !important;
+}
 
 .SelectSearch input {
     background-color: black;
@@ -101,7 +128,14 @@ html, body {
 
 .anim-list-background {
     /*background: url("/gradient.png");*/
-    background-image: linear-gradient(180deg, rgba(6, 6, 6, 0.7) 0%, rgba(6, 6, 6, 1) 100%), url('https://static.promediateknologi.id/crop/0x0:0x0/0x0/webp/photo/p2/74/2023/09/29/Gojo-Satoru-1626485619.jpg');
+    background-image: linear-gradient(180deg, rgba(6, 6, 6, 0.7) 0%, rgba(6, 6, 6, 1) 100%), url('/123.gif');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.anim-list-background-card {
+    background-image: linear-gradient(180deg, rgba(6, 6, 6, 0.7) 0%, rgba(6, 6, 6, 1) 100%), url('/123.gif');
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -133,7 +167,6 @@ html, body {
     padding-left: var(--slide-spacing);
     margin-bottom: 14px;
 }
-
 
 .embla__buttons {
     display: grid;

@@ -1,16 +1,14 @@
 'use client'
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react'
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Search, Command, Star } from "lucide-react"
 import {
-    Modal,
-    ModalContent,
-    ModalBody,
-    useDisclosure,
-    Button,
-    Kbd,
-    Input,
-    Chip
-} from '@nextui-org/react';
-import { AButton } from "@/shared/anisign-ui/Button";
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
 
 // Обновленная структура данных
 const categories = [
@@ -56,74 +54,74 @@ const truncateText = (text, maxLength) => {
     return text;
 };
 
-// Компонент для отображения списка категорий
-const CategoryButton = ({ category, isActive, onSelect }) => (
-    <Button
-        key={category.name}
-        variant={isActive ? 'solid' : 'ghost'}
-        onPress={() => onSelect(category.name)}
-        className={isActive ? 'bg-purple-500 text-white px-[45px] py-[25px]' : 'bg-white/5 border-none px-[45px] py-[25px]'}
-    >
-        {category.name}
-    </Button>
-);
-
 // Компонент для отображения аниме
 const AnimeCard = ({ anime }) => (
-    <div className="bg-[#0B0B0B] p-4 rounded-lg shadow-md flex items-center gap-4">
-        <img
-            src={anime.image}
-            alt="Anime thumbnail"
-            className="rounded-md"
-            width={60}
-            height={90}
-        />
-        <div className='flex justify-between w-full gap-2 items-center pr-5'>
-            <div className="flex flex-col gap-2">
-                <h3 className="text-white font-semibold">
-                    {truncateText(anime.name, 40)}
-                </h3>
-                <div className="flex gap-1 max-w-full flex-wrap">
-                    {anime.genres.map((genre, index) => (
-                        <Chip className="bg-white/5 text-white/60" key={index} size="sm" clickable>
-                            {genre}
-                        </Chip>
-                    ))}
-                </div>
+    <div className="flex items-start gap-3 group">
+        <div className="relative">
+            <img
+                src={anime.image}
+                alt={anime.name}
+                className="w-[120px] h-[160px] rounded-xl object-cover transition-all group-hover:shadow-lg"
+            />
+            <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full">
+                <Star className="w-3 h-3 text-[#E4DBBA]" />
+                <span className="text-xs font-medium text-[#E4DBBA]">{anime.rating}</span>
             </div>
-            <span className="text-[#E4DBBA] bg-[#E4DBBA]/20 px-4 py-2 rounded-[100px]">{anime.rating}</span>
+        </div>
+        <div className="flex-1 space-y-2 py-1">
+            <h3 className="font-medium text-base leading-tight group-hover:text-primary transition-colors">
+                {truncateText(anime.name, 50)}
+            </h3>
+            <div className="flex flex-wrap gap-1.5">
+                {anime.genres.map((genre, index) => (
+                    <Badge 
+                        key={index} 
+                        variant="secondary" 
+                        className="bg-white/5 hover:bg-white/10 text-xs px-2 py-0.5 transition-colors"
+                    >
+                        {genre}
+                    </Badge>
+                ))}
+            </div>
         </div>
     </div>
 );
 
 // Компонент для отображения персонажей
 const CharacterCard = ({ character }) => (
-    <div className="bg-[#0B0B0B] p-4 rounded-lg shadow-md flex items-center gap-4">
+    <div className="flex items-start gap-3 group">
         <img
             src={character.image}
-            alt="Character thumbnail"
-            className="rounded-md"
-            width={60}
-            height={90}
+            alt={character.name}
+            className="w-[120px] h-[160px] rounded-xl object-cover transition-all group-hover:shadow-lg"
         />
-        <div className='flex justify-between w-full gap-2 items-center pr-5'>
-            <div className="flex flex-col gap-2">
-                <h3 className="text-white font-semibold">
-                    {truncateText(character.name, 40)}
-                </h3>
-                <span className="text-white/70">{character.animeTitle}</span>
-            </div>
+        <div className="flex-1 space-y-1.5 py-1">
+            <h3 className="font-medium text-base leading-tight group-hover:text-primary transition-colors">
+                {truncateText(character.name, 40)}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+                {character.animeTitle}
+            </p>
         </div>
     </div>
 );
 
-// Основной компонент с модальным окном
 const SearchModal = () => {
-    const { isOpen, onOpen, onOpenChange } = useDisclosure();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [activeCategory, setActiveCategory] = useState('Аниме');
+    const [open, setOpen] = useState(false)
+    const [activeCategory, setActiveCategory] = useState('Аниме')
+    const [searchTerm, setSearchTerm] = useState('')
 
-    // Мемоизация для оптимизации поиска
+    useEffect(() => {
+        const down = (e) => {
+            if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault()
+                setOpen((open) => !open)
+            }
+        }
+        document.addEventListener("keydown", down)
+        return () => document.removeEventListener("keydown", down)
+    }, [])
+
     const filteredComponents = useMemo(() => {
         const category = categories.find((cat) => cat.name === activeCategory);
         return category?.components.filter((component) =>
@@ -131,112 +129,72 @@ const SearchModal = () => {
         );
     }, [activeCategory, searchTerm]);
 
-    // Обработчик события нажатия на клавишу "K"
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-            if (event.key.toLowerCase() === 'k') {
-                onOpen(); // Открываем модальное окно
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-
-        // Убираем обработчик при размонтировании
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [onOpen]);
-
     return (
         <>
-            <AButton
-                size="md"
-                className="h-[50px] min-w-0 w-fit rounded-[12px]"
-                onPress={onOpen}
-                color="border">
-                <div className="flex gap-3 items-center opacity-60">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 21 21"
-                         fill="none">
-                        <circle cx="9" cy="9" r="8" stroke="white" strokeWidth="1.5" strokeLinecap="round"
-                                strokeLinejoin="round" />
-                        <path d="M14.5 14.958L19.5 19.958" stroke="white" strokeWidth="1.5"
-                              strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <Kbd className="bg-white/10" keys={["command"]}>K</Kbd>
-                </div>
-            </AButton>
-
-            <Modal isOpen={isOpen} size={'5xl'} onOpenChange={onOpenChange} classNames={{
-                body: 'py-10',
-                backdrop: 'bg-black/50',
-                base: 'dark:bg-[#060606] bg-none text-[#a8b0d3]',
-            }}>
-                <ModalContent>
-                    <ModalBody>
-                        {/* Поле поиска */}
-                        <Input
-                            isClearable
-                            radius="lg"
-                            classNames={{
-                                label: 'text-black/50 dark:text-white/90',
-                                input: ['bg-transparent', 'text-black/90 dark:text-white/90', 'placeholder:text-default-700/50 dark:placeholder:text-white/60'],
-                                innerWrapper: 'bg-transparent',
-                                inputWrapper: [
-                                    'shadow-none',
-                                    'backdrop-saturate-200',
-                                    'dark:bg-[#0B0B0B]',
-                                    'px-[15px] py-[25px]',
-                                    'group-data-[focus=true]:bg-[#060606]',
-                                    'dark:group-data-[focus=true]:bg-[#060606]',
-                                    '!cursor-text',
-                                ],
-                            }}
-                            placeholder="Поиск..."
-                            startContent={<img src="search.svg" alt="search icon" />}
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-
-                        <div className="flex mt-5 gap-[20px]">
-                            {/* Боковая панель категорий */}
-                            <div className="">
-                                <div className="flex flex-col gap-3">
-                                    {categories.map((category) => (
-                                        <CategoryButton
-                                            key={category.name}
-                                            category={category}
-                                            isActive={activeCategory === category.name}
-                                            onSelect={setActiveCategory}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Вертикальный разделитель */}
-                            <div className="w-[1px] bg-white/5 h-[350px]"></div>
-
-                            {/* Отображение компонентов */}
-                            <div className="w-full flex flex-col gap-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-                                {filteredComponents?.length > 0 ? (
-                                    filteredComponents.map((component, index) => (
-                                        activeCategory === 'Аниме' ? (
-                                            <AnimeCard key={index} anime={component} />
-                                        ) : (
-                                            <CharacterCard key={index} character={component} />
-                                        )
-                                    ))
-                                ) : (
-                                    <div className="flex flex-col bg-[#FF5C5C]/10 rounded-xl justify-center items-center h-full">
-                                        <p className="text-[#FF5C5C] font-semibold text-[16px]">Ничего не найдено</p>
-                                    </div>
-                                )}
-                            </div>
+            <Button
+                variant="ghost"
+                className="h-[50px] border border-white/5 w-fit rounded-full gap-3 text-muted-foreground"
+                onClick={() => setOpen(true)}
+            >
+                <Search className="h-5 w-5" />
+                <kbd className="pointer-events-none rounded-full hover:bg-[rgba(255,255,255,0.01)] px-3 text-[12px] h-5 select-none bg-muted px-1.5 font-medium text-muted-foreground rounded">
+                    K
+                </kbd>
+            </Button>
+            <Dialog modal open={open} onOpenChange={setOpen}>
+                <DialogContent className="sm:max-w-[800px] p-0">
+                    <div className="relative">
+                        <div className="flex items-center border-b px-3">
+                            <Search className="h-5 w-5 text-muted-foreground/50" />
+                            <Input 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Поиск аниме и персонажей..." 
+                                className="h-14 px-4 border-0 focus-visible:ring-0 rounded-none bg-transparent"
+                            />
+                            <kbd className="pointer-events-none h-6 select-none bg-muted px-2 font-mono text-[10px] font-medium text-muted-foreground rounded flex items-center">
+                                ESC
+                            </kbd>
                         </div>
-                    </ModalBody>
-                </ModalContent>
-            </Modal>
+                    </div>
+                    <div className="border-t">
+                        <div className="flex p-2 gap-2 border-b">
+                            {categories.map((category) => (
+                                <Button
+                                    key={category.name}
+                                    variant={activeCategory === category.name ? "default" : "ghost"}
+                                    onClick={() => setActiveCategory(category.name)}
+                                    className="px-4"
+                                >
+                                    {category.name}
+                                </Button>
+                            ))}
+                        </div>
+                        <div className="max-h-[500px] overflow-y-auto p-3 space-y-3">
+                            {filteredComponents?.length === 0 ? (
+                                <div className="text-center py-10 text-muted-foreground">
+                                    Ничего не найдено
+                                </div>
+                            ) : (
+                                filteredComponents?.map((item, index) => (
+                                    <div 
+                                        key={index}
+                                        className="p-2 hover:bg-accent/50 rounded-xl transition-colors cursor-pointer"
+                                    >
+                                        {activeCategory === 'Аниме' ? (
+                                            <AnimeCard anime={item} />
+                                        ) : (
+                                            <CharacterCard character={item} />
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </>
-    );
-};
+    )
+}
 
 export default SearchModal;
