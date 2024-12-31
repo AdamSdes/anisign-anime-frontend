@@ -3,39 +3,47 @@ import { useState } from 'react';
 import {Image} from "@nextui-org/image";
 
 const AnimeCard = ({ anime }) => {
-    const [imgError, setImgError] = useState(false); // Состояние для контроля ошибки загрузки изображения
+    const [imgError, setImgError] = useState(false);
 
     return (
         <div className="relative flex w-full flex-col gap-2">
-            <div className="relative w-full overflow-hidden rounded-[14px] bg-muted" style={{ aspectRatio: '3 / 4' }}> {/* Задаем соотношение сторон */}
-                <Link href={`/anime/${anime.slug}`}>
+            <div className="relative w-full overflow-hidden rounded-[14px] bg-muted" style={{ aspectRatio: '3 / 4' }}>
+                <Link href={`/anime/${anime.id}`}>
                     <div className="">
                         {!imgError ? (
-                            <Image
+                            <img
                                 isZoomed
-                                className="w-full h-full object-cover" // object-cover сохраняет пропорции изображения
+                                className="w-full h-full object-cover"
                                 alt={anime.title}
-                                src={anime.poster}
-                                onError={() => setImgError(true)} // Обработка ошибки
+                                src={anime.anime_images[0]}
+                                onError={() => setImgError(true)}
                             />
                         ) : (
-                            <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-                                <span className="text-gray-500">Image not available</span>
+                            <div className="w-full h-full flex items-center justify-center bg-default-100">
+                                <span className="text-default-500">Изображение недоступно</span>
                             </div>
                         )}
                     </div>
                 </Link>
             </div>
-            <Link href={`/anime/${anime.slug}`}>
-                <div className="mt-1 truncate">
-                    <span className="text-sm font-medium">{anime.title}</span>
-                    <div className="mt-1 flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">{anime.year}</span>
-                        <div className="w-1 h-1 bg-muted-foreground rounded-full"></div>
-                        <span className="text-xs text-muted-foreground">{anime.type}</span>
-                    </div>
+            <div className="flex flex-col gap-1">
+                <Link href={`/anime/${anime.id}`}>
+                    <h3 className="font-semibold line-clamp-2 hover:text-primary transition-colors">
+                        {anime.title}
+                    </h3>
+                </Link>
+                <div className="flex gap-2 text-sm text-default-500">
+                    <span>{anime.year}</span>
+                    <span>•</span>
+                    <span>{anime.episodes_count} эп.</span>
+                    {anime.last_season > 1 && (
+                        <>
+                            <span>•</span>
+                            <span>Сезон {anime.last_season}</span>
+                        </>
+                    )}
                 </div>
-            </Link>
+            </div>
         </div>
     );
 };
