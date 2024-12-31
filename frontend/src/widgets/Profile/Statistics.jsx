@@ -1,103 +1,48 @@
-"use client"
-
-import Activity from './icons/Activity'
-import Time from './icons/Time'
-import { useSelector } from 'react-redux'
-import { selectCurrentUser } from '@/features/auth/authSlice'
-import { useLazyGetUserByUsernameQuery } from '@/features/auth/authApiSlice'
-import { useEffect, useState } from 'react'
+import React from 'react';
 
 const Statistics = () => {
-  const username = useSelector(selectCurrentUser);
-  const [getUserByUsername, { data: userData, isLoading, isError }] = useLazyGetUserByUsernameQuery();
-  const [timeFromRegistration, setTimeFromRegistration] = useState('');
+    return (
+        <div className="container mx-auto py-8 px-4">
+            <h2 className="text-xl font-bold text-white mb-4">Статистика</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-[rgba(255,255,255,0.02)] border rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                        <svg width="24" height="24" fill="currentColor" className="text-purple-400">
+                            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm2 14h-4a1 1 0 1 1 0-2h4a1 1 0 1 1 0 2zm1-4h-6a1 1 0 0 1 0-2h6a1 1 0 0 1 0 2zm2-4h-8a1 1 0 1 1 0-2h8a1 1 0 1 1 0 2z"></path>
+                        </svg>
+                        <span className="text-white text-lg">Активность</span>
+                    </div>
+                    {/* Столбики активности */}
+                    <div className="flex space-x-2">
+                        {[3, 2, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0].map((val, index) => (
+                            <div
+                                key={index}
+                                className="w-2 bg-purple-500 rounded"
+                                style={{
+                                    height: `${val * 20}px`, // Высота столбиков
+                                    opacity: val === 0 ? 0.3 : 1, // Полупрозрачные, если активность 0
+                                }}
+                            ></div>
+                        ))}
+                    </div>
+                </div>
 
-  useEffect(() => {
-    if (username) {
-      getUserByUsername(username);
-    }
-  }, [username, getUserByUsername]);
-
-  useEffect(() => {
-    if (userData?.created_at) {
-      const updateTime = () => {
-        const registrationDate = new Date(userData.created_at);
-        const now = new Date();
-        const diff = now - registrationDate;
-
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-        let timeString = '';
-        if (days > 0) timeString += `${days}д `;
-        if (hours > 0) timeString += `${hours}ч `;
-        timeString += `${minutes}м`;
-
-        setTimeFromRegistration(timeString);
-      };
-
-      updateTime();
-      const timer = setInterval(updateTime, 60000); // Обновляем каждую минуту
-
-      return () => clearInterval(timer);
-    }
-  }, [userData?.created_at]);
-
-  const activity = [100, 40, 80, 70, 20, 50, 10, 50, 100, 20, 35, 20, 20, 20];
-  const BAR_HEIGHT = 40;
-
-  return (
-    <div className="flex flex-col gap-[30px]">
-      <h1 className="text-[19px] font-semibold">Статистика</h1>
-
-      <div className="min-[1400px]:grid flex max-[1250px]:flex-col grid-cols-2 gap-[30px]">
-        <div className="min-[1250px]:w-[430px] p-[17px] flex flex-col gap-[16px] bg-[#FFFFFF05] border-[1px] border-[#FFFFFF0D] rounded-[8px]">
-          <div className="flex items-center align-center gap-[8px]">
-            <Activity />
-            <h3 className="text-[#B9B9B9] text-[14px] font-medium">
-              Активность
-            </h3>
-          </div>
-
-          <div className="w-full max-[1250px]:justify-between h-[40px] flex min-[450px]:gap-[21px]">
-            {activity.map((item, index) => (
-              <div
-                key={index}
-                className="w-[8px] h-full bg-[#27272A4D] rounded-full relative"
-              >
-                <div
-                  className="w-full bg-[#FFFFFF0D] rounded-full absolute bottom-0"
-                  style={{ height: `${(item / 100) * BAR_HEIGHT}px` }}
-                ></div>
-              </div>
-            ))}
-          </div>
+                <div className="bg-[rgba(255,255,255,0.02)] border rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                        <svg width="24" height="24" fill="currentColor" className="text-purple-400">
+                            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm2 14h-4a1 1 0 1 1 0-2h4a1 1 0 1 1 0 2zm1-4h-6a1 1 0 0 1 0-2h6a1 1 0 0 1 0 2zm2-4h-8a1 1 0 1 1 0-2h8a1 1 0 1 1 0 2z"></path>
+                        </svg>
+                        <span className="text-white text-lg">Время просмотра</span>
+                    </div>
+                    <p className="text-white mb-2">6 месяцев 5 дней</p>
+                    <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
+                        <div className="bg-purple-500 h-2 rounded-full" style={{ width: '65%' }}></div>
+                    </div>
+                    <span className="text-white text-sm">4465 часов</span>
+                </div>
+            </div>
         </div>
-
-        <div className="min-[1250px]:w-[430px] p-[17px] flex flex-col gap-[16px] bg-[#FFFFFF05] border-[1px] border-[#FFFFFF0D] rounded-[8px]">
-          <div className="flex items-center align-center gap-[8px]">
-            <Time />
-            <h3 className="text-[#B9B9B9] text-[14px] font-medium">
-              Время с момента регистрации
-            </h3>
-          </div>
-
-          <div className="flex items-center justify-center h-[40px] text-lg font-medium">
-            {isLoading ? (
-              'Загрузка...'
-            ) : isError ? (
-              'Ошибка получения данных'
-            ) : !userData?.created_at ? (
-              'Нет данных'
-            ) : (
-              timeFromRegistration
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+    );
+};
 
 export default Statistics;

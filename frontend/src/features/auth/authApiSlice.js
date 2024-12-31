@@ -71,7 +71,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
                     return URL.createObjectURL(blob);
                 },
             }),
-            keepUnusedDataFor: 300, // Храним данные 5 минут
+            keepUnusedDataFor: 0, // Отключаем кэширование
             providesTags: ['Avatar'], // Добавляем тег для инвалидации
         }),
         uploadAvatar: builder.mutation({

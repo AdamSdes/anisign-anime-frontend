@@ -13,10 +13,6 @@ COPY requirements.txt /backend/
 # Install any dependencies specified in requirements.txt.
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Create uploads directory and set permissions
-RUN mkdir -p /backend/uploads
-RUN chmod -R 777 /backend/uploads
-
 # Copy the rest of the working directory contents into the container at /backend.
 COPY . .
 
@@ -25,7 +21,6 @@ EXPOSE 8080
 
 # Define environment variable
 ENV NAME World
-ENV UPLOAD_DIR=/backend/uploads/
 
 # Run the application.
 CMD ["python", "-m", "app.main"]
