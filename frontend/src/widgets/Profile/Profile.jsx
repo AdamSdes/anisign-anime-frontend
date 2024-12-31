@@ -3,8 +3,8 @@ import React, { useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FaEye } from "react-icons/fa";
 import { toast } from "sonner";
-import { CircularProgress } from '@mui/material';
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner"; // Import the new loading indicator
 
 import { useLazyGetUserByUsernameQuery, useGetUserAvatarQuery, useUploadAvatarMutation, useChangePasswordMutation } from '@/features/auth/authApiSlice';
 import { useSelector } from 'react-redux';
@@ -89,19 +89,17 @@ const Profile = () => {
                                 >
                                     {isAvatarLoading ? (
                                         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex justify-center items-center bg-default-100">
-                                            <CircularProgress size="sm" color="primary" />
+                                            <Spinner size="sm" color="primary" /> // Use the new loading indicator
                                         </div>
                                     ) : (
-                                        <>
-                                            <Avatar className="w-16 h-16 sm:w-20 sm:h-20">
-                                                <AvatarImage src={avatarUrl} alt={username} />
-                                                <AvatarFallback>{username?.[0]?.toUpperCase()}</AvatarFallback>
-                                            </Avatar>
-                                            <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                                <span className="text-white text-xs">Изменить</span>
-                                            </div>
-                                        </>
+                                        <Avatar className="w-16 h-16 sm:w-20 sm:h-20">
+                                            <AvatarImage src={avatarUrl} alt={username} />
+                                            <AvatarFallback>{username?.[0]?.toUpperCase()}</AvatarFallback>
+                                        </Avatar>
                                     )}
+                                    <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                        <span className="text-white text-xs">Изменить</span>
+                                    </div>
                                 </div>
                                 <FileUploadDialog 
                                     isOpen={isUploadDialogOpen}

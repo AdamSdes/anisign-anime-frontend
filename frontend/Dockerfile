@@ -1,10 +1,11 @@
 # frontend/Dockerfile
-FROM node:19.0.0-alpine
+FROM node:18.0.0-alpine
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+RUN npm cache clean --force && \
+    npm install --legacy-peer-deps
 
 COPY . .
 

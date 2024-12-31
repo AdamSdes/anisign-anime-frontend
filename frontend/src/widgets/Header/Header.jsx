@@ -83,10 +83,10 @@ export default function Navbar() {
                     <div className="navbar-left flex gap-5 items-center">
                         <Link href='/'
                               className="flex gap-5 items-center opacity-100 hover:opacity-50 transition-opacity duration-300">
-                            <img src="logo.png" alt="Logo" className="w-8 h-8" />
+                            <img src="/logo.png" alt="Logo" className="w-8 h-8" />
                             <p className='text-[rgba(255,255,255,0.8)] text-[14px]'>Anisign</p>
                         </Link>
-                        <img src="line.svg" alt="Line" className="hidden md:block" />
+                        <img src="/line.svg" alt="Line" className="hidden md:block" />
                         {/* Меню для десктопа */}
                         <div className="hidden md:flex gap-5">
                             <Link href='/animeList'
@@ -121,7 +121,7 @@ export default function Navbar() {
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu> */}
-                        <img src="line.svg" alt="Line" className="hidden md:block" />
+                        <img src="/line.svg" alt="Line" className="hidden md:block" />
                         {isAuthenticated ? (
                             <div className="flex items-center gap-4">
                                 <NotificationsNav />

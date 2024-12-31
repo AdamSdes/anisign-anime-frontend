@@ -13,7 +13,7 @@ const Page = () => {
             <Header/>
             <Report/>
             <AnimeDetails/>
-            <ImageGallery/>
+            <ImageGallery screenshots={anime.screenshots} />
             <RelatedAnime/>
             <VideoPlayer/>
             <Discussion/>
