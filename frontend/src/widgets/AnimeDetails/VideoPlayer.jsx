@@ -1,66 +1,74 @@
 'use client';
-import React, { useState, useRef } from 'react';
-import { AButton } from '@/shared/anisign-ui/Button';
+import React, { useEffect, useState } from 'react';
 
-export default function VideoPlayer() {
-    // State variables
-    const [activeTab, setActiveTab] = useState('Озвучка');
-    const [selectedOption, setSelectedOption] = useState('JAM CLUB');
-    const [currentPage, setCurrentPage] = useState(2);
-    const [watchedEpisodes, setWatchedEpisodes] = useState(12);
+const VideoPlayer = ({ shikimoriId }) => {
+    const [error, setError] = useState(false);
 
-    // Constants
-    const totalPages = 25;
-    const totalEpisodes = 30;
+    useEffect(() => {
+        if (!shikimoriId) {
+            console.log('Нет shikimoriId:', shikimoriId);
+            return;
+        }
 
-    // Refs for drag scrolling
-    const scrollRef = useRef(null);
-    const isDragging = useRef(false);
-    const startX = useRef(0);
-    const scrollLeft = useRef(0);
+        console.log('Используем shikimoriId:', shikimoriId);
 
-    // Options list
-    const options = [
-        'JAM CLUB',
-        'AniDUB',
-        'AniLibria',
-        'SHIZA Project',
-        'AniMedia',
-        'AniFilm',
-        'AnimeVost',
-        'AniRise',
-    ];
+        // Очищаем предыдущий плеер если он есть
+        const existingPlayer = document.getElementById('kodik-player');
+        if (existingPlayer) {
+            existingPlayer.innerHTML = '';
+            setError(false);
+        }
 
-    // Handlers
-    const handlePageChange = (page) => setCurrentPage(page);
-    const handlePrevClick = () => currentPage > 1 && setCurrentPage(currentPage - 1);
-    const handleNextClick = () => currentPage < totalPages && setCurrentPage(currentPage + 1);
+        // Создаем iframe напрямую
+        const iframe = document.createElement('iframe');
+        iframe.src = `//kodik.info/find-player?shikimoriID=${shikimoriId}&only_season=false&only_episode=false`;
+        iframe.width = '100%';
+        iframe.height = '100%';
+        iframe.frameBorder = '0';
+        iframe.allowFullscreen = true;
+        iframe.allow = 'autoplay *; fullscreen *';
 
-    const handleMouseDown = (e) => {
-        isDragging.current = true;
-        startX.current = e.pageX - scrollRef.current.offsetLeft;
-        scrollLeft.current = scrollRef.current.scrollLeft;
-    };
+        // Добавляем обработчик ошибок
+        iframe.onerror = () => {
+            setError(true);
+            console.error('Ошибка загрузки плеера');
+        };
 
-    const handleMouseUpOrLeave = () => {
-        isDragging.current = false;
-    };
+        // Добавляем iframe в контейнер
+        const container = document.getElementById('kodik-player');
+        if (container) {
+            container.appendChild(iframe);
+        }
 
-    const handleMouseMove = (e) => {
-        if (!isDragging.current) return;
-        const x = e.pageX - scrollRef.current.offsetLeft;
-        scrollRef.current.scrollLeft = scrollLeft.current - (x - startX.current) * 2; // Adjust scroll speed
-    };
+        // Очистка при размонтировании
+        return () => {
+            if (container && iframe) {
+                container.removeChild(iframe);
+            }
+        };
+    }, [shikimoriId]);
 
-    const handleIncrement = () => watchedEpisodes < totalEpisodes && setWatchedEpisodes(watchedEpisodes + 1);
-    const handleDecrement = () => watchedEpisodes > 0 && setWatchedEpisodes(watchedEpisodes - 1);
-
-    // Progress calculation
-    const progressPercentage = (watchedEpisodes / totalEpisodes) * 100;
+    if (error) {
+        return (
+            <div className="w-full aspect-video rounded-[14px] overflow-hidden bg-gray-900 flex items-center justify-center">
+                <div className="text-white/80 text-center">
+                    <p className="text-lg mb-2">Видео не найдено</p>
+                    <p className="text-sm">Попробуйте позже</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <>
-
-        </>
+        <div 
+            id="kodik-player"
+            className="w-full aspect-video rounded-[14px] overflow-hidden bg-gray-900 flex items-center justify-center"
+        >
+            <div className="animate-pulse text-white/60">
+                Загрузка плеера...
+            </div>
+        </div>
     );
-}
+};
+
+export default VideoPlayer;

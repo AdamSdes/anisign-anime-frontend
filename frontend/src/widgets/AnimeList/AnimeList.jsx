@@ -1,60 +1,106 @@
+'use client';
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { motion } from 'framer-motion';
 import AnimeCard from './AnimeCard';
-import { Pagination } from "@nextui-org/react";
+
+const container = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
+
+const item = {
+    hidden: { 
+        opacity: 0,
+        y: 20
+    },
+    show: { 
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.5,
+            ease: "easeOut"
+        }
+    }
+};
+
+const AnimeCardSkeleton = ({ index }) => (
+    <motion.div
+        variants={item}
+        initial="hidden"
+        animate="show"
+        className="relative group"
+    >
+        <div className="animate-pulse">
+            <div className="relative">
+                <div className="w-full aspect-[3/4] rounded-[14px] bg-white/5" />
+            </div>
+            <div className="mt-3 space-y-2">
+                <div className="h-4 bg-white/5 rounded w-3/4" />
+                <div className="h-3 bg-white/5 rounded w-1/2" />
+            </div>
+        </div>
+    </motion.div>
+);
 
 const AnimeList = () => {
     const [animeList, setAnimeList] = useState([]);
-    const [page, setPage] = useState(1);
-    const [isLoading, setIsLoading] = useState(false);
-    const limit = 5;
+    const [loading, setLoading] = useState(true);
+    const searchParams = useSearchParams();
+    const currentPage = Number(searchParams.get('page')) || 1;
+    const limit = 500;
 
     useEffect(() => {
         const fetchAnime = async () => {
-            setIsLoading(true);
             try {
-                const response = await fetch(`http://localhost:8000/anime/get-anime-list?page=${page}&limit=${limit}`);
+                setLoading(true);
+                const response = await fetch(`http://localhost:8000/anime/get-anime-list?page=${currentPage}&limit=${limit}`);
                 const data = await response.json();
                 setAnimeList(data);
             } catch (error) {
                 console.error('Error fetching anime:', error);
             } finally {
-                setIsLoading(false);
+                setLoading(false);
             }
         };
 
         fetchAnime();
-    }, [page]);
+    }, [currentPage]);
 
-    if (isLoading) {
+    if (loading) {
         return (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+            <motion.div 
+                variants={container}
+                initial="hidden"
+                animate="show"
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6"
+            >
                 {[...Array(limit)].map((_, index) => (
-                    <div key={index} className="animate-pulse">
-                        <div className="bg-default-100 rounded-[14px]" style={{ aspectRatio: '3 / 4' }}></div>
-                        <div className="mt-2 space-y-2">
-                            <div className="h-4 bg-default-100 rounded w-3/4"></div>
-                            <div className="h-3 bg-default-100 rounded w-1/2"></div>
-                        </div>
-                    </div>
+                    <AnimeCardSkeleton key={index} index={index} />
                 ))}
-            </div>
+            </motion.div>
         );
     }
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-                {animeList.map((anime) => (
-                    <AnimeCard key={anime.id} anime={anime} />
+            <motion.div 
+                variants={container}
+                initial="hidden"
+                animate="show"
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6"
+            >
+                {animeList.map((anime, index) => (
+                    <motion.div key={anime.id} variants={item}>
+                        <AnimeCard anime={anime} />
+                    </motion.div>
                 ))}
-            </div>
-            <div className="flex justify-center">
-                <Pagination
-                    total={10}
-                    page={page}
-                    onChange={setPage}
-                />
-            </div>
+            </motion.div>
         </div>
     );
 };

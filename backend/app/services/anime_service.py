@@ -206,7 +206,7 @@ class AnimeService:
             return None
     
     async def save_anime_list_in_db(self):
-        for x in range(1, 2):
+        for x in range(1, 10):
             animes = await self.parse_page_animes(x)
             if animes:
                 logger.info(f"Animes found: {animes[0]['anime_id']}")
