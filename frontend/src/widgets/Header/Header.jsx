@@ -89,7 +89,7 @@ export default function Navbar() {
                         <img src="/line.svg" alt="Line" className="hidden md:block" />
                         {/* Меню для десктопа */}
                         <div className="hidden md:flex gap-5">
-                            <Link href='/animeList'
+                            <Link href='/anime-list'
                                   className="text-[#CCBAE4] gap-1 font-semibold rounded-[12px] text-[14px] bg-[none] h-[48px] opacity-100 hover:opacity-60 transition-all duration-300">
                                 Список аниме
                             </Link>
@@ -147,7 +147,7 @@ export default function Navbar() {
                 <div className="md:hidden fixed inset-0 bg-black/95 z-40 pt-[89px]">
                     <div className="container mx-auto px-4 py-8">
                         <div className="flex flex-col gap-6">
-                            <Link href="/animeList" className="text-white text-lg">
+                            <Link href="/anime-list" className="text-white text-lg">
                                 Список аниме
                             </Link>
                             <Link href="/characters" className="text-white text-lg">
