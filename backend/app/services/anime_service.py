@@ -20,7 +20,7 @@ class AnimeService:
         return result
     
     async def delete_all(self):
-        return self.anime_repository.delete_all()
+        return await self.anime_repository.delete_all()
     
     async def get_anime_by_id(self, anime_id: str):
         return await self.anime_repository.get_anime_by_id(anime_id)
@@ -212,8 +212,10 @@ class AnimeService:
                 logger.info(f"Animes found: {animes[0]['anime_id']}")
                 result = await self.anime_repository.save_anime_list(animes)
                 logger.info(result)
+                return result
             else:
                 logger.info("No animes found")
+                return {'message':"Anime list not saved"}
         
         
         # for num in range(1, 2):
