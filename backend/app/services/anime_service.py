@@ -198,6 +198,7 @@ class AnimeService:
                     }
                     animes.append(transformed_anime)
                 logger.info(f"Page {page_num} fetched")
+                print(f"Page {page_num} fetched")
                 time.sleep(0.5)
                 return animes        
         
@@ -210,12 +211,12 @@ class AnimeService:
             animes = await self.parse_page_animes(x)
             if animes:
                 logger.info(f"Animes found: {animes[0]['anime_id']}")
-                result = await self.anime_repository.save_anime_list(animes)
-                logger.info(result)
-                return result
+                await self.anime_repository.save_anime_list(animes)
+                logger.info({'message':f"Anime list saved successfully page {x}"})
             else:
                 logger.info("No animes found")
                 return {'message':"Anime list not saved"}
+        return {'message':"Anime list saved successfully"}
         
         
         # for num in range(1, 2):
