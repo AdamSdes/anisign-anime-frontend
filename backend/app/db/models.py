@@ -1,7 +1,11 @@
 from sqlalchemy import Column, Integer, String ,ARRAY, Text, Date, Boolean , Float
 from app.db.base_models import BaseTable
+from sqlalchemy import Table, Column, String, ForeignKey
+from sqlalchemy.orm import relationship
 
 
+
+# genre_ids = Column(ARRAY(Integer))
 class User(BaseTable):
     __tablename__ = 'users'
     username = Column(String, index=True, unique=True, nullable=False)
@@ -32,8 +36,18 @@ class Anime(BaseTable):
     isCensored = Column(Boolean, index=True, nullable=True)
     screenshots = Column(ARRAY(Text))
     description = Column(String, index=True, nullable=True)
+    genre_ids = Column(ARRAY(Text))
+    
+    # genres = relationship('Genre', secondary=anime_genre, back_populates='animes')
     
     
+class Genre(BaseTable):
+    __tablename__ = 'genre'
+    genre_id = Column(String, index=True, unique=True, nullable=False)
+    name = Column(String, index=True, unique=True, nullable=False)
+    russian = Column(String, index=True, unique=True, nullable=True)
+    
+    # animes = relationship('Anime', secondary=anime_genre, back_populates='genres')
     
     
     
@@ -42,6 +56,7 @@ class Anime(BaseTable):
     # studio
     # character roles
     #  related (anime)
+    
 
     
     

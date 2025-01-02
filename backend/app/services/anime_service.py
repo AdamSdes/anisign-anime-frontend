@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.anime_repository import AnimeRepository
+from app.repositories.genre_repository import GenreRepository
 from app.core.config import Settings
 import requests
 import json
@@ -14,6 +15,7 @@ class AnimeService:
     settings = Settings()
     def __init__(self, db: AsyncSession):
         self.anime_repository = AnimeRepository(db)
+        self.genre_repository = GenreRepository(db)
     
     async def get_anime_list(self, page: int, limit: int):
         result = await self.anime_repository.get_anime_list(page, limit)
@@ -174,6 +176,7 @@ class AnimeService:
             data = response.json()
             if data["data"]["animes"]:
                 for anime in data["data"]["animes"]:
+                    genres = [{"genre_id": genre["id"], "name": genre["name"], "russian": genre["russian"]} for genre in anime["genres"]]
                     transformed_anime = {
                         "anime_id": anime["id"],
                         "english": anime["english"],
@@ -194,11 +197,13 @@ class AnimeService:
                         "nextEpisodeAt": anime["nextEpisodeAt"],
                         "isCensored": anime["isCensored"],
                         "screenshots": [s["originalUrl"] for s in anime["screenshots"]],
-                        "description": anime["description"]
+                        "description": anime["description"],
+                        "genres": genres
                     }
                     animes.append(transformed_anime)
                 logger.info(f"Page {page_num} fetched")
                 print(f"Page {page_num} fetched")
+
                 time.sleep(0.5)
                 return animes        
         
@@ -210,9 +215,16 @@ class AnimeService:
         for x in range(1, 10):
             animes = await self.parse_page_animes(x)
             if animes:
-                logger.info(f"Animes found: {animes[0]['anime_id']}")
-                await self.anime_repository.save_anime_list(animes)
-                logger.info({'message':f"Anime list saved successfully page {x}"})
+                for anime in animes:
+                    genre_ids = []
+                    genres = anime.pop("genres")
+                    for genre in genres:
+                        await self.genre_repository.create_genre_if_not_exists(genre)
+                        genre_id = genre["genre_id"]
+                        genre_ids.append(genre_id)
+                    # print("genre_ids =" + genre_ids)
+                await self.anime_repository.save_anime_list(animes, genre_ids)
+                logger.info(f"Anime list saved successfully page {x}")
             else:
                 logger.info("No animes found")
                 return {'message':"Anime list not saved"}

@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
-from app.db.models import Anime
+from app.db.models import Anime , Genre
 import logging
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
@@ -24,31 +24,36 @@ class AnimeRepository():
         anime = anime.scalars().first()
         return anime
         
-    async def save_anime_list(self, animes: list):
+    async def save_anime_list(self, animes: list, genre_ids: list):
         for anime in animes:
             try:
                 # Convert date strings to datetime.date objects
                 date_fields = ['aired_on', 'released_on', 'createdAt', 'updatedAt', 'nextEpisodeAt']
                 for field in date_fields:
-                    if anime.get(field) and anime[field]:
+                    if anime[field]:
                         try:
                             anime[field] = parser.parse(anime[field]).date()
                         except (ValueError, parser.ParserError) as e:
                             logging.error(f"Error parsing date for field {field} in anime {anime}: {e}")
                             anime[field] = None
                 
-                self.db.add(Anime(**anime))
+                
+                anime['genre_ids'] = genre_ids
+                anime_instance = Anime(**anime)
+                self.db.add(anime_instance)
                 await self.db.commit()
+                await self.db.refresh(anime_instance)
+                
             except IntegrityError as e:
                 await self.db.rollback()
-                logging.error(f"Duplicate entry for anime: {anime['english']}, Error: {e}")
+                logging.error(f"Duplicate entry for anime: {anime.get('english', 'unknown')}, Error: {e}")
                 continue  # Skip the duplicate entry and continue with the next one
             except SQLAlchemyError as e:
                 await self.db.rollback()
                 logging.error(f"Error while saving anime: {anime}, Error: {e}")
                 return f"Error while saving anime list: {e}"
         
-        return {'message':"Anime list saved successfully"}
+        return {'message': "Anime list saved successfully"}
     
     
     
