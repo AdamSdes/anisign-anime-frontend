@@ -6,8 +6,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Bell } from "lucide-react"
 
 export function NotificationsNav() {
   return (
@@ -16,73 +16,116 @@ export function NotificationsNav() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-[50px] bg-white/5 w-[50px] rounded-full"
+          className="h-[50px] bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] border border-white/5 w-[50px] rounded-full transition-all duration-300"
         >
-          <img src="bell.svg" alt="notifications" className="h-[20px] w-[20px]" />
+          <Bell className="h-5 w-5 text-white/60" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
-        className="w-[400px] p-2" 
+        className="w-[480px] rounded-[14px] border border-white/5 bg-[#060606]/95 backdrop-blur-xl p-4" 
         align="end" 
         forceMount
         sideOffset={8}
       >
-        <DropdownMenuLabel className="font-normal px-2 py-3">
+        <DropdownMenuLabel className="px-2 py-1.5">
           <div className="flex items-center justify-between">
-            <p className="text-lg font-semibold">Уведомления</p>
-            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-primary">
+            <p className="text-[14px] font-semibold text-white/90">Уведомления</p>
+            <Button 
+              variant="ghost" 
+              className="text-[12px] text-white/60 hover:text-white"
+              size="sm"
+            >
               Прочитать все
             </Button>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="my-1" />
+        <DropdownMenuSeparator className="my-2 bg-white/5" />
+        
+        {/* Запросы в друзья */}
+        <div className="rounded-[10px] hover:bg-[rgba(255,255,255,0.02)] transition-all duration-300">
+          <div className="flex gap-3 p-3">
+            <img 
+              src="/avatar_logo.png"
+              alt="User avatar" 
+              className="w-[50px] h-[50px] rounded-full object-cover"
+            />
+            <div className="flex flex-col flex-1">
+              <div className="flex flex-col gap-2">
+                <p className="text-[14px] font-medium text-white/90">
+                  Александр
+                </p>
+                <p className="text-[12px] text-white/60">
+                  Хочет добавить вас в друзья
+                </p>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-4 bg-[#CCBAE4]/10 hover:bg-[#CCBAE4]/20 text-[#CCBAE4] rounded-lg"
+                  >
+                    Принять
+                  </Button>
+                  <Button 
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg"
+                  >
+                    Отклонить
+                  </Button>
+                </div>
+              </div>
+              <p className="text-[11px] text-white/40 mt-2">5 минут назад</p>
+            </div>
+          </div>
+        </div>
+
+        <DropdownMenuSeparator className="my-2 bg-white/5" />
+        
+        {/* Существующие уведомления */}
         <div className="space-y-1 max-h-[400px] overflow-y-auto">
-          <DropdownMenuItem className="p-0 focus:bg-transparent hover:bg-transparent cursor-default">
-            <div className="flex gap-3 p-3 w-full hover:bg-accent/50 transition-all duration-200 rounded-lg cursor-pointer group">
+          <div className="rounded-[10px] hover:bg-[rgba(255,255,255,0.02)] transition-all duration-300 cursor-pointer">
+            <div className="flex gap-3 p-3">
               <img 
                 src="https://animego.me/upload/anime/images/67641f5785b6b666465610.jpg" 
                 alt="Anime cover" 
-                className="w-20 h-full rounded-[12px] object-cover shadow-sm group-hover:shadow-md transition-all"
+                className="w-[70px] h-[90px] rounded-[10px] object-cover"
               />
               <div className="flex flex-col flex-1 gap-2">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium leading-none group-hover:text-primary transition-colors">
+                <p className="text-[14px] font-medium text-white/90 line-clamp-2">
                   Госпожа Кагуя: в любви как на войне
-                  </p>
-                </div>
-                <p className="text-sm text-muted-foreground leading-snug">
+                </p>
+                <p className="text-[12px] text-white/60 line-clamp-2">
                   Добавлена 13-я серия с русской озвучкой
                 </p>
-                <Badge className="text-[11px] w-fit bg-white/5 hover:bg-white/5 text-muted-foreground whitespace-nowrap">9 часов назад</Badge>
+                <p className="text-[11px] text-white/40">9 часов назад</p>
               </div>
             </div>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="p-0 focus:bg-transparent hover:bg-transparent cursor-default">
-            <div className="flex gap-3 p-3 w-full hover:bg-accent/50 transition-all duration-200 rounded-lg cursor-pointer group">
+          </div>
+
+          <div className="rounded-[10px] hover:bg-[rgba(255,255,255,0.02)] transition-all duration-300 cursor-pointer">
+            <div className="flex gap-3 p-3">
               <img 
                 src="https://animego.me/upload/anime/images/668321821b7df482839372.jpg" 
                 alt="Anime cover" 
-                className="w-20 h-full rounded-[12px] object-cover shadow-sm group-hover:shadow-md transition-all"
+                className="w-[70px] h-[90px] rounded-[10px] object-cover"
               />
               <div className="flex flex-col flex-1 gap-2">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium leading-none group-hover:text-primary transition-colors">
+                <p className="text-[14px] font-medium text-white/90 line-clamp-2">
                   Операция: Семейка Ёдзакура
-                  </p>
-                </div>
-                <p className="text-sm text-muted-foreground leading-snug">
+                </p>
+                <p className="text-[12px] text-white/60 line-clamp-2">
                   Добавлена 10-я серия с русской озвучкой
                 </p>
-                <Badge className="text-[11px] w-fit bg-white/5 hover:bg-white/5 text-muted-foreground whitespace-nowrap">2 часа назад</Badge>
+                <p className="text-[11px] text-white/40">2 часа назад</p>
               </div>
             </div>
-          </DropdownMenuItem>
+          </div>
         </div>
         
-        <DropdownMenuSeparator className="my-1" />
+        <DropdownMenuSeparator className="my-2 bg-white/5" />
         <Button 
           variant="ghost" 
-          className="w-full justify-center text-sm text-muted-foreground hover:text-primary"
+          className="w-full h-[45px] rounded-[10px] text-[14px] font-medium text-white/60 hover:text-white hover:bg-[rgba(255,255,255,0.02)] transition-all duration-300"
         >
           Показать все уведомления
         </Button>

@@ -7,7 +7,7 @@ import Statistics from "@/widgets/Profile/Statistics";
 import Anime from "@/widgets/Profile/Anime";
 import History from "@/widgets/Profile/History";
 import Friends from "@/widgets/Profile/Friends";
-import Footer from "@/shared/ui/Footer/Footer";
+import Footer from "@/widgets/Footer/Footer";
 
 export default function Page() {
     return (

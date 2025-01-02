@@ -1,6 +1,6 @@
 import Header from "@/widgets/Header/Header";
 import Report from "@/features/Report/Report";
-import Footer from "@/shared/ui/Footer/Footer";
+import Footer from "@/widgets/Footer/Footer";
 import CommentsList from "@/widgets/CommentsList/CommentsList";
 import FilterComments from "@/featers/FiltersComments/FilterComments";
 

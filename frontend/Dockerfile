@@ -4,7 +4,7 @@ FROM node:18.17.0-alpine
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm cache clean --force && \
+RUN npm npm install @radix-ui/react-toggle-group @radix-ui/react-toggle && \
     npm install --legacy-peer-deps
 
 COPY . .

@@ -7,6 +7,9 @@ import Header from "@/widgets/Header/Header";
 import Report from "@/features/Report/Report";
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Comments from '@/widgets/Comments/Comments';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Reviews from '@/widgets/AnimeDetails/Reviews';
 
 export default function Page() {
     const { id } = useParams();
@@ -75,6 +78,7 @@ export default function Page() {
     return (
         <main className="flex min-h-screen flex-col">
             <Header />
+            <Report />
             <section className="container mx-auto px-4 py-8">
                 <div className="flex flex-col gap-8">
 
@@ -84,15 +88,46 @@ export default function Page() {
                         <ImageGallery screenshots={animeData.screenshots} />
                     )}
 
-                    <div className="mt-10">
+                    <div 
+                        id="player" 
+                        className="mt-10 scroll-mt-24 scroll-smooth" 
+                    > 
                         <h2 className="text-2xl font-bold mb-5">Смотреть онлайн</h2>
                         {animeData?.anime_id && (
                             <VideoPlayer shikimoriId={animeData.anime_id} />
                         )}
                     </div>
+                    <div className="w-full mt-10 h-[1px] bg-white/5"></div>       
+                    
+                    <Tabs defaultValue="comments" className="mt-10">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-xl font-semibold">Комментарии</h2>
+                            <TabsList className="bg-white/5 rounded-full">
+                                <TabsTrigger 
+                                    value="comments" 
+                                    className="data-[state=active]:bg-[#CCBAE4] rounded-full data-[state=active]:text-black"
+                                >
+                                    Комментарии
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="reviews" 
+                                    className="data-[state=active]:bg-[#CCBAE4] rounded-full data-[state=active]:text-black"
+                                >
+                                    Отзывы
+                                </TabsTrigger>
+                            </TabsList>
+                        </div>
+                        
+                        <TabsContent value="comments">
+                            <Comments animeId={animeData?.anime_id} />
+                        </TabsContent>
+                        
+                        <TabsContent value="reviews">
+                            <Reviews animeId={animeData?.anime_id} />
+                        </TabsContent>
+                    </Tabs>
                 </div>
             </section>
-            <Report />
         </main>
     );
 }

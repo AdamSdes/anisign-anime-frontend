@@ -54,55 +54,84 @@ const truncateText = (text, maxLength) => {
     return text;
 };
 
-// Компонент для отображения аниме
+// Обновленный компонент карточки аниме
 const AnimeCard = ({ anime }) => (
-    <div className="flex items-start gap-3 group">
-        <div className="relative">
+    <div className="group relative flex items-start gap-4 p-2 rounded-xl transition-all duration-300 hover:bg-white/[0.03]">
+        <div className="relative aspect-[3/4] w-[100px] flex-shrink-0">
             <img
                 src={anime.image}
                 alt={anime.name}
-                className="w-[120px] h-[160px] rounded-xl object-cover transition-all group-hover:shadow-lg"
+                className="w-full h-full object-cover rounded-lg transition-all duration-300 group-hover:ring-2 ring-[#CCBAE4]/20"
             />
-            <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full">
-                <Star className="w-3 h-3 text-[#E4DBBA]" />
-                <span className="text-xs font-medium text-[#E4DBBA]">{anime.rating}</span>
+            <div className="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full 
+                bg-black/60 backdrop-blur-md border border-white/10">
+                <Star className="w-3 h-3 text-[#CCBAE4]" />
+                <span className="text-xs font-medium">{anime.rating}</span>
             </div>
         </div>
-        <div className="flex-1 space-y-2 py-1">
-            <h3 className="font-medium text-base leading-tight group-hover:text-primary transition-colors">
-                {truncateText(anime.name, 50)}
+        <div className="flex-1 min-w-0 py-1">
+            <h3 className="text-[15px] font-medium leading-snug mb-2 text-white/90 group-hover:text-white 
+                transition-colors duration-200">
+                {truncateText(anime.name, 60)}
             </h3>
             <div className="flex flex-wrap gap-1.5">
-                {anime.genres.map((genre, index) => (
-                    <Badge 
-                        key={index} 
-                        variant="secondary" 
-                        className="bg-white/5 hover:bg-white/10 text-xs px-2 py-0.5 transition-colors"
-                    >
+                {anime.genres.slice(0, 4).map((genre, index) => (
+                    <span key={index} 
+                        className="px-2.5 py-1 text-[11px] font-medium bg-white/[0.03] text-white/50 
+                        rounded-full border border-white/[0.05] transition-all duration-200 
+                        hover:border-white/10 hover:text-white/70">
                         {genre}
-                    </Badge>
+                    </span>
                 ))}
+                {anime.genres.length > 4 && (
+                    <span className="px-2 py-1 text-[11px] text-white/40">
+                        +{anime.genres.length - 4}
+                    </span>
+                )}
             </div>
         </div>
     </div>
 );
 
-// Компонент для отображения персонажей
+// Обновленный компонент карточки персонажа
 const CharacterCard = ({ character }) => (
-    <div className="flex items-start gap-3 group">
-        <img
-            src={character.image}
-            alt={character.name}
-            className="w-[120px] h-[160px] rounded-xl object-cover transition-all group-hover:shadow-lg"
-        />
-        <div className="flex-1 space-y-1.5 py-1">
-            <h3 className="font-medium text-base leading-tight group-hover:text-primary transition-colors">
+    <div className="group relative flex items-start gap-4 p-2 rounded-xl transition-all duration-300 
+        hover:bg-white/[0.03]">
+        <div className="relative aspect-[3/4] w-[90px] flex-shrink-0">
+            <img
+                src={character.image}
+                alt={character.name}
+                className="w-full h-full object-cover rounded-lg transition-all duration-300 
+                    group-hover:ring-2 ring-[#CCBAE4]/20"
+            />
+        </div>
+        <div className="flex-1 min-w-0 py-1">
+            <h3 className="text-[15px] font-medium text-white/90 group-hover:text-white 
+                transition-colors duration-200 mb-1.5">
                 {truncateText(character.name, 40)}
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-[13px] text-white/40 group-hover:text-white/50 transition-colors duration-200">
                 {character.animeTitle}
             </p>
         </div>
+    </div>
+);
+
+const EmptyState = ({ searchTerm }) => (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="relative w-16 h-16 mb-4">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#CCBAE4]/20 to-transparent 
+                rounded-full blur-xl"/>
+            <Search className="w-16 h-16 text-white/10" />
+        </div>
+        <p className="text-[15px] text-white/40 mb-2">
+            {searchTerm ? 'Ничего не найдено' : 'Начните поиск'}
+        </p>
+        {searchTerm && (
+            <p className="text-[13px] text-white/30">
+                Попробуйте изменить поисковый запрос
+            </p>
+        )}
     </div>
 );
 
@@ -133,68 +162,70 @@ const SearchModal = () => {
         <>
             <Button
                 variant="ghost"
-                className="h-[50px] border border-white/5 w-fit rounded-full gap-3 text-muted-foreground"
+                className="h-[46px] bg-white/[0.02] hover:bg-white/[0.04] border border-white/5 
+                    rounded-full gap-3 text-white/60 transition-all duration-300 hover:border-white/10"
                 onClick={() => setOpen(true)}
             >
-                <Search className="h-5 w-5" />
-                <kbd className="pointer-events-none rounded-full hover:bg-[rgba(255,255,255,0.01)] px-3 text-[12px] h-5 select-none bg-muted px-1.5 font-medium text-muted-foreground rounded">
-                    K
-                </kbd>
+                <Search className="w-4 h-4" />
+                <span className="text-sm">Поиск</span>
+                <kbd className="hidden md:flex h-6 items-center px-2 text-[11px] font-medium 
+                    bg-white/[0.02] rounded-md text-white/30">⌘K</kbd>
             </Button>
+
             <Dialog modal open={open} onOpenChange={setOpen}>
-                <DialogContent className="sm:max-w-[800px] p-0">
-                    <div className="relative">
-                        <div className="flex items-center border-b px-3">
-                            <Search className="h-5 w-5 text-muted-foreground/50" />
-                            <Input 
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Поиск аниме и персонажей..." 
-                                className="h-14 px-4 border-0 focus-visible:ring-0 rounded-none bg-transparent"
-                            />
-                            <kbd className="pointer-events-none h-6 select-none bg-muted px-2 font-mono text-[10px] font-medium text-muted-foreground rounded flex items-center">
-                                ESC
-                            </kbd>
-                        </div>
+                <DialogContent className="sm:max-w-[850px] p-0 gap-0 rounded-2xl border border-white/[0.05] 
+                    bg-black/90 shadow-2xl">
+                    <div className="flex items-center px-4 h-16 border-b border-white/[0.05]">
+                        <Search className="w-5 h-5 text-white/30" />
+                        <Input 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Поиск аниме и персонажей..." 
+                            className="h-16 px-4 border-0 focus-visible:ring-0 bg-transparent 
+                                text-white/90 placeholder:text-white/30 text-[15px]"
+                        />
                     </div>
-                    <div className="border-t">
-                        <div className="flex p-2 gap-2 border-b">
+                    
+                    <div className="sticky top-0 z-10 border-b border-white/[0.05] 
+                        bg-black/50">
+                        <div className="flex p-3 gap-2">
                             {categories.map((category) => (
                                 <Button
                                     key={category.name}
-                                    variant={activeCategory === category.name ? "default" : "ghost"}
                                     onClick={() => setActiveCategory(category.name)}
-                                    className="px-4"
+                                    className={cn(
+                                        "px-4 h-9 rounded-full text-[13px] font-medium transition-all",
+                                        activeCategory === category.name 
+                                            ? "bg-[#CCBAE4] text-black" 
+                                            : "text-white/50 hover:text-white/80 bg-white/[0.02] hover:bg-white/[0.05]"
+                                    )}
                                 >
                                     {category.name}
                                 </Button>
                             ))}
                         </div>
-                        <div className="max-h-[500px] overflow-y-auto p-3 space-y-3">
-                            {filteredComponents?.length === 0 ? (
-                                <div className="text-center py-10 text-muted-foreground">
-                                    Ничего не найдено
-                                </div>
-                            ) : (
-                                filteredComponents?.map((item, index) => (
-                                    <div 
-                                        key={index}
-                                        className="p-2 hover:bg-accent/50 rounded-xl transition-colors cursor-pointer"
-                                    >
-                                        {activeCategory === 'Аниме' ? (
-                                            <AnimeCard anime={item} />
-                                        ) : (
-                                            <CharacterCard character={item} />
-                                        )}
+                    </div>
+
+                    <div className="relative max-h-[600px] overflow-y-auto">
+                        {filteredComponents?.length === 0 ? (
+                            <EmptyState searchTerm={searchTerm} />
+                        ) : (
+                            <div className="grid grid-cols-1 divide-y divide-white/[0.03]">
+                                {filteredComponents?.map((item, index) => (
+                                    <div key={index} className="p-2">
+                                        {activeCategory === 'Аниме' 
+                                            ? <AnimeCard anime={item} />
+                                            : <CharacterCard character={item} />
+                                        }
                                     </div>
-                                ))
-                            )}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </DialogContent>
             </Dialog>
         </>
-    )
+    );
 }
 
 export default SearchModal;

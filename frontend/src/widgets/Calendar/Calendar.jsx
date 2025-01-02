@@ -6,29 +6,76 @@ import { Button } from '@/shared/shadcn-ui/button';
 import { ChevronRight } from "lucide-react";
 import { endpoints } from "@/shared/api/config";
 
-const Calendar = () => {
+const mockAnimeData = [
+    {
+        image: "https://cdn.myanimelist.net/images/anime/1015/138006.jpg",
+        rating: "8.7",
+        title: "Демон против проклятий",
+        episodeInfo: "Серия 13",
+        timeInfo: "12:00"
+    },
+    {
+        image: "https://cdn.myanimelist.net/images/anime/1506/138982.jpg",
+        rating: "9.2",
+        title: "Клинок, рассекающий демонов",
+        episodeInfo: "Серия 8",
+        timeInfo: "15:30"
+    },
+    {
+        image: "https://cdn.myanimelist.net/images/anime/1170/124312.jpg",
+        rating: "7.9",
+        title: "Синий оркестр",
+        episodeInfo: "Серия 21",
+        timeInfo: "18:00"
+    },
+    {
+        image: "https://cdn.myanimelist.net/images/anime/1988/138140.jpg",
+        rating: "8.4",
+        title: "Магическая битва",
+        episodeInfo: "Серия 5",
+        timeInfo: "20:30"
+    },
+    {
+        image: "https://cdn.myanimelist.net/images/anime/1259/110227.jpg",
+        rating: "8.8",
+        title: "Атака титанов",
+        episodeInfo: "Серия 17",
+        timeInfo: "22:00"
+    },
+    {
+        image: "https://cdn.myanimelist.net/images/anime/1280/135951.jpg",
+        rating: "7.6",
+        title: "Благословение небожителей",
+        episodeInfo: "Серия 9",
+        timeInfo: "23:30"
+    }
+];
+
+const Calendar = ({ date, showOnlyMine }) => {
     const [animeData, setAnimeData] = useState([]);
     const [selectedCard, setSelectedCard] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchAnimeData = async () => {
-            try {
-                const response = await fetch(endpoints.mainCalendar);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                setAnimeData(data);
-            } catch (error) {
-                console.error('Ошибка при загрузке данных:', error);
-            } finally {
+        // Имитация загрузки данных
+        const fetchMockData = () => {
+            setTimeout(() => {
+                // Перемешиваем массив случайным образом
+                const shuffledData = [...mockAnimeData]
+                    .sort(() => Math.random() - 0.5)
+                    .map(anime => ({
+                        ...anime,
+                        rating: (Math.random() * 3 + 7).toFixed(1), // Рандомный рейтинг от 7 до 10
+                        episodeInfo: `Серия ${Math.floor(Math.random() * 24) + 1}`,
+                        timeInfo: `${Math.floor(Math.random() * 24)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`
+                    }));
+                setAnimeData(shuffledData);
                 setIsLoading(false);
-            }
+            }, 1000); // Имитация задержки загрузки
         };
 
-        fetchAnimeData();
-    }, []);
+        fetchMockData();
+    }, [date]); // Перезагружаем при изменении даты
 
     return (
         <main className="flex flex-col mb-[30px] gap-3 items-center">

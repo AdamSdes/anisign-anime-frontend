@@ -2,7 +2,6 @@ import './globals.css';
 
 import {Montserrat} from 'next/font/google';
 import { AuthProvider } from '@/context/AuthContext';
-import Footer from "@/shared/ui/Footer/Footer";
 import { Providers } from './redux/provider';
 import { Toaster } from "sonner";
 

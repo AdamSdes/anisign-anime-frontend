@@ -70,13 +70,13 @@ const Paginations = () => {
     };
 
     return (
-        <div className="sticky bottom-2 z-10 flex items-center justify-center mb-5">
-            <div className="w-fit rounded-lg border border-secondary/60 bg-background p-2 shadow">
+        <div className="sticky bottom-2 z-50 flex items-center justify-center mb-5">
+            <div className="w-fit rounded-[14px] border border-secondary/60 bg-background p-2 shadow">
                 <div className="flex w-full justify-center gap-2 lg:gap-4">
                     {/* Кнопка "Назад" */}
                     <button
                         onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                        className="inline-flex gap-2 items-center justify-center whitespace-nowrap rounded-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 border border-secondary/60 bg-secondary/30 hover:bg-secondary/60 hover:text-secondary-foreground size-9 text-xs sm:size-10"
+                        className="inline-flex gap-2 items-center justify-center rounded-[14px] whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 border border-secondary/60 bg-secondary/30 hover:bg-secondary/60 hover:text-secondary-foreground size-9 text-xs sm:size-10"
                         disabled={currentPage === 1}
                     >
                         <svg viewBox="0 0 1024 1024" width="1.2em" height="1.2em">
@@ -106,7 +106,7 @@ const Paginations = () => {
                                     value={inputPage}
                                     onChange={handlePageInput}
                                     onKeyDown={handleInputKeyDown}
-                                    className="flex rounded-md border border-secondary/60 bg-secondary/30 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 size-9 sm:size-10"
+                                    className="flex rounded-[14px] border border-secondary/60 bg-secondary/30 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 size-9 sm:size-10"
                                     placeholder="..."
                                 />
                             );
@@ -116,7 +116,7 @@ const Paginations = () => {
                             <button
                                 key={pageNumber}
                                 onClick={() => handlePageChange(pageNumber)}
-                                className={`inline-flex gap-2 items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 size-9 sm:size-10 ${
+                                className={`inline-flex gap-2 items-center justify-center whitespace-nowrap rounded-[14px] text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 size-9 sm:size-10 ${
                                     currentPage === pageNumber
                                         ? 'border border-primary bg-primary text-primary-foreground hover:bg-primary/90'
                                         : 'border border-secondary/60 bg-secondary/30 hover:bg-secondary/60 hover:text-secondary-foreground'
@@ -130,7 +130,7 @@ const Paginations = () => {
                     {/* Кнопка "Вперед" */}
                     <button
                         onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                        className="inline-flex gap-2 items-center justify-center whitespace-nowrap rounded-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 border border-secondary/60 bg-secondary/30 hover:bg-secondary/60 hover:text-secondary-foreground size-9 text-xs sm:size-10"
+                        className="inline-flex gap-2 items-center justify-center whitespace-nowrap rounded-[14px] font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 border border-secondary/60 bg-secondary/30 hover:bg-secondary/60 hover:text-secondary-foreground size-9 text-xs sm:size-10"
                         disabled={currentPage === totalPages}
                     >
                         <svg viewBox="0 0 1024 1024" width="1.2em" height="1.2em">

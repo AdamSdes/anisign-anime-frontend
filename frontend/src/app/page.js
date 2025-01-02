@@ -2,9 +2,8 @@ import Header from "@/widgets/Header/Header";
 import Report from "@/features/Report/Report";
 import AnimeCarousel from "@/widgets/Carousel/AnimeCarousel";
 import Calendar from "@/widgets/Calendar/Calendar";
-import Comments from "@/widgets/Comments/Comments";
 import Collection from "@/widgets/Collections/Collections";
-import Footer from "@/shared/ui/Footer/Footer";
+import Footer from "@/widgets/Footer/Footer";
 import {Button} from "@/shared/shadcn-ui/button";
 import {ChevronRight} from "lucide-react";
 import React from "react";
@@ -36,7 +35,6 @@ const Page = () => {
                             </Button>
                         </Link>
                     </div>
-                    <Comments/>
                 </div>
             </main>
         </>

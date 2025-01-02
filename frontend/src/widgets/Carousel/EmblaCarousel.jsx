@@ -1,22 +1,25 @@
 'use client'
-import React, {useState, useEffect} from 'react'
-import {DotButton, useDotButton} from '@/widgets/Carousel/EmblaCarouselDotButton'
+import React, { useState, useEffect } from 'react'
+import { DotButton, useDotButton } from '@/widgets/Carousel/EmblaCarouselDotButton'
 import {
     PrevButton,
     NextButton,
     usePrevNextButtons
 } from '@/widgets/Carousel/EmblaCarouselArrowButtons'
 import useEmblaCarousel from 'embla-carousel-react'
-import {Tooltip} from "@nextui-org/tooltip";
-import dbData from '/db.json'
-import {Card, Skeleton} from "@nextui-org/react";
+import { Tooltip } from "@nextui-org/tooltip"
+import { Card, Skeleton } from "@nextui-org/react"
 
-const EmblaCarousel = ({options}) => {
+const EmblaCarousel = ({ options }) => {
     const [slides, setSlides] = useState([])
-    const [emblaRef, emblaApi] = useEmblaCarousel(options)
+    const [emblaRef, emblaApi] = useEmblaCarousel({ 
+        ...options, 
+        loop: false,
+        dragFree: true
+    })
+    const [loading, setLoading] = useState(true)
 
-    const {selectedIndex, scrollSnaps, onDotButtonClick} =
-        useDotButton(emblaApi)
+    const { selectedIndex, scrollSnaps, onDotButtonClick } = useDotButton(emblaApi)
 
     const {
         prevBtnDisabled,
@@ -26,11 +29,23 @@ const EmblaCarousel = ({options}) => {
     } = usePrevNextButtons(emblaApi)
 
     useEffect(() => {
-        const data = dbData['main-carousel']
-        setSlides(data)
+        const fetchAnime = async () => {
+            try {
+                setLoading(true)
+                const response = await fetch('http://localhost:8000/anime/get-anime-list?limit=10')
+                const data = await response.json()
+                setSlides(data)
+            } catch (error) {
+                console.error('Error fetching anime:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchAnime()
     }, [])
 
-    if (!slides.length) {
+    if (loading) {
         return (
             <section className="embla ">
                 <div className="mb-[51px]">
@@ -73,8 +88,8 @@ const EmblaCarousel = ({options}) => {
         <section className="embla">
             <div className="embla__viewport" ref={emblaRef}>
                 <div className="embla__container">
-                    {slides.map((slide, index) => (
-                        <div className="embla__slide" key={index}>
+                    {slides.map((anime) => (
+                        <div className="embla__slide" key={anime.id}>
                             <Tooltip
                                 delay={700}
                                 closeDelay={300}
@@ -101,17 +116,17 @@ const EmblaCarousel = ({options}) => {
                                 <button
                                     className="relative w-[261px] h-[368px] rounded-[16px] overflow-hidden border-none bg-none group">
                                     <img
-                                        src={slide.image}
-                                        alt={slide.title}
+                                        src={anime.poster_url}
+                                        alt={anime.russian || anime.name}
                                         className="object-cover w-full h-full transition-transform duration-500 ease-in-out group-hover:scale-110"/>
                                     <div
                                         className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent pointer-events-none z-10"></div>
                                     <div className="absolute bottom-0 w-full p-4 text-white z-20">
-                                        <p className="text-[14px] text-start font-semibold">{slide.title}</p>
+                                        <p className="text-[14px] text-start font-semibold">{anime.russian || anime.name}</p>
                                         <div className="flex gap-[10px] text-sm mt-2 opacity-70">
-                                            <p className="text-[12px]">{slide.year}</p>
+                                            <p className="text-[12px]">{new Date(anime.released_on).getFullYear()}</p>
                                             <span>/</span>
-                                            <p className="text-[12px]">{slide.type}</p>
+                                            <p className="text-[12px]">{anime.kind}</p>
                                         </div>
                                     </div>
                                 </button>
@@ -129,7 +144,7 @@ const EmblaCarousel = ({options}) => {
 
                 <div className="border rounded-[50px] items-center w-fit p-4 flex gap-5">
                     {scrollSnaps.map((_, index) => (
-                        <button
+                        <DotButton
                             key={index}
                             onClick={() => onDotButtonClick(index)}
                             className={`w-[10px] h-[10px] rounded-[50px] transition-colors duration-300 ${

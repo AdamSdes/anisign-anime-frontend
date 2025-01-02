@@ -74,6 +74,10 @@
     }
 }
 
+.container {
+    max-width: 1450px;
+}
+
 /* Кастомный скроллбар */
 body::-webkit-scrollbar {
   width: 1px;

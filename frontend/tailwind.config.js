@@ -11,6 +11,17 @@ module.exports = {
     "./src/**/**/*.{js,jsx}",
     "./node_modules/@nextui-org/theme/dist/components/(button|checkbox|chip|date-picker|dropdown|image|input|kbd|modal|navbar|pagination|scroll-shadow|select|skeleton|slider|toggle|tabs|popover|ripple|spinner|calendar|date-input|menu|divider|listbox).js"
   ],
+  extend: {
+    keyframes: {
+      "slide-in-from-bottom": {
+        "0%": { transform: "translateY(100%)" },
+        "100%": { transform: "translateY(0)" }
+      }
+    },
+    animation: {
+      "slide-in-from-bottom": "slide-in-from-bottom 0.3s ease-out"
+    }
+  },
   prefix: "",
   theme: {
   	container: {

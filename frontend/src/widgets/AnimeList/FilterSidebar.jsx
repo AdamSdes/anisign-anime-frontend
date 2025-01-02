@@ -1,12 +1,34 @@
 "use client";
-import React, {useState} from "react";
-import {Slider} from "@nextui-org/slider";
-import {Chip} from "@nextui-org/chip";
+import React from "react";
+import { Slider } from "@nextui-org/slider";
+import { GenreSelect } from "@/components/ui/genre-select";
+import { Button } from "@nextui-org/react";
+import { 
+    Filter, 
+    Star, 
+    Calendar, 
+    Target, 
+    X, 
+    Play, 
+    Check, 
+    Clock, 
+    Sparkles, 
+    Film, 
+    Tv as Television, // Renamed from Television to Tv
+    Clapperboard,
+    Disc,
+    Globe
+} from "lucide-react";
 
 const FilterSidebar = () => {
-
+    const [activeSort, setActiveSort] = React.useState('date'); // Add this state
     const [years, setYears] = React.useState([1965, 2024]);
     const [inputValues, setInputValues] = React.useState([1965, 2024]);
+    const [selectedGenres, setSelectedGenres] = React.useState([]);
+    const [selectedAgeRating, setSelectedAgeRating] = React.useState(''); // Add this state
+    const [selectedSeason, setSelectedSeason] = React.useState('');
+    const [selectedTypes, setSelectedTypes] = React.useState([]); // Add this state
+    const [selectedStatus, setSelectedStatus] = React.useState(''); // Add this state
 
     const handleSliderChange = (newValue) => {
         setYears(newValue);
@@ -31,40 +53,191 @@ const FilterSidebar = () => {
         }
     };
 
+    const sortOptions = [
+        { id: 'date', label: 'Дате' },
+        { id: 'rating', label: 'Рейтингу' },
+        { id: 'name', label: 'Названию' },
+        { id: 'views', label: 'Просмотрам' }
+    ];
+
+    const ageRatings = [
+        { id: 'G', label: 'G' },
+        { id: 'PG', label: 'PG' },
+        { id: 'PG-13', label: 'PG-13' },
+        { id: 'R', label: 'R-17+' },
+        { id: 'R+', label: 'R+' }
+    ];
+
+    const seasons = [
+        { id: 'winter', label: 'Зима' },
+        { id: 'spring', label: 'Весна' },
+        { id: 'summer', label: 'Лето' },
+        { id: 'fall', label: 'Осень' }
+    ];
+
+    const types = [
+        { id: 'tv', label: 'ТВ-Сериал' },
+        { id: 'movie', label: 'Фильм' },
+        { id: 'ova', label: 'OVA' },
+        { id: 'ona', label: 'ONA' },
+        { id: 'special', label: 'Спешл' }
+    ];
+
+    const statusOptions = [
+        { 
+            id: 'ongoing', 
+            label: 'Онгоинг',
+            icon: Play,
+            color: '#4CAF50',
+            description: 'Выходит сейчас'
+        },
+        { 
+            id: 'finished', 
+            label: 'Завершён',
+            icon: Check,
+            color: '#CCBAE4',
+            description: 'Все серии доступны'
+        },
+        { 
+            id: 'announced', 
+            label: 'Анонс',
+            icon: Clock,
+            color: '#FFA726',
+            description: 'Скоро выйдет'
+        },
+        { 
+            id: 'upcoming', 
+            label: 'Upcoming',
+            icon: Sparkles,
+            color: '#2196F3',
+            description: 'В планах на выход'
+        }
+    ];
+
+    // Добавим функцию сброса фильтров
+    const handleReset = () => {
+        setActiveSort('date');
+        setYears([1965, 2024]);
+        setInputValues([1965, 2024]);
+        setSelectedGenres([]);
+        setSelectedAgeRating('');
+        setSelectedSeason('');
+        setSelectedTypes([]);
+        setSelectedStatus('');
+    };
+
     return (
-        <aside className="hidden lg:block  space-y-6 sticky top-20">
-            <div className="bg-[rgba(255,255,255,0.02)] border border-white/5 p-6 rounded-[14px]">
-                <h3 className="font-semibold mb-5 w-full">Сортировать по</h3>
+        <aside className="hidden lg:block space-y-5 sticky top-20">
+            <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                    <Filter className="w-5 h-5 text-white/60" />
+                    <h2 className="text-[16px] font-semibold">Фильтры</h2>
+                </div>
+                <Button
+                    onClick={handleReset}
+                    className="h-[35px] px-3 bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.04)] text-white/60 hover:text-white rounded-full flex items-center gap-2 transition-all duration-300"
+                >
+                    <X className="w-4 h-4" />
+                    <span className="text-[13px]">Сбросить</span>
+                </Button>
+            </div>
 
-                {/* Используем flexbox и flex-wrap для адаптации элементов */}
-                <div className="flex flex-wrap gap-2 ">
-                    <div className="flex items-center px-[15px] h-[39px] font-medium rounded-[34px] cursor-pointer hover:opacity-60 transition-all duration-300 ease-in-out bg-[#CCBAE4] text-black border">
-                        Дате</div>
-                    <div className="flex items-center px-[15px] h-[39px] font-medium rounded-[34px] cursor-pointer hover:opacity-60 transition-all duration-300 ease-in-out bg-[rgba(255,255,255,0.02)]  text-[rgba(255,255,255,0.6)] border">
-                        Рейтингу</div>
-                    <div className="flex items-center px-[15px] h-[39px] font-medium rounded-[34px] cursor-pointer hover:opacity-60 transition-all duration-300 ease-in-out bg-[rgba(255,255,255,0.02)]  text-[rgba(255,255,255,0.6)] border">
-                        Названию</div>
-                    <div className="flex items-center px-[15px] h-[39px] font-medium rounded-[34px] cursor-pointer hover:opacity-60 transition-all duration-300 ease-in-out bg-[rgba(255,255,255,0.02)]  text-[rgba(255,255,255,0.6)] border">
-                        Просмотрам</div>
-
+            {/* Сортировка */}
+            <div className="bg-[rgba(255,255,255,0.02)] border border-white/5 p-5 rounded-[14px]">
+                <div className="flex items-center gap-2 mb-4">
+                    <Star className="w-4 h-4 text-white/60" />
+                    <h3 className="text-[14px] font-medium">Сортировка</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                    {sortOptions.map((option) => (
+                        <button
+                            key={option.id}
+                            onClick={() => setActiveSort(option.id)}
+                            className={`px-4 h-[35px] rounded-full text-[13px] font-medium transition-all duration-300 ${
+                                activeSort === option.id 
+                                    ? 'bg-[#CCBAE4] text-black' 
+                                    : 'bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.04)] text-white/60 hover:text-white'
+                            }`}
+                        >
+                            {option.label}
+                        </button>
+                    ))}
                 </div>
             </div>
 
+            {/* Обновленный блок статусов */}
+            <div className="bg-[rgba(255,255,255,0.02)] border border-white/5 p-5 rounded-[14px]">
+                <div className="flex items-center gap-2 mb-4">
+                    <Target className="w-4 h-4 text-white/60" />
+                    <h3 className="text-[14px] font-medium">Статус</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                    {statusOptions.map((status) => {
+                        const Icon = status.icon;
+                        return (
+                            <button
+                                key={status.id}
+                                onClick={() => setSelectedStatus(status.id === selectedStatus ? '' : status.id)}
+                                className={`group flex flex-col items-start p-3 rounded-xl transition-all duration-300 ${
+                                    selectedStatus === status.id 
+                                        ? 'bg-white/10' 
+                                        : 'hover:bg-white/5'
+                                }`}
+                            >
+                                <div className="flex items-center gap-2 mb-1">
+                                    <Icon 
+                                        className="w-4 h-4" 
+                                        style={{ 
+                                            color: selectedStatus === status.id ? status.color : 'rgba(255,255,255,0.6)',
+                                            transition: 'color 0.3s'
+                                        }} 
+                                    />
+                                    <span className={`font-medium ${
+                                        selectedStatus === status.id 
+                                            ? 'text-white' 
+                                            : 'text-white/60 group-hover:text-white/80'
+                                    }`}>
+                                        {status.label}
+                                    </span>
+                                </div>
+                                <span className="text-[11px] text-white/40">
+                                    {status.description}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
 
-            <div className="bg-[rgba(255,255,255,0.02)] border border-white/5 p-6 rounded-[14px]">
-                <h3 className="font-semibold mb-5">Год выхода</h3>
-                <div className="space-y-2">
-                    <div className="flex justify-between items-center text-white gap-4">
+            {/* Жанры */}
+            <div className="bg-[rgba(255,255,255,0.02)] border border-white/5 p-5 rounded-[14px]">
+                <div className="flex items-center gap-2 mb-4">
+                    <Target className="w-4 h-4 text-white/60" />
+                    <h3 className="text-[14px] font-medium">Жанры</h3>
+                </div>
+                <GenreSelect 
+                    value={selectedGenres}
+                    onChange={setSelectedGenres}
+                    className="bg-transparent"
+                />
+            </div>
 
+            {/* Год выхода */}
+            <div className="bg-[rgba(255,255,255,0.02)] border border-white/5 p-5 rounded-[14px]">
+                <div className="flex items-center gap-2 mb-4">
+                    <Calendar className="w-4 h-4 text-white/60" />
+                    <h3 className="text-[14px] font-medium">Год выхода</h3>
+                </div>
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center gap-4">
                         <input
                             type="text"
                             value={inputValues[0]}
-                            maxLength="4" //
+                            maxLength="4"
                             onChange={(e) => handleInputChange(0, e.target.value)}
-                            className="w-[70px] px-2 py-2 bg-[rgba(255,255,255,0.02)] border border-white/5 text-center text-white/80 outline-none rounded-[40px] hover:bg-[rgba(255,255,255,0.05)] transition-all duration-300 focus:bg-[rgba(255,255,255,0.05)]"
+                            className="w-[70px] h-[35px] px-2 bg-[rgba(255,255,255,0.02)] border border-white/5 text-center text-white/80 rounded-full focus:outline-none focus:ring-1 focus:ring-white/10"
                         />
-
-                        <div className="px-3 py-3 bg-none border w-full min-w-[80px] rounded-[40px]">
+                        <div className="flex-1 px-3 py-3 border border-white/5 rounded-full">
                             <Slider
                                 className=""
                                 showTooltip={true}
@@ -85,15 +258,44 @@ const FilterSidebar = () => {
                                 />)}
                             />
                         </div>
-
                         <input
                             type="text"
                             value={inputValues[1]}
-                            maxLength="4" //
+                            maxLength="4"
                             onChange={(e) => handleInputChange(1, e.target.value)}
-                            className="w-[70px] px-2 py-2 bg-[rgba(255,255,255,0.02)] border border-white/5 text-center text-white/80 outline-none rounded-[40px] hover:bg-[rgba(255,255,255,0.05)] transition-all duration-300 focus:bg-[rgba(255,255,255,0.05)]"
+                            className="w-[70px] h-[35px] px-2 bg-[rgba(255,255,255,0.02)] border border-white/5 text-center text-white/80 rounded-full focus:outline-none focus:ring-1 focus:ring-white/10"
                         />
                     </div>
+                </div>
+            </div>
+
+            {/* Обновленный блок типов */}
+            <div className="bg-[rgba(255,255,255,0.02)] border border-white/5 p-5 rounded-[14px]">
+                <div className="flex items-center gap-2 mb-4">
+                    <Film className="w-4 h-4 text-white/60" />
+                    <h3 className="text-[14px] font-medium">Тип</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                    {types.map((type) => (
+                        <button
+                            key={type.id}
+                            onClick={() => {
+                                setSelectedTypes(prev => {
+                                    if (prev.includes(type.id)) {
+                                        return prev.filter(t => t !== type.id);
+                                    }
+                                    return [...prev, type.id];
+                                });
+                            }}
+                            className={`px-4 h-[35px] rounded-full text-[13px] font-medium transition-all duration-300 ${
+                                selectedTypes.includes(type.id)
+                                    ? 'bg-[#CCBAE4] text-black'
+                                    : 'bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.04)] text-white/60 hover:text-white'
+                            }`}
+                        >
+                            {type.label}
+                        </button>
+                    ))}
                 </div>
             </div>
         </aside>

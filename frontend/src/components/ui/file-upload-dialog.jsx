@@ -17,7 +17,6 @@ import { cn } from "@/lib/utils"
 
 export function FileUploadDialog({ isOpen, onClose, onUpload }) {
   const [file, setFile] = React.useState(null)
-  const [uploadProgress, setUploadProgress] = React.useState(0)
   const [isUploading, setIsUploading] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState("")
 
@@ -54,24 +53,10 @@ export function FileUploadDialog({ isOpen, onClose, onUpload }) {
     setIsUploading(true)
     
     try {
-      const interval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(interval)
-            return 100
-          }
-          return prev + 10
-        })
-      }, 500)
-
       await onUpload(file)
-      
-      clearInterval(interval)
-      setUploadProgress(100)
-      
-      setTimeout(() => {
-        handleClose()
-      }, 500)
+      // Даем небольшую задержку перед закрытием диалога
+      await new Promise(resolve => setTimeout(resolve, 500))
+      handleClose()
     } catch (error) {
       console.error('Upload failed:', error)
       setErrorMessage("Ошибка при загрузке файла")
@@ -80,9 +65,32 @@ export function FileUploadDialog({ isOpen, onClose, onUpload }) {
     }
   }
 
+  const handleAvatarDrop = async (file) => {
+    if (!file) return;
+    
+    setIsAvatarUploading(true);
+    try {
+        await uploadAvatar(file).unwrap();
+        // Добавляем несколько попыток обновления аватара
+        let retries = 3;
+        while (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await refetchAvatar();
+            retries--;
+        }
+        toast.success("Аватар успешно обновлен");
+        setIsUploadDialogOpen(false);
+    } catch (error) {
+        toast.error(error.data?.detail || "Ошибка при загрузке аватара");
+        console.error("Error uploading avatar:", error);
+    } finally {
+        setIsAvatarUploading(false);
+    }
+  };
+
   const handleClose = () => {
+    if (isUploading) return // Предотвращаем закрытие во время загрузки
     setFile(null)
-    setUploadProgress(0)
     setIsUploading(false)
     setErrorMessage("")
     onClose()
@@ -119,8 +127,7 @@ export function FileUploadDialog({ isOpen, onClose, onUpload }) {
             "border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors",
             isDragActive ? "border-primary" : "border-white/5",
             "hover:border-primary"
-          )}
-        >
+          )}>
           <input {...getInputProps()} />
           <div className="flex flex-col items-center justify-center space-y-2 text-center">
             {file ? (
@@ -145,35 +152,36 @@ export function FileUploadDialog({ isOpen, onClose, onUpload }) {
           </div>
         </div>
 
-        {file && !isUploading && (
-          <div className="flex justify-between items-center">
-            <button
-              onClick={() => setFile(null)}
-              className="flex items-center text-sm text-muted-foreground hover:text-white transition-colors"
-            >
-              <X className="w-4 h-4 mr-1" />
-              Удалить
-            </button>
-            <button
-              onClick={handleUpload}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              Загрузить
-            </button>
-          </div>
-        )}
-
-        {isUploading && (
+        {isUploading ? (
           <div className="flex justify-center">
             <CircularProgress
               size="lg"
-              value={uploadProgress}
               color="primary"
-              showValueLabel={true}
+              label="Загрузка..."
+              isIndeterminate
             />
           </div>
+        ) : (
+          file && (
+            <div className="flex justify-between items-center">
+              <button
+                onClick={() => setFile(null)}
+                className="flex items-center text-sm text-muted-foreground hover:text-white transition-colors"
+              >
+                <X className="w-4 h-4 mr-1" />
+                Удалить
+              </button>
+              <button
+                onClick={handleUpload}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Загрузить
+              </button>
+            </div>
+          )
         )}
       </DialogContent>
     </Dialog>
   )
 }
+

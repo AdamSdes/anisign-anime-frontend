@@ -6,7 +6,7 @@ import Paginations from "@/widgets/AnimeList/Pagination";
 import Navbar from "@/widgets/Header/Header";
 import Report from "@/features/Report/Report";
 import SearchBar from "@/widgets/AnimeList/SearchBar";
-import Footer from "@/shared/ui/Footer/Footer";
+import Footer from "@/widgets/Footer/Footer";
 
 const Page = () => {
     const [search, setSearch] = useState('');

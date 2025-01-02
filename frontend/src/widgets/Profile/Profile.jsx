@@ -2,9 +2,11 @@
 import React, { useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FaEye } from "react-icons/fa";
+import { Settings, Camera, UserCircle, Crown, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner"; // Import the new loading indicator
+import Link from 'next/link';
 
 import { useLazyGetUserByUsernameQuery, useGetUserAvatarQuery, useUploadAvatarMutation, useChangePasswordMutation } from '@/features/auth/authApiSlice';
 import { useSelector } from 'react-redux';
@@ -23,6 +25,7 @@ const Profile = () => {
     // Состояния для модальных окон
     const [isPasswordDialogOpen, setIsPasswordDialogOpen] = React.useState(false);
     const [isUploadDialogOpen, setIsUploadDialogOpen] = React.useState(false);
+    const [isAvatarUploading, setIsAvatarUploading] = React.useState(false);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -64,14 +67,19 @@ const Profile = () => {
     const handleAvatarDrop = async (file) => {
         if (!file) return;
         
+        setIsAvatarUploading(true);
         try {
-            await uploadAvatar(file).unwrap();
-            await refetchAvatar(); // Принудительно обновляем аватар
+            const result = await uploadAvatar(file).unwrap();
+            // Добавляем небольшую задержку перед обновлением аватара
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await refetchAvatar();
             toast.success("Аватар успешно обновлен");
             setIsUploadDialogOpen(false);
         } catch (error) {
             toast.error(error.data?.detail || "Ошибка при загрузке аватара");
             console.error("Error uploading avatar:", error);
+        } finally {
+            setIsAvatarUploading(false);
         }
     };
     
@@ -79,64 +87,83 @@ const Profile = () => {
         <>
             <div className="anim-list-background h-[350px] relative">
                 <div className="container mx-auto h-full flex items-end justify-center pb-10">
-                    <div className="flex justify-between items-end w-full max-w-[1450px] gap-5 translate-y-[80px]">
-                        {/* Левая часть с PRO */}
-                        <div className="flex items-end gap-5">
+                    <div className="flex justify-between items-end w-full max-w-[1450px] gap-6 translate-y-[80px]">
+                        {/* Left Section */}
+                        <div className="flex items-end gap-6">
+                            {/* Avatar Section */}
                             <div className="flex flex-col anim-list-background-card outline outline-[1px] outline-white/5 rounded-[14px] items-center justify-center h-[247px] w-[185px] gap-3">
                                 <div 
-                                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full hover:opacity-80 transition-opacity relative group cursor-pointer"
-                                    onClick={() => setIsUploadDialogOpen(true)}
+                                    className="relative group cursor-pointer"
+                                    onClick={() => !isAvatarUploading && setIsUploadDialogOpen(true)}
                                 >
-                                    {isAvatarLoading ? (
-                                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex justify-center items-center bg-default-100">
-                                            <Spinner size="sm" color="primary" /> // Use the new loading indicator
-                                        </div>
-                                    ) : (
-                                        <Avatar className="w-16 h-16 sm:w-20 sm:h-20">
-                                            <AvatarImage src={avatarUrl} alt={username} />
-                                            <AvatarFallback>{username?.[0]?.toUpperCase()}</AvatarFallback>
-                                        </Avatar>
-                                    )}
-                                    <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                        <span className="text-white text-xs">Изменить</span>
+                                    <div className="w-20 h-20 rounded-full overflow-hidden">
+                                        {(isAvatarLoading || isAvatarUploading) ? (
+                                            <div className="w-full h-full bg-[rgba(255,255,255,0.02)] flex items-center justify-center">
+                                                <Spinner size="sm" color="primary" />
+                                            </div>
+                                        ) : (
+                                            <Avatar className="w-full h-full">
+                                                <AvatarImage src={avatarUrl} alt={username} className="object-cover" />
+                                                <AvatarFallback>
+                                                    <UserCircle className="w-8 h-8 text-white/40" />
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        )}
+                                    </div>
+                                    <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/50 flex items-center justify-center">
+                                        <Camera className="w-5 h-5 text-white" />
                                     </div>
                                 </div>
-                                <FileUploadDialog 
-                                    isOpen={isUploadDialogOpen}
-                                    onClose={() => setIsUploadDialogOpen(false)}
-                                    onUpload={handleAvatarDrop}
-                                />
+                                
                                 <div className="text-center">
                                     <h1 className="text-white text-[14px] font-semibold">{user?.username || username}</h1>
                                 </div>
                             </div>
+
+                            {/* User Info */}
                             <div className="flex flex-col gap-5">
-                                <p className="text-white/50 pl-1 text-sm flex items-center gap-3"><FaEye size={20} />Смотрит - Магическую битву 2</p>
+                                <p className="text-white/50 pl-1 text-[14px] flex items-center gap-3">
+                                    <FaEye className="w-4 h-4" />
+                                    Смотрит — Магическая битва 2
+                                </p>
                                 <div className="flex gap-2">
-                                    <p className='py-2 px-3 rounded-full border border-white/5 text-white/60'>Новичок</p>
-                                    <p className='py-2 flex items-center px-3 font-semibold rounded-full bg-[#CCBAE4] text-black'>PRO</p>
+                                    <span className="py-2 px-3 rounded-full border border-white/5 text-white/60">
+                                        Новичок
+                                    </span>
+                                    <span className="py-2 px-3 rounded-full bg-[#CCBAE4] text-black font-medium flex items-center gap-1.5">
+                                        <Crown className="w-3.5 h-3.5" /> PRO
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                            <Button
-                                className="h-[50px] px-[25px]"
-                                size="lg"
-                                onClick={() => setIsPasswordDialogOpen(true)}
+                        {/* Right Section */}
+                        <div className='flex gap-3'>
+                            <Link 
+                                href="/achievements"
+                                className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#CCBAE4]/10 hover:bg-[#CCBAE4]/20 transition-all duration-300"
                             >
-                                Сменить пароль
-                            </Button>
+                                <Trophy className="h-4 w-4 text-[#CCBAE4]" />
+                                <span className="text-[#CCBAE4]">Достижения</span>
+                            </Link>
+                            <Link href='/settings'>
+                                <Button             
+                                    className="h-[50px] px-[25px] rounded-full bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] text-white/90 hover:text-white flex items-center gap-2 transition-all duration-300"
+                                >
+                                    <Settings className="w-4 h-4" />
+                                    Настройки
+                                </Button>
+                            </Link>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <ChangePasswordDialog 
-                isOpen={isPasswordDialogOpen}
-                onClose={() => setIsPasswordDialogOpen(false)}
-                onChangePassword={handleChangePassword}
-                isLoading={isChangingPassword}
+            {/* Dialogs */}
+            <FileUploadDialog 
+                isOpen={isUploadDialogOpen}
+                onClose={() => setIsUploadDialogOpen(false)}
+                onUpload={handleAvatarDrop}
             />
         </>
     );
