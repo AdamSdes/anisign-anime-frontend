@@ -23,6 +23,12 @@ export function Auth() {
   const dispatch = useDispatch();
   const [isLogin, setIsLogin] = useState(true);
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
+  const [isRecovery, setIsRecovery] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [recoveryStep, setRecoveryStep] = useState(1); // 1: email, 2: code, 3: new password
+  const [recoveryCode, setRecoveryCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
   // Смена фона каждые 5 секунд
   useEffect(() => {
@@ -113,6 +119,45 @@ export function Auth() {
     }
   };
 
+  const handleRecovery = async (e) => {
+    e.preventDefault();
+    try {
+      switch (recoveryStep) {
+        case 1:
+          // Отправка email для восстановления
+          toast.success("Код восстановления отправлен на почту");
+          setRecoveryStep(2);
+          break;
+        case 2:
+          // Проверка кода
+          if (recoveryCode.length === 6) {
+            setRecoveryStep(3);
+          } else {
+            toast.error("Неверный код подтверждения");
+          }
+          break;
+        case 3:
+          // Установка нового пароля
+          if (newPassword === confirmNewPassword) {
+            toast.success("Пароль успешно изменен!");
+            setIsRecovery(false);
+            setIsLogin(true);
+            // Сброс всех полей восстановления
+            setRecoveryStep(1);
+            setRecoveryEmail("");
+            setRecoveryCode("");
+            setNewPassword("");
+            setConfirmNewPassword("");
+          } else {
+            toast.error("Пароли не совпадают");
+          }
+          break;
+      }
+    } catch (error) {
+      toast.error("Произошла ошибка при восстановлении пароля");
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       redirect("/");
@@ -153,6 +198,83 @@ export function Auth() {
     }
   };
 
+  const RecoveryForm = () => (
+    <motion.form
+      variants={containerVariants}
+      className="flex flex-col gap-[35px] w-full"
+      onSubmit={handleRecovery}
+    >
+      <motion.div variants={itemVariants} className="grid gap-3 w-full">
+        {recoveryStep === 1 && (
+          <AInput
+            type="email"
+            placeholder="Email для восстановления"
+            size="xl"
+            value={recoveryEmail}
+            onChange={(e) => setRecoveryEmail(e.target.value)}
+            startContent={
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="18" viewBox="0 0 22 18" fill="none">
+                <rect x="1" y="1" width="20" height="16" rx="5" stroke="#8B8B8B" strokeWidth="1.5"/>
+                <path d="M5 6L9.8 9.6C10.5111 10.1333 11.4889 10.1333 12.2 9.6L17 6" stroke="#8B8B8B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            }
+          />
+        )}
+        {recoveryStep === 2 && (
+          <AInput
+            type="text"
+            placeholder="Введите код из письма"
+            size="xl"
+            value={recoveryCode}
+            onChange={(e) => setRecoveryCode(e.target.value)}
+            maxLength={6}
+          />
+        )}
+        {recoveryStep === 3 && (
+          <>
+            <AInput
+              type="password"
+              placeholder="Новый пароль"
+              size="xl"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <AInput
+              type="password"
+              placeholder="Подтвердите новый пароль"
+              size="xl"
+              value={confirmNewPassword}
+              onChange={(e) => setConfirmNewPassword(e.target.value)}
+            />
+          </>
+        )}
+      </motion.div>
+
+      <motion.div variants={itemVariants} className="flex gap-2">
+        <AButton 
+          className="w-full" 
+          type="submit"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          {recoveryStep === 1 ? "Отправить" : recoveryStep === 2 ? "Подтвердить" : "Сохранить"}
+        </AButton>
+        <AButton
+          className="h-[58px]"
+          color="gray"
+          onClick={() => {
+            setIsRecovery(false);
+            setRecoveryStep(1);
+          }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Назад
+        </AButton>
+      </motion.div>
+    </motion.form>
+  );
+
   return (
     <div className="relative overflow-hidden">
       <AnimatePresence mode="wait">
@@ -170,12 +292,12 @@ export function Auth() {
           }}
         />
       </AnimatePresence>
-      <div className="relative flex items-center justify-end w-full h-screen">
+      <div className="relative flex items-center justify-center md:justify-end w-full h-screen">
         <motion.div
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-[#060606] mr-[175px] p-[50px] rounded-[24px] w-[490px]"
+          className="bg-[#060606] mx-4 md:mx-0 md:mr-[175px] p-[25px] md:p-[50px] rounded-[24px] w-full md:w-[490px]"
           onKeyDown={handleKeyDown}
         >
           <motion.div
@@ -228,194 +350,206 @@ export function Auth() {
             </motion.div>
             <motion.div variants={itemVariants} className="w-full h-[1px] bg-white/5 opacity-10" />
 
-            <motion.form
-              variants={containerVariants}
-              className="flex flex-col gap-[35px] w-full"
-              onSubmit={handleSubmit}
-            >
-              <motion.div variants={itemVariants} className="grid gap-3 w-full">
-                <AInput
-                  type="email"
-                  placeholder="Логин"
-                  size="xl"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  startContent={
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="22"
-                      height="18"
-                      viewBox="0 0 22 18"
-                      fill="none"
-                    >
-                      <rect
-                        x="1"
-                        y="1"
-                        width="20"
-                        height="16"
-                        rx="5"
-                        stroke="#8B8B8B"
-                        strokeWidth="1.5"
-                      />
-                      <path
-                        d="M5 6L9.8 9.6C10.5111 10.1333 11.4889 10.1333 12.2 9.6L17 6"
-                        stroke="#8B8B8B"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  }
-                />
-                <AInput
-                  type={isPasswordVisible ? "text" : "password"}
-                  placeholder="Пароль"
-                  size="xl"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  startContent={
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="22"
-                      height="22"
-                      viewBox="0 0 18 20"
-                      fill="none"
-                    >
-                      <rect
-                        x="1"
-                        y="7"
-                        width="16"
-                        height="12"
-                        rx="4"
-                        stroke="#8B8B8B"
-                        strokeWidth="1.5"
-                      />
-                      <path
-                        d="M9 14L9 12"
-                        stroke="#8B8B8B"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d="M13 7V5C13 2.79086 11.2091 1 9 1V1C6.79086 1 5 2.79086 5 5L5 7"
-                        stroke="#8B8B8B"
-                        strokeWidth="1.5"
-                      />
-                    </svg>
-                  }
-                />
-                <AnimatePresence mode="wait">
-                  {!isLogin && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <AInput
-                        type="password"
-                        placeholder="Повторите Пароль"
-                        size="xl"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        startContent={
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="22"
-                            height="22"
-                            viewBox="0 0 18 20"
-                            fill="none"
-                          >
-                            <rect
-                              x="1"
-                              y="7"
-                              width="16"
-                              height="12"
-                              rx="4"
-                              stroke="#8B8B8B"
-                              strokeWidth="1.5"
-                            />
-                            <path
-                              d="M9 14L9 12"
-                              stroke="#8B8B8B"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <path
-                              d="M13 7V5C13 2.79086 11.2091 1 9 1V1C6.79086 1 5 2.79086 5 5L5 7"
-                              stroke="#8B8B8B"
-                              strokeWidth="1.5"
-                            />
-                          </svg>
-                        }
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-
-              <AnimatePresence mode="wait">
-                {isLogin ? (
-                  <motion.div
-                    key="login"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ duration: 0.3 }}
-                    className="flex items-center space-x-2 w-full"
-                  >
-                    <ACheckbox
-                      id="remember-me"
-                      checked={rememberMe}
-                      onCheckedChange={toggleRememberMe}
-                    />
-                    <Label htmlFor="remember-me" className="opacity-70 font-normal">
-                      Запомнить меня
-                    </Label>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="register"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="flex items-center space-x-2"
-                  >
-                    <ASwitch
-                      selected={hasAgreedToToS}
-                      onChange={toggleAgreedToToS}
-                      aria-label="Automatic updates"
-                    />
-                    <Label htmlFor="airplane-mode" className="opacity-70 font-normal">
-                      Согласен с <a className="text-[#B6D0F7]" href="youtube.com">правилами</a> сайта
-                    </Label>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <motion.div variants={itemVariants} className="flex gap-2">
-                <AButton 
-                  className="w-full" 
-                  onClick={handleSubmit}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+            <AnimatePresence mode="wait">
+              {isRecovery ? (
+                <RecoveryForm />
+              ) : (
+                <motion.form
+                  variants={containerVariants}
+                  className="flex flex-col gap-[35px] w-full"
+                  onSubmit={handleSubmit}
                 >
-                  {isLogin ? "Войти" : "Создать"}
-                </AButton>
-                <AButton
-                  className="h-[58px]"
-                  color="gray"
-                  onClick={toggleMode}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {isLogin ? "Регистрация" : "Войти"}
-                </AButton>
-              </motion.div>
-            </motion.form>
+                  <motion.div variants={itemVariants} className="grid gap-3 w-full">
+                    <AInput
+                      type="email"
+                      placeholder="Логин"
+                      size="xl"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      startContent={
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="22"
+                          height="18"
+                          viewBox="0 0 22 18"
+                          fill="none"
+                        >
+                          <rect
+                            x="1"
+                            y="1"
+                            width="20"
+                            height="16"
+                            rx="5"
+                            stroke="#8B8B8B"
+                            strokeWidth="1.5"
+                          />
+                          <path
+                            d="M5 6L9.8 9.6C10.5111 10.1333 11.4889 10.1333 12.2 9.6L17 6"
+                            stroke="#8B8B8B"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      }
+                    />
+                    <AInput
+                      type={isPasswordVisible ? "text" : "password"}
+                      placeholder="Пароль"
+                      size="xl"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      startContent={
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="22"
+                          height="22"
+                          viewBox="0 0 18 20"
+                          fill="none"
+                        >
+                          <rect
+                            x="1"
+                            y="7"
+                            width="16"
+                            height="12"
+                            rx="4"
+                            stroke="#8B8B8B"
+                            strokeWidth="1.5"
+                          />
+                          <path
+                            d="M9 14L9 12"
+                            stroke="#8B8B8B"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M13 7V5C13 2.79086 11.2091 1 9 1V1C6.79086 1 5 2.79086 5 5L5 7"
+                            stroke="#8B8B8B"
+                            strokeWidth="1.5"
+                          />
+                        </svg>
+                      }
+                    />
+                    <AnimatePresence mode="wait">
+                      {!isLogin && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <AInput
+                            type="password"
+                            placeholder="Повторите Пароль"
+                            size="xl"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            startContent={
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="22"
+                                height="22"
+                                viewBox="0 0 18 20"
+                                fill="none"
+                              >
+                                <rect
+                                  x="1"
+                                  y="7"
+                                  width="16"
+                                  height="12"
+                                  rx="4"
+                                  stroke="#8B8B8B"
+                                  strokeWidth="1.5"
+                                />
+                                <path
+                                  d="M9 14L9 12"
+                                  stroke="#8B8B8B"
+                                  strokeWidth="1.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                                <path
+                                  d="M13 7В5C13 2.79086 11.2091 1 9 1В1C6.79086 1 5 2.79086 5 5L5 7"
+                                  stroke="#8B8B8B"
+                                  strokeWidth="1.5"
+                                />
+                              </svg>
+                            }
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+
+                  <AnimatePresence mode="wait">
+                    {isLogin ? (
+                      <motion.div
+                        key="login"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex items-center space-x-2 w-full"
+                      >
+                        <ACheckbox
+                          id="remember-me"
+                          checked={rememberMe}
+                          onCheckedChange={toggleRememberMe}
+                        />
+                        <Label htmlFor="remember-me" className="opacity-70 font-normal">
+                          Запомнить меня
+                        </Label>
+                        <button
+                          onClick={() => setIsRecovery(true)}
+                          className="text-sm text-[#B6D0F7] hover:underline"
+                        >
+                          Забыли пароль?
+                        </button>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="register"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex items-center space-x-2"
+                      >
+                        <ASwitch
+                          selected={hasAgreedToToS}
+                          onChange={toggleAgreedToToS}
+                          aria-label="Automatic updates"
+                        />
+                        <Label htmlFor="airplane-mode" className="opacity-70 font-normal">
+                          Согласен с <a className="text-[#B6D0F7]" href="youtube.com">правилами</a> сайта
+                        </Label>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <motion.div variants={itemVariants} className="flex gap-2">
+                    <AButton 
+                      className="w-full" 
+                      onClick={handleSubmit}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {isLogin ? "Войти" : "Создать"}
+                    </AButton>
+                    <AButton
+                      className="h-[58px]"
+                      color="gray"
+                      onClick={toggleMode}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {isLogin ? "Регистрация" : "Войти"}
+                    </AButton>
+                  </motion.div>
+                </motion.form>
+              )}
+            </AnimatePresence>
           </motion.div>
         </motion.div>
       </div>

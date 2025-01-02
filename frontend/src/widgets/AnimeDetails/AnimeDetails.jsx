@@ -25,6 +25,20 @@ import {
     X,
     Pause
 } from "lucide-react";
+import { motion } from "framer-motion";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.2 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
 
 const CharacterTooltip = ({ id, name, imageUrl }) => {
     const [isImageLoading, setIsImageLoading] = React.useState(true);
@@ -145,13 +159,15 @@ const ScrollToPlayerButton = () => {
     };
 
     return (
-        <button 
+        <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleClick}
             className="w-full flex items-center justify-center gap-2 h-[54px] bg-[#CCBAE4] hover:opacity-90 text-black font-medium rounded-xl px-5 transition-all duration-300"
         >
             <Play className="h-5 w-5" />
             <span>Смотреть</span>
-        </button>
+        </motion.button>
     );
 };
 
@@ -171,7 +187,9 @@ const ListButton = () => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button 
+                <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     className={`
                         w-full flex items-center justify-between h-[60px] 
                         ${activeStatus 
@@ -201,7 +219,7 @@ const ListButton = () => {
                         )}
                     </div>
                     <ChevronDown className="h-4 w-4" />
-                </button>
+                </motion.button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[315px] bg-[#060606]/95 rounded-[14px] backdrop-blur-xl border-white/5">
                 {listStatuses.map((item) => (
@@ -245,37 +263,63 @@ export default function AnimeDetails({ anime }) {
     if (!anime) return null;
 
     return (
-        <section className="relative">
+        <motion.section 
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="relative"
+        >
             <div className="flex flex-col lg:flex-row gap-8 relative">
                 {/* Левая колонка */}
-                <article className="flex flex-col gap-6 lg:sticky lg:top-24 h-fit">
-                    <Card className="w-[315px] h-[454px] rounded-[16px]" aria-labelledby="anime-title">
-                        <Image
-                            removeWrapper
-                            alt={anime.russian || anime.russian}
-                            className="w-full h-full object-cover"
-                            src={anime.poster_url}
-                        />
-                    </Card>
+                <motion.article 
+                    variants={itemVariants}
+                    className="flex flex-col gap-6 lg:sticky lg:top-24 h-fit"
+                >
+                    <motion.div
+                        initial={{ opacity: 0, x: -50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <Card className="w-[315px] h-[454px] rounded-[16px]" aria-labelledby="anime-title">
+                            <Image
+                                removeWrapper
+                                alt={anime.russian || anime.russian}
+                                className="w-full h-full object-cover"
+                                src={anime.poster_url}
+                            />
+                        </Card>
+                    </motion.div>
 
                     {/* Кнопки действий */}
-                    <div className="flex flex-col gap-3 w-full max-w-[315px]">
+                    <motion.div 
+                        variants={itemVariants}
+                        className="flex flex-col gap-3 w-full max-w-[315px]"
+                    >
                         <ScrollToPlayerButton />
                         <ListButton />
-                    </div>
-                </article>
+                    </motion.div>
+                </motion.article>
 
                 {/* Центр с основной информацией об аниме */}
-                <article className="flex w-full flex-col gap-[30px]">
+                <motion.article 
+                    variants={itemVariants}
+                    className="flex w-full flex-col gap-[30px]"
+                >
                     {anime.nextEpisodeAt && (
-                        <div className="flex justify-between items-center p-5 bg-[#BFF6F9]/5 rounded-[14px]">
+                        <motion.div 
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex justify-between items-center p-5 bg-[#BFF6F9]/5 rounded-[14px]"
+                        >
                             <p className="text-[#BFF6F9]/60 text-[14px]">Следующий эпизод</p>
                             <p className="text-[#BFF6F9] text-[14px]">{new Date(anime.nextEpisodeAt).toLocaleString()}</p>
-                        </div>
+                        </motion.div>
                     )}
 
-                    {/* Заголовок и рейтинг */}
-                    <header className="flex justify-between items-center">
+                    <motion.header 
+                        variants={itemVariants}
+                        className="flex justify-between items-center"
+                    >
                         <div className="flex flex-col gap-2">
                             <h1 id="anime-title" className="text-[32px] font-bold">{anime.russian || anime.russian}</h1>
                             <p className="opacity-60 text-[12px]">{anime.english}</p>
@@ -283,18 +327,21 @@ export default function AnimeDetails({ anime }) {
                         <div className="bg-[#FDE5B9]/10 h-fit text-[#FDE5B9] flex items-center rounded-[40px] w-fit px-[15px] py-[10px]">
                             {anime.score}
                         </div>
-                    </header>
+                    </motion.header>
 
-                    <div className="flex flex-wrap items-center gap-3">
+                    <motion.div 
+                        variants={itemVariants}
+                        className="flex flex-wrap items-center gap-3"
+                    >
                         <Link href='/' className='p-3 border text-[14px] rounded-full border-white/5'>Комедия</Link>
                         <Link href='/' className='p-3 border text-[14px] rounded-full border-white/5'>Приключения</Link>
                         <Link href='/' className='p-3 border text-[14px] rounded-full border-white/5'>Сверхъестественное</Link>
                         <Link href='/' className='p-3 border text-[14px] rounded-full border-white/5'>Фэнтези</Link>
-                    </div>
+                    </motion.div>
 
-                    <div className="w-full h-[1px] bg-white/5"></div>
+                    <motion.div variants={itemVariants} className="w-full h-[1px] bg-white/5" />
 
-                    {/* Описание аниме */}
+                    <motion.div variants={itemVariants}>
                         {anime.description && anime.description.trim() ? (
                             <p className="opacity-80 text-[14px]">{transformDescription(anime.description)}</p>
                         ) : (
@@ -303,27 +350,44 @@ export default function AnimeDetails({ anime }) {
                                 <p className="text-white/50">Описание отсутствует</p>
                             </div>
                         )}
-                </article>
+                    </motion.div>
+                </motion.article>
 
                 {/* Вертикальная разделительная линия на больших экранах */}
                 <div className="hidden lg:block w-[1px] min-h-[624px] bg-white/5"></div>
 
                 {/* Правая колонка с дополнительной информацией */}
-                <aside className="flex flex-col gap-[20px]">
-                    <div className="flex flex-col w-[320px] gap-[10px]">
-                        <InfoItem label="Тип" value={transformValue('kind', anime.kind)} />
-                        <InfoItem label="Эпизодов" value={anime.episodes} />
-                        <InfoItem label="Статус" value={transformValue('status', anime.status)} />
-                        <InfoItem label="Рейтинг" value={transformValue('rating', anime.rating)} />
-                        <InfoItem label="Длительность" value={`${anime.duration} мин.`} />
-                        <InfoItem label="Сезон" value={transformValue('season', anime.season)  || "Неизвестно" } />
-                        <InfoItem label="Дата выхода" value={new Date(anime.aired_on).toLocaleDateString()} />
-                        {anime.released_on && (
-                            <InfoItem label="Дата завершения" value={new Date(anime.released_on).toLocaleDateString()} />
-                        )}
-                    </div>
-                </aside>
+                <motion.aside 
+                    variants={itemVariants}
+                    className="flex flex-col gap-[20px]"
+                >
+                    <motion.div 
+                        variants={containerVariants}
+                        className="flex flex-col w-[320px] gap-[10px]"
+                    >
+                        {[
+                            { label: "Тип", value: transformValue('kind', anime.kind) },
+                            { label: "Эпизодов", value: anime.episodes },
+                            { label: "Статус", value: transformValue('status', anime.status) },
+                            { label: "Рейтинг", value: transformValue('rating', anime.rating) },
+                            { label: "Длительность", value: `${anime.duration} мин.` },
+                            { label: "Сезон", value: transformValue('season', anime.season)  || "Неизвестно" },
+                            { label: "Дата выхода", value: new Date(anime.aired_on).toLocaleDateString() },
+                            { label: "Дата завершения", value: anime.released_on ? new Date(anime.released_on).toLocaleDateString() : null }
+                        ].map((item, index) => (
+                            <motion.div
+                                key={item.label}
+                                variants={itemVariants}
+                                initial="hidden"
+                                animate="visible"
+                                transition={{ delay: index * 0.1 }}
+                            >
+                                <InfoItem label={item.label} value={item.value} />
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                </motion.aside>
             </div>
-        </section>
+        </motion.section>
     );
 }

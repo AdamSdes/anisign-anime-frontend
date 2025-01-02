@@ -19,6 +19,13 @@ import {
     Disc,
     Globe
 } from "lucide-react";
+// Add these imports
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const FilterSidebar = () => {
     const [activeSort, setActiveSort] = React.useState('date'); // Add this state
@@ -60,12 +67,38 @@ const FilterSidebar = () => {
         { id: 'views', label: 'Просмотрам' }
     ];
 
+    // Обновим массив возрастных рейтингов, добавив описания и иконки
     const ageRatings = [
-        { id: 'G', label: 'G' },
-        { id: 'PG', label: 'PG' },
-        { id: 'PG-13', label: 'PG-13' },
-        { id: 'R', label: 'R-17+' },
-        { id: 'R+', label: 'R+' }
+        { 
+            id: 'G', 
+            label: 'G',
+            description: 'Нет возрастных ограничений',
+            color: '#4CAF50'
+        },
+        { 
+            id: 'PG', 
+            label: 'PG',
+            description: 'Рекомендуется присутствие родителей',
+            color: '#2196F3'
+        },
+        { 
+            id: 'PG-13', 
+            label: 'PG-13',
+            description: 'Детям до 13 лет просмотр нежелателен',
+            color: '#FFA726'
+        },
+        { 
+            id: 'R-17', 
+            label: 'R-17+',
+            description: 'Лицам до 17 лет обязательно присутствие взрослого',
+            color: '#FF5722'
+        },
+        { 
+            id: 'R+', 
+            label: 'R+',
+            description: 'Только для взрослой аудитории',
+            color: '#D32F2F'
+        }
     ];
 
     const seasons = [
@@ -207,6 +240,42 @@ const FilterSidebar = () => {
                         );
                     })}
                 </div>
+            </div>
+
+            {/* Добавим блок возрастного рейтинга после блока статусов */}
+            <div className="bg-[rgba(255,255,255,0.02)] border border-white/5 p-5 rounded-[14px]">
+                <div className="flex items-center gap-2 mb-4">
+                    <Globe className="w-4 h-4 text-white/60" />
+                    <h3 className="text-[14px] font-medium">Возрастной рейтинг</h3>
+                </div>
+                <TooltipProvider>
+                    <div className="flex flex-wrap gap-2">
+                        {ageRatings.map((rating) => (
+                            <Tooltip key={rating.id}>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        onClick={() => setSelectedAgeRating(rating.id === selectedAgeRating ? '' : rating.id)}
+                                        className={`px-4 h-[35px] bg-[rgba(255,255,255,0.02)] rounded-full text-[13px] font-medium transition-all duration-300 ${
+                                            selectedAgeRating === rating.id 
+                                                ? 'bg-white/10' 
+                                                : 'hover:bg-[rgba(255,255,255,0.04)]'
+                                        }`}
+                                        style={{
+                                            color: selectedAgeRating === rating.id ? rating.color : 'rgba(255,255,255,0.6)',
+                                            borderColor: selectedAgeRating === rating.id ? rating.color : 'transparent',
+                                            borderWidth: '1px'
+                                        }}
+                                    >
+                                        {rating.label}
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{rating.description}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        ))}
+                    </div>
+                </TooltipProvider>
             </div>
 
             {/* Жанры */}
