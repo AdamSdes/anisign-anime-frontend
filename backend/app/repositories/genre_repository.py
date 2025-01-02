@@ -21,3 +21,8 @@ class GenreRepository:
         query = select(Genre)
         result = await self.db.execute(query)
         return result.scalars().all()
+    
+    async def get_genre_by_id(self, genre_id: str):
+        genre = await self.db.execute(select(Genre).where(Genre.genre_id == genre_id))
+        genre = genre.scalars().first()
+        return genre

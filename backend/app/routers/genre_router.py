@@ -22,3 +22,9 @@ async def get_genres_list(db: AsyncSession = Depends(get_session)):
     service = GenreService(db)
     result = await service.get_genres_list()
     return result
+
+@genre_router.get("/get-genre/{genre_id}")
+async def get_genre_by_id(genre_id: str, db: AsyncSession = Depends(get_session)):
+    service = GenreService(db)
+    result = await service.get_genre_by_id(genre_id)
+    return result
