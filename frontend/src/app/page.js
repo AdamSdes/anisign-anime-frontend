@@ -37,6 +37,8 @@ const Page = () => {
                     </div>
                 </div>
             </main>
+            <Collection/>
+            <Footer/>
         </>
 
     );

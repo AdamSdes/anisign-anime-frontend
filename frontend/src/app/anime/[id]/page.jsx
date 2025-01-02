@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import Comments from '@/widgets/Comments/Comments';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Reviews from '@/widgets/AnimeDetails/Reviews';
+import Footer from "@/widgets/Footer/Footer";
 
 export default function Page() {
     const { id } = useParams();
@@ -128,6 +129,7 @@ export default function Page() {
                     </Tabs>
                 </div>
             </section>
+            <Footer/>
         </main>
     );
 }

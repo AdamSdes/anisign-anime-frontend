@@ -1,35 +1,55 @@
 import { useState } from 'react';
+import { Button } from "@/shared/shadcn-ui/button";
+import { Search, LayoutGrid, List, SlidersHorizontal } from 'lucide-react';
 
-const SearchBar = ({ setSearch }) => {
+const SearchBar = ({ setSearch, viewMode, setViewMode }) => {
     const [searchValue, setSearchValue] = useState('');
 
     const handleSearchChange = (e) => {
         setSearchValue(e.target.value);
-        setSearch(e.target.value); // Обновляем состояние в родительском компоненте
+        setSearch(e.target.value);
     };
 
     return (
-        <div className="flex items-end gap-2 border-b border-b-transparent bg-transparent transition md:gap-4">
-            <div className="flex flex-1 flex-col gap-4">
+        <div className="flex items-center gap-4">
+            {/* Поиск */}
+            <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4" />
                 <input
-                    className="flex h-12 w-full rounded-md border border-secondary/60 bg-secondary/30 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
-                    placeholder="Введіть назву аніме..."
+                    className="w-full h-12 pl-10 pr-4 bg-white/[0.02] hover:bg-white/[0.03] border border-white/5 
+                        rounded-xl text-white/90 placeholder:text-white/40 focus:outline-none focus:ring-1 
+                        focus:ring-white/10 transition-all"
+                    placeholder="Поиск аниме..."
                     type="text"
                     value={searchValue}
                     onChange={handleSearchChange}
                 />
             </div>
-            {/* Мобильная кнопка фильтра */}
-            <div className="lg:hidden">
-                <button className="inline-flex items-center justify-center h-12 w-12 rounded-md border border-secondary/60 bg-secondary/30 hover:bg-secondary/60 hover:text-secondary-foreground">
-                    <svg viewBox="0 0 1024 1024" width="1.2em" height="1.2em">
-                        <path
-                            fill="currentColor"
-                            d="M349 838c0 17.7 14.2 32 31.8 32h262.4c17.6 0 31.8-14.3 31.8-32V642H349zm531.1-684H143.9c-24.5 0-39.8 26.7-27.5 48l221.3 376h348.8l221.3-376c12.1-21.3-3.2-48-27.7-48"
-                        ></path>
-                    </svg>
-                </button>
+
+            {/* Переключатель вида */}
+            <div className="hidden md:flex bg-white/5 rounded-lg p-1 gap-1">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className={`h-10 w-10 ${viewMode === 'grid' ? 'bg-white/10' : ''}`}
+                    onClick={() => setViewMode('grid')}
+                >
+                    <LayoutGrid className="h-4 w-4" />
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className={`h-10 w-10 ${viewMode === 'list' ? 'bg-white/10' : ''}`}
+                    onClick={() => setViewMode('list')}
+                >
+                    <List className="h-4 w-4" />
+                </Button>
             </div>
+
+            {/* Кнопка фильтров (мобильная) */}
+            <Button variant="outline" size="icon" className="md:hidden h-12 w-12">
+                <SlidersHorizontal className="h-4 w-4" />
+            </Button>
         </div>
     );
 };

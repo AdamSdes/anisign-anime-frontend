@@ -19,7 +19,6 @@ const Page = () => {
             <main className="container mx-auto  mt-8  px-4 lg:mt-16">
                 <div className="grid grid-cols-1 justify-center lg:grid-cols-[3fr_1fr] lg:gap-10">
                     <div className="flex flex-col gap-8">
-                        <SearchBar setSearch={setSearch}/>
                         <AnimeList/>
                         <Paginations/>
                     </div>

@@ -107,6 +107,12 @@ const transformValue = (key, value) => {
 const AnimeCard = ({ anime }) => {
     const [imgError, setImgError] = useState(false);
 
+    // Функция для форматирования рейтинга
+    const formatScore = (score) => {
+        if (!score) return null;
+        return Number(score).toFixed(1);
+    };
+
     return (
         <TooltipProvider>
             <Tooltip delayDuration={200}>
@@ -117,7 +123,7 @@ const AnimeCard = ({ anime }) => {
                                 <svg width="14" height="14" viewBox="0 0 24 24" className="white">
                                     <path fill="currentColor" d="m12 17.27l4.15 2.51c.76.46 1.69-.22 1.49-1.08l-1.1-4.72l3.67-3.18c.67-.58.31-1.68-.57-1.75l-4.83-.41l-1.89-4.46c-.34-.81-1.5-.81-1.84 0L9.19 8.63l-4.83.41c-.88.07-1.24 1.17-.57 1.75l3.67 3.18l-1.1 4.72c-.2.86.73 1.54 1.49 1.08l4.15-2.5z"/>
                                 </svg>
-                                <span className="text-sm font-medium text-white">{anime.score}</span>
+                                <span className="text-sm font-medium text-white">{formatScore(anime.score)}</span>
                             </div>
                         )}
                         <div className="relative group">
@@ -139,7 +145,7 @@ const AnimeCard = ({ anime }) => {
                                 <h3 className="text-sm font-medium line-clamp-2">
                                     {anime.russian || anime.name}
                                 </h3>
-                                <p className="text-xs text-white/50">{new Date(anime.released_on).getFullYear()} • {transformValue('kind', anime.kind)}</p>
+                                <p className="text-xs text-white/50">{new Date(anime.aired_on).getFullYear()} • {transformValue('kind', anime.kind)}</p>
                             </div>
                         </div>
                     </Link>
@@ -157,14 +163,14 @@ const AnimeCard = ({ anime }) => {
                                     <svg width="12" height="12" viewBox="0 0 24 24" className="text-yellow-400">
                                         <path fill="currentColor" d="m12 17.27l4.15 2.51c.76.46 1.69-.22 1.49-1.08l-1.1-4.72l3.67-3.18c.67-.58.31-1.68-.57-1.75l-4.83-.41l-1.89-4.46c-.34-.81-1.5-.81-1.84 0L9.19 8.63l-4.83.41c-.88.07-1.24 1.17-.57 1.75l3.67 3.18l-1.1 4.72c-.2.86.73 1.54 1.49 1.08l4.15-2.5z"/>
                                     </svg>
-                                    <span className="text-sm font-medium text-yellow-400">{anime.score}</span>
+                                    <span className="text-sm font-medium text-yellow-400">{formatScore(anime.score)}</span>
                                 </div>
                             )}
                         </div>
                         <div className="flex gap-2 text-sm text-white/50">
                             <span>{transformValue('kind', anime.kind)}</span>
                             <span>•</span>
-                            <span>{new Date(anime.released_on).getFullYear()}</span>
+                            <span>{new Date(anime.aired_on).getFullYear()}</span>
                             {anime.episodes && (
                                 <>
                                     <span>•</span>

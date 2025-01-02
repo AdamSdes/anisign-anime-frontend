@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Header from "@/widgets/Header/Header";
 import Report from "@/features/Report/Report";
 import React from "react";
+import Footer from "@/widgets/Footer/Footer";
 
 const achievementCategories = [
   {
@@ -296,6 +297,8 @@ export default function AchievementsPage() {
           ))}
         </motion.div>
       </div>
+      <Footer/>
     </motion.div>
+
   );
 }
