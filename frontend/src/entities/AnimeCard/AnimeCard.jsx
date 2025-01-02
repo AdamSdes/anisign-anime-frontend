@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/shared/shadcn-ui/avatar";
 
 const AnimeCard = ({ backgroundImage, title, username, avatar }) => {
     return (
-        <button className="relative flex-shrink-0 w-full sm:w-[220px] h-[308px] rounded-lg overflow-hidden group transition-all duration-300">
+        <button className="relative flex-shrink-0 w-full sm:w-[220px] h-[308px] rounded-[14px] overflow-hidden group transition-all duration-300">
             {/* Фоновое изображение с эффектом увеличения при наведении */}
             <div
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-500 ease-in-out transform group-hover:scale-125"
