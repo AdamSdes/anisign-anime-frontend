@@ -104,8 +104,14 @@ const transformValue = (key, value) => {
     return value;
 };
 
-const AnimeCard = ({ anime }) => {
+const AnimeCard = ({ anime, genres }) => {
     const [imgError, setImgError] = useState(false);
+
+    const getGenreName = (genreId) => {
+        if (!genres || !Array.isArray(genres)) return '';
+        const genre = genres.find(g => String(g.genre_id) === String(genreId));
+        return genre ? genre.russian || genre.name : '';
+    };
 
     // Функция для форматирования рейтинга
     const formatScore = (score) => {
@@ -178,18 +184,6 @@ const AnimeCard = ({ anime }) => {
                                 </>
                             )}
                         </div>
-                        {anime.genres && (
-                            <div className="flex flex-wrap gap-1.5">
-                                {anime.genres.slice(0, 4).map((genre, index) => (
-                                    <span 
-                                        key={index}
-                                        className="px-2 py-1 text-xs rounded-md bg-white/5 text-white/70"
-                                    >
-                                        {genre}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
                         {anime.description && (
                             <div className="text-sm text-white/70 line-clamp-3">
                                 {transformDescription(anime.description)}

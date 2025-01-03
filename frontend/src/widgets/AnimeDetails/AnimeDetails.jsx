@@ -14,12 +14,12 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { 
-    Play, 
-    Plus, 
-    Check, 
-    Star, 
-    Clock, 
+import {
+    Play,
+    Plus,
+    Check,
+    Star,
+    Clock,
     Ban,
     ChevronDown,
     X,
@@ -28,16 +28,16 @@ import {
 import { motion } from "framer-motion";
 
 const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.2 }
-  }
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: { staggerChildren: 0.2 }
+    }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
 };
 
 const CharacterTooltip = ({ id, name, imageUrl }) => {
@@ -48,8 +48,8 @@ const CharacterTooltip = ({ id, name, imageUrl }) => {
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Link 
-                        href={`/character/${id}`} 
+                    <Link
+                        href={`/character/${id}`}
                         className="text-[#CCBAE4] hover:underline cursor-pointer"
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -87,9 +87,9 @@ const CharacterTooltip = ({ id, name, imageUrl }) => {
 
 const transformDescription = (description) => {
     if (!description) return '';
-    
+
     const parts = description.split(/(\[character=\d+\][^\[]+\[\/character\])/g);
-    
+
     return parts.map((part, index) => {
         const match = part.match(/\[character=(\d+)\]([^\[]+)\[\/character\]/);
         if (match) {
@@ -151,7 +151,7 @@ const ScrollToPlayerButton = () => {
         e.preventDefault();
         const playerSection = document.getElementById('player');
         if (playerSection) {
-            playerSection.scrollIntoView({ 
+            playerSection.scrollIntoView({
                 behavior: 'smooth',
                 block: 'start'
             });
@@ -159,7 +159,7 @@ const ScrollToPlayerButton = () => {
     };
 
     return (
-        <motion.button 
+        <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleClick}
@@ -173,7 +173,7 @@ const ScrollToPlayerButton = () => {
 
 const ListButton = () => {
     const [status, setStatus] = useState(null);
-    
+
     const listStatuses = [
         { id: 'watching', label: 'Смотрю', icon: Play, color: '#CCBAE4' },
         { id: 'completed', label: 'Просмотрено', icon: Check, color: '#86EFAC' },
@@ -187,13 +187,13 @@ const ListButton = () => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <motion.button 
+                <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className={`
                         w-full flex items-center justify-between h-[60px] 
-                        ${activeStatus 
-                            ? `bg-[${activeStatus.color}]/5 hover:bg-[${activeStatus.color}]/10` 
+                        ${activeStatus
+                            ? `bg-[${activeStatus.color}]/5 hover:bg-[${activeStatus.color}]/10`
                             : 'bg-[rgba(255,255,255,0.02)] hover:bg-white/5'
                         }
                         text-white/90 font-medium rounded-xl px-5 
@@ -203,8 +203,8 @@ const ListButton = () => {
                     <div className="flex items-center gap-2">
                         {activeStatus ? (
                             <>
-                                <activeStatus.icon 
-                                    className="h-5 w-5" 
+                                <activeStatus.icon
+                                    className="h-5 w-5"
                                     style={{ color: activeStatus.color }}
                                 />
                                 <span className="text-white/90">
@@ -232,8 +232,8 @@ const ListButton = () => {
                             transition-colors duration-200
                         `}
                     >
-                        <item.icon 
-                            className="h-4 w-4" 
+                        <item.icon
+                            className="h-4 w-4"
                             style={{ color: item.color }}
                         />
                         <span className="text-white/90">{item.label}</span>
@@ -259,11 +259,17 @@ const ListButton = () => {
     );
 };
 
-export default function AnimeDetails({ anime }) {
+export default function AnimeDetails({ anime, genres }) {
     if (!anime) return null;
 
+    const getGenreName = (genreId) => {
+        if (!genres) return '...';
+        const genre = genres.find(g => String(g.genre_id) === String(genreId));
+        return genre ? genre.russian || genre.name : '...';
+    };
+
     return (
-        <motion.section 
+        <motion.section
             initial="hidden"
             animate="visible"
             variants={containerVariants}
@@ -271,7 +277,7 @@ export default function AnimeDetails({ anime }) {
         >
             <div className="flex flex-col lg:flex-row gap-8 relative">
                 {/* Левая колонка */}
-                <motion.article 
+                <motion.article
                     variants={itemVariants}
                     className="flex flex-col gap-6 lg:sticky lg:top-24 h-fit"
                 >
@@ -291,7 +297,7 @@ export default function AnimeDetails({ anime }) {
                     </motion.div>
 
                     {/* Кнопки действий */}
-                    <motion.div 
+                    <motion.div
                         variants={itemVariants}
                         className="flex flex-col gap-3 w-full max-w-[315px]"
                     >
@@ -301,12 +307,12 @@ export default function AnimeDetails({ anime }) {
                 </motion.article>
 
                 {/* Центр с основной информацией об аниме */}
-                <motion.article 
+                <motion.article
                     variants={itemVariants}
                     className="flex w-full flex-col gap-[30px]"
                 >
                     {anime.nextEpisodeAt && (
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, y: -20 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="flex justify-between items-center p-5 bg-[#BFF6F9]/5 rounded-[14px]"
@@ -316,7 +322,7 @@ export default function AnimeDetails({ anime }) {
                         </motion.div>
                     )}
 
-                    <motion.header 
+                    <motion.header
                         variants={itemVariants}
                         className="flex justify-between items-center"
                     >
@@ -328,16 +334,17 @@ export default function AnimeDetails({ anime }) {
                             {anime.score}
                         </div>
                     </motion.header>
-
-                    <motion.div 
-                        variants={itemVariants}
-                        className="flex flex-wrap items-center gap-3"
-                    >
-                        <Link href='/' className='p-3 border text-[14px] rounded-full border-white/5'>Комедия</Link>
-                        <Link href='/' className='p-3 border text-[14px] rounded-full border-white/5'>Приключения</Link>
-                        <Link href='/' className='p-3 border text-[14px] rounded-full border-white/5'>Сверхъестественное</Link>
-                        <Link href='/' className='p-3 border text-[14px] rounded-full border-white/5'>Фэнтези</Link>
-                    </motion.div>
+                    
+                    <div className='flex gap-2 flex-wrap'>                   
+                        {anime.genre_ids?.map((genreId) => (
+                            <span 
+                                key={genreId}
+                                className="px-3 flex py-2 border border-white/5 text-white/60 rounded-full"
+                            >
+                                {getGenreName(genreId)}
+                            </span>
+                        ))}
+                    </div>
 
                     <motion.div variants={itemVariants} className="w-full h-[1px] bg-white/5" />
 
@@ -357,11 +364,11 @@ export default function AnimeDetails({ anime }) {
                 <div className="hidden lg:block w-[1px] min-h-[624px] bg-white/5"></div>
 
                 {/* Правая колонка с дополнительной информацией */}
-                <motion.aside 
+                <motion.aside
                     variants={itemVariants}
                     className="flex flex-col gap-[20px]"
                 >
-                    <motion.div 
+                    <motion.div
                         variants={containerVariants}
                         className="flex flex-col w-[320px] gap-[10px]"
                     >
@@ -371,7 +378,7 @@ export default function AnimeDetails({ anime }) {
                             { label: "Статус", value: transformValue('status', anime.status) },
                             { label: "Рейтинг", value: transformValue('rating', anime.rating) },
                             { label: "Длительность", value: `${anime.duration} мин.` },
-                            { label: "Сезон", value: transformValue('season', anime.season)  || "Неизвестно" },
+                            { label: "Сезон", value: transformValue('season', anime.season) || "Неизвестно" },
                             { label: "Дата выхода", value: new Date(anime.aired_on).toLocaleDateString() },
                             { label: "Дата завершения", value: anime.released_on ? new Date(anime.released_on).toLocaleDateString() : null }
                         ].map((item, index) => (

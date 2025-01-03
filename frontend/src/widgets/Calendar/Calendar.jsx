@@ -8,46 +8,52 @@ import { endpoints } from "@/shared/api/config";
 
 const mockAnimeData = [
     {
-        image: "https://cdn.myanimelist.net/images/anime/1015/138006.jpg",
+        image: "https://animego.me/upload/anime/images/676c95f46c3d0879885789.jpg",
         rating: "8.7",
         title: "Демон против проклятий",
         episodeInfo: "Серия 13",
-        timeInfo: "12:00"
+        timeInfo: "12:00",
+        episodeTitle: "Битва в темноте" // Добавляем названия эпизодов
     },
     {
-        image: "https://cdn.myanimelist.net/images/anime/1506/138982.jpg",
+        image: "https://animego.me/upload/anime/images/665663fabd74c692489555.jpg",
         rating: "9.2",
         title: "Клинок, рассекающий демонов",
         episodeInfo: "Серия 8",
-        timeInfo: "15:30"
+        timeInfo: "15:30",
+        episodeTitle: "Путь самурая"
     },
     {
-        image: "https://cdn.myanimelist.net/images/anime/1170/124312.jpg",
+        image: "https://animego.me/upload/anime/images/67627d7674fda938995197.jpg",
         rating: "7.9",
         title: "Синий оркестр",
         episodeInfo: "Серия 21",
-        timeInfo: "18:00"
+        timeInfo: "18:00",
+        episodeTitle: "Мелодия судьбы"
     },
     {
-        image: "https://cdn.myanimelist.net/images/anime/1988/138140.jpg",
+        image: "https://animego.me/upload/anime/images/676179108a4fa943224395.jpg",
         rating: "8.4",
         title: "Магическая битва",
         episodeInfo: "Серия 5",
-        timeInfo: "20:30"
+        timeInfo: "20:30",
+        episodeTitle: "Заклинание разрушения"
     },
     {
-        image: "https://cdn.myanimelist.net/images/anime/1259/110227.jpg",
+        image: "https://animego.me/upload/anime/images/676d194be10ff551342542.jpg",
         rating: "8.8",
         title: "Атака титанов",
         episodeInfo: "Серия 17",
-        timeInfo: "22:00"
+        timeInfo: "22:00",
+        episodeTitle: "Последний рубеж"
     },
     {
-        image: "https://cdn.myanimelist.net/images/anime/1280/135951.jpg",
+        image: "https://animego.me/upload/anime/images/676aba08923a6590670860.jpg",
         rating: "7.6",
         title: "Благословение небожителей",
         episodeInfo: "Серия 9",
-        timeInfo: "23:30"
+        timeInfo: "23:30",
+        episodeTitle: "Божественное вмешательство"
     }
 ];
 
