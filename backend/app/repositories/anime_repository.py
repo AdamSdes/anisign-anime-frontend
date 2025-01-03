@@ -37,6 +37,9 @@ class AnimeRepository():
                             logging.error(f"Error parsing date for field {field} in anime {anime}: {e}")
                             anime[field] = None
                 
+                # related_anime_ids = [related['anime']['id'] for related in anime.get('related', []) if 'anime' in related]
+                # anime['related_anime_ids'] = related_anime_ids
+                
                 anime_instance = Anime(**anime)
                 self.db.add(anime_instance)
                 await self.db.commit()

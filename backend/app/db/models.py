@@ -37,6 +37,7 @@ class Anime(BaseTable):
     screenshots = Column(ARRAY(Text))
     description = Column(String, index=True, nullable=True)
     genre_ids = Column(ARRAY(Text))
+    related_anime_ids = Column(ARRAY(Text), nullable=True)
     
     # genres = relationship('Genre', secondary=anime_genre, back_populates='animes')
     
@@ -51,8 +52,6 @@ class Genre(BaseTable):
     
     
     
-    
-      # genre
     # studio
     # character roles
     #  related (anime)

@@ -176,6 +176,7 @@ class AnimeService:
             data = response.json()
             if data["data"]["animes"]:
                 for anime in data["data"]["animes"]:
+                    related_anime_ids = [related["anime"]["id"] for related in anime.get("related", []) if related.get("anime")]
                     genres = [{"genre_id": genre["id"], "name": genre["name"], "russian": genre["russian"]} for genre in anime["genres"]]
                     transformed_anime = {
                         "anime_id": anime["id"],
@@ -198,9 +199,9 @@ class AnimeService:
                         "isCensored": anime["isCensored"],
                         "screenshots": [s["originalUrl"] for s in anime["screenshots"]],
                         "description": anime["description"],
-                        "genres": genres
+                        "genres": genres,
+                        "related_anime_ids": related_anime_ids
                     }
-                    print(genres)
                     animes.append(transformed_anime)
                 logger.info(f"Page {page_num} fetched")
                 print(f"Page {page_num} fetched")
