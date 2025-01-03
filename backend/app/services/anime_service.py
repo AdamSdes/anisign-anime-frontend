@@ -200,9 +200,11 @@ class AnimeService:
                         "description": anime["description"],
                         "genres": genres
                     }
+                    print(genres)
                     animes.append(transformed_anime)
                 logger.info(f"Page {page_num} fetched")
                 print(f"Page {page_num} fetched")
+                
 
                 time.sleep(0.5)
                 return animes        
@@ -222,8 +224,8 @@ class AnimeService:
                         await self.genre_repository.create_genre_if_not_exists(genre)
                         genre_id = genre["genre_id"]
                         genre_ids.append(genre_id)
-                    # print("genre_ids =" + genre_ids)
-                await self.anime_repository.save_anime_list(animes, genre_ids)
+                    anime["genre_ids"] = genre_ids
+                await self.anime_repository.save_anime_list(animes)
                 logger.info(f"Anime list saved successfully page {x}")
             else:
                 logger.info("No animes found")

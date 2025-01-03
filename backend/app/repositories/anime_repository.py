@@ -24,7 +24,7 @@ class AnimeRepository():
         anime = anime.scalars().first()
         return anime
         
-    async def save_anime_list(self, animes: list, genre_ids: list):
+    async def save_anime_list(self, animes: list):
         for anime in animes:
             try:
                 # Convert date strings to datetime.date objects
@@ -37,8 +37,6 @@ class AnimeRepository():
                             logging.error(f"Error parsing date for field {field} in anime {anime}: {e}")
                             anime[field] = None
                 
-                
-                anime['genre_ids'] = genre_ids
                 anime_instance = Anime(**anime)
                 self.db.add(anime_instance)
                 await self.db.commit()
