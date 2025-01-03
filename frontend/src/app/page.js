@@ -8,6 +8,10 @@ import {Button} from "@/shared/shadcn-ui/button";
 import {ChevronRight} from "lucide-react";
 import React from "react";
 import Link from "next/link";
+import { RecentComments } from '@/widgets/Comments/RecentComment';
+import ProBanner from "@/widgets/ProBanner/ProBanner";
+
+
 
 const Page = () => {
     return (
@@ -35,9 +39,10 @@ const Page = () => {
                             </Button>
                         </Link>
                     </div>
+                    <RecentComments />
                 </div>
+                <ProBanner />
             </main>
-            <Collection/>
             <Footer/>
         </>
 

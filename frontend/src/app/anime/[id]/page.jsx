@@ -11,11 +11,13 @@ import Comments from '@/widgets/Comments/Comments';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Reviews from '@/widgets/AnimeDetails/Reviews';
 import Footer from "@/widgets/Footer/Footer";
+import RelatedAnime from '@/widgets/AnimeDetails/RelatedAnime';
 
 export default function Page() {
     const { id } = useParams();
     const [animeData, setAnimeData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [genres, setGenres] = useState(null);
 
     useEffect(() => {
         const fetchAnimeDetails = async () => {
@@ -29,7 +31,17 @@ export default function Page() {
                 if (data.screenshots) {
                     data.screenshots = data.screenshots.slice(0, 4);
                 }
+
+                // Fetch all genres
+                const genresPromises = data.genre_ids.map(id => 
+                    fetch(`http://localhost:8000/genre/get-genre/${id}`)
+                        .then(res => res.json())
+                );
+                
+                const genresData = await Promise.all(genresPromises);
+                
                 setAnimeData(data);
+                setGenres(genresData);
             } catch (error) {
                 console.error('Error fetching anime details:', error);
             } finally {
@@ -83,11 +95,13 @@ export default function Page() {
             <section className="container mx-auto px-4 py-8">
                 <div className="flex flex-col gap-8">
 
-                    <AnimeDetails anime={animeData} />
+                    <AnimeDetails anime={animeData} genres={genres} />
 
                     {animeData?.screenshots?.length > 0 && (
                         <ImageGallery screenshots={animeData.screenshots} />
                     )}
+
+                    <RelatedAnime></RelatedAnime>
 
                     <div 
                         id="player" 
