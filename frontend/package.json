@@ -10,6 +10,7 @@
     "json-server": "json-server --watch db.json --port 5000"
   },
   "dependencies": {
+    "emoji-mart": "^5.4.0",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@emotion/react": "^11.11.1",

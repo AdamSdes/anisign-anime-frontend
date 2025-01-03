@@ -38,6 +38,7 @@ class Anime(BaseTable):
     description = Column(String, index=True, nullable=True)
     genre_ids = Column(ARRAY(Text))
     related_anime_ids = Column(ARRAY(Text), nullable=True)
+    character_ids = Column(ARRAY(Text), nullable=True)
     
     # genres = relationship('Genre', secondary=anime_genre, back_populates='animes')
     
@@ -50,11 +51,18 @@ class Genre(BaseTable):
     
     # animes = relationship('Anime', secondary=anime_genre, back_populates='genres')
     
-    
+
+class Character(BaseTable):
+    __tablename__ = 'character'
+    character_id = Column(String, index=True, unique=True, nullable=False)
+    name = Column(String, index=True, unique=True, nullable=False)
+    russian = Column(String, index=True, unique=True, nullable=False)
+    japanese = Column(String, index=True, nullable=True)
+    poster_url = Column(String, index=True, nullable=False) # original
+    description = Column(String, index=True, nullable=True)
     
     # studio
     # character roles
-    #  related (anime)
     
 
     
