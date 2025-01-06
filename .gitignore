@@ -26,7 +26,7 @@ pycache/
 /.vscode
 
 # dependencies
-/node_modules
+/frontend/node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
@@ -35,7 +35,7 @@ pycache/
 /coverage
 
 # next.js
-/.next/
+/frontend/.next/
 /out/
 
 # production
