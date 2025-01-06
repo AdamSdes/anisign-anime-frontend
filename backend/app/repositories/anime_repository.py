@@ -8,7 +8,7 @@ import logging
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 from dateutil import parser
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_ , func
 from sqlalchemy.sql import text
 
 
@@ -19,7 +19,14 @@ class AnimeRepository():
     async def get_anime_list(self, page: int, limit: int):
         query = select(Anime).limit(limit).offset((page - 1) * limit)
         result = await self.db.execute(query)
-        return result.scalars().all()
+        anime_list = result.scalars().all()
+
+        count_query = select(func.count()).select_from(Anime)
+        count_result = await self.db.execute(count_query)
+        total_count = count_result.scalar()
+        
+        return {"total_count": total_count, "anime_list": anime_list}
+
     
     async def get_anime_by_id(self, anime_id: str):
         anime = await self.db.execute(select(Anime).where(Anime.anime_id == anime_id))
@@ -75,7 +82,10 @@ class AnimeRepository():
         )
         result = await self.db.execute(query)
         anime_list = result.scalars().all()
-        return anime_list
+
+        total_count = len(anime_list)
+
+        return {"total_count": total_count, "anime_list": anime_list}
     
     
 #
