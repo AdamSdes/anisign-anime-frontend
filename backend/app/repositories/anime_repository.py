@@ -8,6 +8,8 @@ import logging
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 from dateutil import parser
+from sqlalchemy import select, or_
+from sqlalchemy.sql import text
 
 
 class AnimeRepository():
@@ -63,6 +65,17 @@ class AnimeRepository():
         await self.db.execute(query)
         await self.db.commit()
         return "All anime deleted successfully"
+    
+    async def get_anime_by_name(self, name: str):
+        query = select(Anime).where(
+            or_(
+                Anime.english.ilike(f'%{name}%'),
+                Anime.russian.ilike(f'%{name}%')
+            )
+        )
+        result = await self.db.execute(query)
+        anime_list = result.scalars().all()
+        return anime_list
     
     
 #

@@ -21,6 +21,18 @@ async def save_anime_list_in_db(db: AsyncSession = Depends(get_session)):
     result = await service.save_anime_list_in_db()
     return result
 
+@anime_router.get("/name/{name}")
+async def get_anime_by_name(name: str, db: AsyncSession = Depends(get_session)):
+    service = AnimeService(db)
+    result = await service.get_anime_by_name(name)
+    return result
+
+@anime_router.get("/id/{anime_id}")
+async def get_anime_by_id(anime_id: str, db: AsyncSession = Depends(get_session)):
+    service = AnimeService(db)
+    result = await service.get_anime_by_id(anime_id)
+    return result
+
 @anime_router.delete("/delete-all-anime")
 async def delete_all_anime(db: AsyncSession = Depends(get_session)):
     service = AnimeService(db)
@@ -33,9 +45,6 @@ async def get_anime_list(page: int = 1, limit: int = 10, db: AsyncSession = Depe
     result = await service.get_anime_list(page, limit)
     return result
 
-@anime_router.get("/{anime_id}")
-async def get_anime_by_id(anime_id: str, db: AsyncSession = Depends(get_session)):
-    service = AnimeService(db)
-    result = await service.get_anime_by_id(anime_id)
-    return result
+
+
     

@@ -234,6 +234,10 @@ class AnimeService:
                 logger.info("No animes found")
                 return {'message':"Anime list not saved"}
         return {'message':"Anime list saved successfully"}
+    
+    async def get_anime_by_name(self, name: str):
+        result = await self.anime_repository.get_anime_by_name(name)
+        return result
         
         
         # for num in range(1, 2):
