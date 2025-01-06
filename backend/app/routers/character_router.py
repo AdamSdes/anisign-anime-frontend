@@ -33,3 +33,9 @@ async def get_character_list(page: int = 1, limit: int = 10, db: AsyncSession = 
     service = CharacterService(db)
     result = await service.get_characters_list(page, limit)
     return result
+
+@character_router.get("/{character_id}")
+async def get_character_by_id(character_id: str, db: AsyncSession = Depends(get_session)):
+    service = CharacterService(db)
+    result = await service.get_character_by_id(character_id)
+    return result

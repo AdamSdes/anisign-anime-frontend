@@ -19,6 +19,11 @@ class CharacterRepository:
         result = await self.db.execute(query)
         return result.scalars().all()
     
+    async def get_character_by_id(self, character_id: str):
+        character = await self.db.execute(select(Character).where(Character.character_id == character_id))
+        character = character.scalars().first()
+        return character
+    
     async def save_characters_list(self,characters: list):
         for character in characters:
             try:

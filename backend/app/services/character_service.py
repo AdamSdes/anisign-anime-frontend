@@ -20,6 +20,10 @@ class CharacterService:
         result = await self.character_repository.get_characters_list(page, limit)
         return result
     
+    async def get_character_by_id(self, character_id: str):
+        return await self.character_repository.get_character_by_id(character_id)
+    
+    
     async def parse_page_characters(self, page_num):
         characters = []
         base_url = "https://shikimori.one/api/graphql"
