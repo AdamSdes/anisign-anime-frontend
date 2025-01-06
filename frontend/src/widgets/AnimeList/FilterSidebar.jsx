@@ -161,7 +161,7 @@ const FilterSidebar = () => {
 
     return (
         <aside className="hidden lg:block space-y-5 sticky top-20">
-            <div className="flex items-center justify-between mb-2">
+            <div className="w-[344px] flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                     <Filter className="w-5 h-5 text-white/60" />
                     <h2 className="text-[16px] font-semibold">Фильтры</h2>

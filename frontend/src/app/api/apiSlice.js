@@ -27,7 +27,6 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
             result = await baseQuery(args, api, extraOptions);
         } else {
             //логаут, якщо не вийшло
-            console.log('Token refresh request failed, logging out');
             await baseQuery('/auth/logout', api, extraOptions);
             api.dispatch(logOut());
         }

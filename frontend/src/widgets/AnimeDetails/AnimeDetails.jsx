@@ -26,6 +26,7 @@ import {
     Pause
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -259,7 +260,61 @@ const ListButton = () => {
     );
 };
 
-export default function AnimeDetails({ anime, genres }) {
+const AnimeDetailsSkeleton = () => {
+    return (
+        <div className="flex flex-col lg:flex-row gap-8 relative animate-pulse">
+            {/* Left Column Skeleton */}
+            <div className="flex flex-col gap-6 lg:sticky lg:top-24 h-fit">
+                <Skeleton className="w-[315px] h-[454px] rounded-[16px] bg-white/5" />
+                <div className="flex flex-col gap-3 w-full max-w-[315px]">
+                    <Skeleton className="w-full h-[54px] rounded-xl bg-white/5" />
+                    <Skeleton className="w-full h-[60px] rounded-xl bg-white/5" />
+                </div>
+            </div>
+
+            {/* Center Column Skeleton */}
+            <div className="flex w-full flex-col gap-[30px]">
+                <div className="flex justify-between items-center">
+                    <div className="flex flex-col gap-2">
+                        <Skeleton className="h-8 w-[300px] bg-white/5" />
+                        <Skeleton className="h-4 w-[200px] bg-white/5" />
+                    </div>
+                    <Skeleton className="h-10 w-16 rounded-[40px] bg-white/5" />
+                </div>
+
+                <div className="flex gap-2 flex-wrap">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                        <Skeleton key={i} className="h-8 w-24 rounded-full bg-white/5" />
+                    ))}
+                </div>
+
+                <Skeleton className="w-full h-[1px] bg-white/5" />
+
+                <div className="flex flex-col gap-4">
+                    {[1, 2, 3, 4].map((i) => (
+                        <Skeleton key={i} className="h-4 w-full bg-white/5" />
+                    ))}
+                </div>
+            </div>
+
+            {/* Right Column Skeleton */}
+            <div className="hidden lg:block w-[1px] min-h-[624px] bg-white/5" />
+            <div className="flex flex-col gap-[20px]">
+                <div className="flex flex-col w-[320px] gap-[10px]">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                        <div key={i} className="flex justify-between items-center">
+                            <Skeleton className="h-4 w-20 bg-white/5" />
+                            <Skeleton className="h-4 w-32 bg-white/5" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default function AnimeDetails({ anime, genres, isLoading }) {
+    if (isLoading) return <AnimeDetailsSkeleton />;
     if (!anime) return null;
 
     const getGenreName = (genreId) => {

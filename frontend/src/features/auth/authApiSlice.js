@@ -67,12 +67,23 @@ export const authApiSlice = apiSlice.injectEndpoints({
             query: () => ({
                 url: '/user/get-my-avatar',
                 responseHandler: async (response) => {
+                    if (!response.ok) {
+                        throw new Error('Avatar not found');
+                    }
                     const blob = await response.blob();
-                    return URL.createObjectURL(blob);
+                    // Создаем URL только если получили валидный blob
+                    if (blob.size > 0) {
+                        return URL.createObjectURL(blob);
+                    }
+                    throw new Error('Invalid avatar data');
                 },
+                headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache'
+                }
             }),
-            keepUnusedDataFor: 5, // Храним данные 5 минут
-            providesTags: ['Avatar'], // Добавляем тег для инвалидации
+            keepUnusedDataFor: 0,
+            providesTags: (result) => [{ type: 'Avatar', id: 'CURRENT' }]
         }),
         uploadAvatar: builder.mutation({
             query: (file) => ({
@@ -83,14 +94,29 @@ export const authApiSlice = apiSlice.injectEndpoints({
                     formData.append('file', file);
                     return formData;
                 })(),
+                // Важно! Не устанавливаем Content-Type, позволяем браузеру установить правильный boundary
             }),
-            invalidatesTags: ['Avatar'], // Инвалидируем кэш аватарки после загрузки
+            // Инвалидируем конкретный тег аватара
+            invalidatesTags: [{ type: 'Avatar', id: 'CURRENT' }],
+            
+            // Улучшаем обработку успешной загрузки
+            async onQueryStarted(_, { dispatch, queryFulfilled }) {
+                try {
+                    await queryFulfilled;
+                    // После успешной загрузки делаем одну попытку обновления
+                    await dispatch(
+                        authApiSlice.endpoints.getUserAvatar.initiate(undefined, {
+                            forceRefetch: true
+                        })
+                    );
+                } catch {}
+            }
         }),
         changePassword: builder.mutation({
             query: ({ password, newPassword, confirmPassword }) => ({
                 url: `/user/change-my-password`,
                 method: 'POST',
-                params: {
+                body: {
                     password,
                     new_password: newPassword,
                     confirm_password: confirmPassword

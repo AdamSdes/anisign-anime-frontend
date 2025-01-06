@@ -16,7 +16,12 @@ import { ChangePasswordDialog } from '@/components/ui/change-password-dialog';
 
 const Profile = () => {
     const [getUserByUsername, { data: user, isLoading, isError }] = useLazyGetUserByUsernameQuery();
-    const { data: avatarUrl, isLoading: isAvatarLoading, error: avatarError, refetch: refetchAvatar } = useGetUserAvatarQuery();
+    const { data: avatarUrl, isLoading: isAvatarLoading, error: avatarError, refetch: refetchAvatar } = useGetUserAvatarQuery(undefined, {
+        // Добавляем повторные попытки при ошибке
+        pollingInterval: 0,
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true
+    });
     const [uploadAvatar] = useUploadAvatarMutation();
     const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
     const username = useSelector(state => state.auth.user);
@@ -69,10 +74,12 @@ const Profile = () => {
         
         setIsAvatarUploading(true);
         try {
-            const result = await uploadAvatar(file).unwrap();
-            // Добавляем небольшую задержку перед обновлением аватара
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Загружаем аватар
+            await uploadAvatar(file).unwrap();
+            
+            // Убираем множественные рефетчи, оставляем только один
             await refetchAvatar();
+            
             toast.success("Аватар успешно обновлен");
             setIsUploadDialogOpen(false);
         } catch (error) {
@@ -101,9 +108,19 @@ const Profile = () => {
                                             <div className="w-full h-full bg-[rgba(255,255,255,0.02)] flex items-center justify-center">
                                                 <Spinner size="sm" color="primary" />
                                             </div>
+                                        ) : avatarError ? (
+                                            <UserCircle className="w-full h-full text-white/40" />
                                         ) : (
                                             <Avatar className="w-full h-full">
-                                                <AvatarImage src={avatarUrl} alt={username} className="object-cover" />
+                                                <AvatarImage 
+                                                    src={avatarUrl} 
+                                                    alt={username}
+                                                    className="object-cover"
+                                                    onError={(e) => {
+                                                        e.currentTarget.src = ''; // Очищаем битый URL
+                                                        refetchAvatar(); // Пробуем перезагрузить
+                                                    }}
+                                                />
                                                 <AvatarFallback>
                                                     <UserCircle className="w-8 h-8 text-white/40" />
                                                 </AvatarFallback>

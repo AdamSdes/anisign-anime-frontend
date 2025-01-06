@@ -1,7 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { Play, Volume2 } from "lucide-react";
 
 const VideoPlayer = ({ shikimoriId }) => {
@@ -35,7 +34,6 @@ const VideoPlayer = ({ shikimoriId }) => {
                 if (event.origin.includes('kodik.info')) {
                     try {
                         const data = JSON.parse(event.data);
-                        console.log('Kodik data:', data);
                         
                         if (data.type === 'kodik_player_info') {
                             setPlayerInfo(data);

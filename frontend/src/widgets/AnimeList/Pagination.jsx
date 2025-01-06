@@ -8,7 +8,7 @@ const Paginations = () => {
     const searchParams = useSearchParams();
     const currentPage = Number(searchParams.get('page')) || 1;
     const [inputPage, setInputPage] = useState('');
-    const totalPages = 21;
+    const totalPages = 101;
 
     const createPageURL = (pageNumber) => {
         const params = new URLSearchParams(searchParams);

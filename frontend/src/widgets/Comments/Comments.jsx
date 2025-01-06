@@ -276,12 +276,6 @@ const ReportDialog = ({ isOpen, onClose, comment }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Здесь будет логика отправки жалобы
-    console.log('Report submitted:', {
-      commentId: comment.id,
-      author: comment.author.name,
-      reason,
-      description
-    });
     onClose();
     // Показываем уведомление
     toast.success('Жалоба отправлена');

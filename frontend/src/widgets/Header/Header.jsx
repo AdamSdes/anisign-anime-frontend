@@ -88,10 +88,20 @@ export default function Navbar() {
                         </Link>
                         <img src="/line.svg" alt="Line" className="hidden md:block" />
                         {/* Меню для десктопа */}
-                        <div className="hidden md:flex gap-5">
+                        <div className="hidden md:flex gap-5 flex items-center">
                             <Link href='/anime-list'
                                   className="text-[#CCBAE4] gap-1 font-semibold rounded-[12px] text-[14px] bg-[none] h-[48px] opacity-100 hover:opacity-60 transition-all duration-300">
                                 Список аниме
+                            </Link>
+                            <p className='opacity-10'>/</p>
+                            <Link href='/characters'
+                                  className="text-white/60 gap-1 font-medium rounded-[12px] text-[14px] bg-[none] h-[48px] opacity-100 hover:opacity-60 transition-all duration-300">
+                                Персонажи
+                            </Link>
+                            <p className='opacity-10'>/</p>
+                            <Link href='/characters'
+                                  className="text-white/60 gap-1 font-medium rounded-[12px] text-[14px] bg-[none] h-[48px] opacity-100 hover:opacity-60 transition-all duration-300">
+                                Календарь
                             </Link>
                         </div>
                     </div>
@@ -99,28 +109,6 @@ export default function Navbar() {
                     {/* Правый блок навбара для десктопа */}
                     <div className="hidden md:flex items-center gap-5">
                         <SearchModal/>
-                        {/* <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    className="h-[50px] px-5 rounded-[14px] border border-white/5"
-                                    size="lg"
-                                >
-                                    Страницы
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56">
-                                <DropdownMenuItem>
-                                    <Link href="/characters">Персонажи</Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <Link href="/calendar">Календарь</Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <Link href="/news">Новости</Link>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu> */}
                         <img src="/line.svg" alt="Line" className="hidden md:block" />
                         {isAuthenticated ? (
                             <div className="flex items-center gap-4">

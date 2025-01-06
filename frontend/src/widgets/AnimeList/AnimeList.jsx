@@ -93,7 +93,16 @@ const AnimeCardSkeleton = ({ index }) => (
     </div>
 );
 
-const AnimeListItem = ({ anime }) => (
+// Добавляем функцию getGenreName как в AnimeDetails
+const getGenreName = (genreId, genres) => {
+    if (!genres) return '...';
+    // Используем genre_id для сравнения
+    const genre = genres.find(g => g.genre_id === String(genreId));
+    return genre ? genre.russian || genre.name : '...';
+};
+
+// Модифицируем компонент AnimeListItem чтобы он принимал genres
+const AnimeListItem = ({ anime, genres }) => (
     <Link href={`/anime/${anime.anime_id}`}>
         <div className="group flex gap-6 p-5 rounded-xl bg-white/[0.02] hover:bg-[#0A0A0A] border border-transparent
             hover:border-white/5 transition-all duration-300">
@@ -131,13 +140,16 @@ const AnimeListItem = ({ anime }) => (
                         </span>
                     </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                    <Link href='/' className='px-2 py-1 mb-2 border text-[12px] rounded-full border-white/5'>Комедия</Link>
-                    <Link href='/'
-                          className='px-2 py-1 mb-2 border text-[12px] rounded-full border-white/5'>Приключения</Link>
-                    <Link href='/'
-                          className='px-2 py-1 mb-2 border text-[12px] rounded-full border-white/5'>Сверхъестественное</Link>
-                    <Link href='/' className='px-2 py-1 mb-2 border text-[12px] rounded-full border-white/5'>Фэнтези</Link>
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                    {anime.genre_ids?.map((genreId) => (
+                        <span
+                            key={genreId}
+                            className="px-2 py-1 border text-[12px] rounded-full border-white/5 text-white/60
+                                     hover:text-white/80 hover:border-white/10 transition-colors duration-200"
+                        >
+                            {getGenreName(genreId, genres)}
+                        </span>
+                    ))}
                 </div>
 
                 {anime.description && (
@@ -182,29 +194,47 @@ const AnimeListItem = ({ anime }) => (
 
 const AnimeList = () => {
     const [animeList, setAnimeList] = useState([]);
+    const [genres, setGenres] = useState(null);
     const [loading, setLoading] = useState(true);
     const [hoveredId, setHoveredId] = useState(null);
-    const [viewMode, setViewMode] = useState('grid'); // 'grid' или 'list'
+    // Инициализируем viewMode из localStorage или используем 'grid' по умолчанию
+    const [viewMode, setViewMode] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('animeListViewMode') || 'grid';
+        }
+        return 'grid';
+    });
     const [search, setSearch] = useState('');
     const searchParams = useSearchParams();
     const currentPage = Number(searchParams.get('page')) || 1;
     const limit = 20;
 
+    // Сохраняем viewMode в localStorage при изменении
+    const handleViewModeChange = (mode) => {
+        setViewMode(mode);
+        localStorage.setItem('animeListViewMode', mode);
+    };
+
     useEffect(() => {
-        const fetchAnime = async () => {
+        const fetchData = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(`http://localhost:8000/anime/get-anime-list?page=${currentPage}&limit=${limit}`);
-                const data = await response.json();
-                setAnimeList(data);
+                const [animeResponse, genresResponse] = await Promise.all([
+                    fetch(`http://localhost:8000/anime/get-anime-list?page=${currentPage}&limit=${limit}`),
+                    fetch('http://localhost:8000/genre/get-list-genres') // Исправляем URL для получения жанров
+                ]);
+                const animeData = await animeResponse.json();
+                const genresData = await genresResponse.json();
+                setAnimeList(animeData);
+                setGenres(genresData);
             } catch (error) {
-                console.error('Error fetching anime:', error);
+                console.error('Error fetching data:', error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchAnime();
+        fetchData();
     }, [currentPage]);
 
     if (loading) {
@@ -213,7 +243,7 @@ const AnimeList = () => {
                 <SearchBar 
                     setSearch={setSearch}
                     viewMode={viewMode}
-                    setViewMode={setViewMode}
+                    setViewMode={handleViewModeChange}  // Используем новый обработчик
                 />
                 <div className={viewMode === 'grid' 
                     ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6"
@@ -232,7 +262,7 @@ const AnimeList = () => {
             <SearchBar 
                 setSearch={setSearch}
                 viewMode={viewMode}
-                setViewMode={setViewMode}
+                setViewMode={handleViewModeChange}  // Используем новый обработчик
             />
             
             <div className={`
@@ -253,9 +283,9 @@ const AnimeList = () => {
                         onMouseLeave={() => setHoveredId(null)}
                     >
                         {viewMode === 'grid' ? (
-                            <AnimeCard anime={anime} />
+                            <AnimeCard anime={anime} genres={genres} />
                         ) : (
-                            <AnimeListItem anime={anime} />
+                            <AnimeListItem anime={anime} genres={genres} />
                         )}
                     </div>
                 ))}

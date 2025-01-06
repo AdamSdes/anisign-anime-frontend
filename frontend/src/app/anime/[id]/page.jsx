@@ -27,7 +27,7 @@ export default function Page() {
                     throw new Error('Failed to fetch anime details');
                 }
                 const data = await response.json();
-                console.log('Полученные данные:', data);
+
                 if (data.screenshots) {
                     data.screenshots = data.screenshots.slice(0, 4);
                 }
@@ -52,22 +52,7 @@ export default function Page() {
         fetchAnimeDetails();
     }, [id]);
 
-    if (loading) {
-        return (
-            <>
-                <Header />
-                <Report />
-                <main className="container mx-auto max-w-[1400px] px-4 py-10">
-                    <div className="animate-pulse">
-                        <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-                        <div className="h-[500px] bg-gray-200 rounded mb-4"></div>
-                    </div>
-                </main>
-            </>
-        );
-    }
-
-    if (!animeData) {
+    if (!animeData && !loading) {
         return (
             <>
                 <Header />
@@ -94,8 +79,11 @@ export default function Page() {
             <Report />
             <section className="container mx-auto px-4 py-8">
                 <div className="flex flex-col gap-8">
-
-                    <AnimeDetails anime={animeData} genres={genres} />
+                    <AnimeDetails 
+                        anime={animeData} 
+                        genres={genres} 
+                        isLoading={loading}
+                    />
 
                     {animeData?.screenshots?.length > 0 && (
                         <ImageGallery screenshots={animeData.screenshots} />

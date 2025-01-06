@@ -470,7 +470,7 @@ export function Auth() {
                                   strokeLinejoin="round"
                                 />
                                 <path
-                                  d="M13 7В5C13 2.79086 11.2091 1 9 1В1C6.79086 1 5 2.79086 5 5L5 7"
+                                  d="М13 7В5C13 2.79086 11.2091 1 9 1В1C6.79086 1 5 2.79086 5 5L5 7"
                                   stroke="#8B8B8B"
                                   strokeWidth="1.5"
                                 />
