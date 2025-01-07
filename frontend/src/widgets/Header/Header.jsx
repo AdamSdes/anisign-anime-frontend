@@ -20,6 +20,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const genresData = [
+    { id: 1, name: "Экшен" },
+    { id: 2, name: "Приключения" },
+    { id: 3, name: "Комедия" },
+    { id: 4, name: "Драма" },
+    { id: 5, name: "Повседневность" },
+    { id: 6, name: "Фэнтези" },
+    { id: 7, name: "Магия" },
+    { id: 8, name: "Сверхъестественное" },
+    { id: 9, name: "Ужасы" },
+    { id: 10, name: "Детектив" },
+    { id: 11, name: "Психологическое" },
+    { id: 12, name: "Романтика" },
+    { id: 13, name: "Научная фантастика" },
+    { id: 14, name: "Спорт" },
+    { id: 15, name: "Школа" },
+    { id: 16, name: "Боевые искусства" },
+    { id: 17, name: "Меха" },
+    { id: 18, name: "Музыка" },
+    { id: 19, name: "Триллер" },
+    { id: 20, name: "Военное" }
+];
+
 const UserNotLoggedNavBar = () => {
     return (
         <Link href="/auth">
@@ -108,7 +131,7 @@ export default function Navbar() {
 
                     {/* Правый блок навбара для десктопа */}
                     <div className="hidden md:flex items-center gap-5">
-                        <SearchModal/>
+                        <SearchModal genres={genresData} />
                         <img src="/line.svg" alt="Line" className="hidden md:block" />
                         {isAuthenticated ? (
                             <div className="flex items-center gap-4">
