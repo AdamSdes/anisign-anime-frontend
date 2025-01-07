@@ -1,5 +1,7 @@
 import bcrypt
 
+KIND_ENUM = ["tv", "tv_special", "ona", "movie", "ova", "special"]
+
 async def hash_password(password: str) -> str:
     hashed_password = bcrypt.hashpw(
         password.encode('utf-8'), bcrypt.gensalt())

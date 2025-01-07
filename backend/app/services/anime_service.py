@@ -238,6 +238,18 @@ class AnimeService:
     async def get_anime_by_name(self, name: str):
         result = await self.anime_repository.get_anime_by_name(name)
         return result
+    
+    async def get_anime_by_genre(self, genre_id: str):
+        result = await self.anime_repository.get_anime_by_genre(genre_id)
+        return result
+    
+    async def get_anime_list_by_kind(self, kind: str, page: int, limit: int):
+        result = await self.anime_repository.get_anime_list_by_kind(kind, page, limit)
+        return result
+    
+    async def get_all_kinds(self):
+        result = await self.anime_repository.get_all_kinds()
+        return result
         
         
         # for num in range(1, 2):
