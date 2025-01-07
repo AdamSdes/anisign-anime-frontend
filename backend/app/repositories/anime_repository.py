@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import delete
+from sqlalchemy import delete ,distinct
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 from app.db.models import Anime , Genre
@@ -87,7 +87,37 @@ class AnimeRepository():
 
         return {"total_count": total_count, "anime_list": anime_list}
     
+    async def get_anime_by_genre(self, genre_id: str):
+        count_query = select(func.count()).select_from(Anime).where(
+            Anime.genre_ids.contains([genre_id])
+        )
+        total_count_result = await self.db.execute(count_query)
+        total_count = total_count_result.scalar()
+        
+        query = select(Anime).where(
+            Anime.genre_ids.contains([genre_id])
+        )
+        result = await self.db.execute(query)
+        anime_list = result.scalars().all()
+
+        return {"total_count": total_count, "anime_list": anime_list}
     
+    async def get_anime_list_by_kind(self, kind: str, page: int, limit: int):
+        count_query = select(func.count()).select_from(Anime).where(Anime.kind == kind)
+        total_count_result = await self.db.execute(count_query)
+        total_count = total_count_result.scalar()
+        
+        query = select(Anime).where(Anime.kind == kind).limit(limit).offset((page - 1) * limit)
+        result = await self.db.execute(query)
+        anime_list = result.scalars().all()
+        
+        return {"total_count": total_count, "anime_list": anime_list}
+    
+    async def get_all_kinds(self):
+        query = select(distinct(Anime.kind))
+        result = await self.db.execute(query)
+        kinds = result.scalars().all()
+        return kinds
 #
 # class Anime(BaseTable):
     # __tablename__ = 'anime'
