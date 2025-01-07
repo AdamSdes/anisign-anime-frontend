@@ -87,7 +87,7 @@ class AnimeRepository():
 
         return {"total_count": total_count, "anime_list": anime_list}
     
-    async def get_anime_by_genre(self, genre_id: str):
+    async def get_anime_by_genre(self, genre_id: str, page: int, limit: int):
         count_query = select(func.count()).select_from(Anime).where(
             Anime.genre_ids.contains([genre_id])
         )
@@ -96,7 +96,7 @@ class AnimeRepository():
         
         query = select(Anime).where(
             Anime.genre_ids.contains([genre_id])
-        )
+        ).limit(limit).offset((page - 1) * limit)
         result = await self.db.execute(query)
         anime_list = result.scalars().all()
 

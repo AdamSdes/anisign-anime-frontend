@@ -239,8 +239,8 @@ class AnimeService:
         result = await self.anime_repository.get_anime_by_name(name)
         return result
     
-    async def get_anime_by_genre(self, genre_id: str):
-        result = await self.anime_repository.get_anime_by_genre(genre_id)
+    async def get_anime_by_genre(self, genre_id: str, page: int, limit: int):
+        result = await self.anime_repository.get_anime_by_genre(genre_id, page, limit)
         return result
     
     async def get_anime_list_by_kind(self, kind: str, page: int, limit: int):

@@ -30,9 +30,9 @@ async def get_anime_by_name(name: str, db: AsyncSession = Depends(get_session)):
     return result
 
 @anime_router.get("/genre/{genre}")
-async def get_anime_by_genre(genre: str, db: AsyncSession = Depends(get_session)):
+async def get_anime_by_genre(genre: str, page: int = 1, limit: int = 10, db: AsyncSession = Depends(get_session)):
     service = AnimeService(db)
-    result = await service.get_anime_by_genre(genre)
+    result = await service.get_anime_by_genre(genre, page, limit)
     return result
 
 @anime_router.get("/id/{anime_id}")
