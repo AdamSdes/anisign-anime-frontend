@@ -6,6 +6,7 @@ import { LayoutGrid, List } from 'lucide-react';
 import AnimeCard from './AnimeCard';
 import { Button } from "@/shared/shadcn-ui/button";
 import SearchBar from './SearchBar';
+import Pagination from './Pagination'; // Добавляем этот импорт
 import Link from "next/link";
 
 const transformValue = (key, value) => {
@@ -197,53 +198,107 @@ const AnimeList = () => {
     const [genres, setGenres] = useState(null);
     const [loading, setLoading] = useState(true);
     const [hoveredId, setHoveredId] = useState(null);
-    // Инициализируем viewMode из localStorage или используем 'grid' по умолчанию
     const [viewMode, setViewMode] = useState(() => {
         if (typeof window !== 'undefined') {
             return localStorage.getItem('animeListViewMode') || 'grid';
         }
         return 'grid';
     });
-    const [search, setSearch] = useState('');
     const searchParams = useSearchParams();
     const currentPage = Number(searchParams.get('page')) || 1;
     const limit = 20;
+    const [totalCount, setTotalCount] = useState(0);
+    const [displayLimit, setDisplayLimit] = useState(limit); // Добавляем новый state
 
-    // Сохраняем viewMode в localStorage при изменении
-    const handleViewModeChange = (mode) => {
-        setViewMode(mode);
-        localStorage.setItem('animeListViewMode', mode);
+    // Обновляем handleSearch для работы с результатами поиска
+    const handleSearch = (searchResults) => {
+        if (searchResults === null) {
+            // Если поиск пуст, загружаем обычный список аниме
+            fetchAnimeList();
+        } else {
+            // Обрабатываем результаты поиска с учетом новой структуры
+            setAnimeList(searchResults.anime_list || []);
+            setTotalCount(searchResults.total_count || 0);
+            setLoading(false);
+        }
+    };
+
+    // Обновляем функцию загрузки списка аниме
+    const fetchAnimeList = async () => {
+        try {
+            setLoading(true);
+            const [animeResponse, genresResponse] = await Promise.all([
+                fetch(`http://localhost:8000/anime/get-anime-list?page=${currentPage}&limit=${limit}`),
+                fetch('http://localhost:8000/genre/get-list-genres')
+            ]);
+            const animeData = await animeResponse.json();
+            const genresData = await genresResponse.json();
+            
+            // Теперь используем anime_list из ответа
+            setAnimeList(animeData.anime_list || []);
+            setTotalCount(animeData.total_count || 0);
+            setGenres(genresData);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setAnimeList([]); // В случае ошибки устанавливаем пустой массив
+            setTotalCount(0);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Функция для загрузки дополнительных аниме
+    const loadMore = async () => {
+        try {
+            const response = await fetch(`http://localhost:8000/anime/get-anime-list?page=${currentPage}&limit=${displayLimit + 10}`);
+            const data = await response.json();
+            setAnimeList(data.anime_list || []);
+            setDisplayLimit(prev => prev + 10);
+        } catch (error) {
+            console.error('Error loading more anime:', error);
+        }
+    };
+
+    // Функция для скрытия дополнительных аниме
+    const showLess = () => {
+        setDisplayLimit(limit);
+        setAnimeList(prev => prev.slice(0, limit));
     };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                const [animeResponse, genresResponse] = await Promise.all([
-                    fetch(`http://localhost:8000/anime/get-anime-list?page=${currentPage}&limit=${limit}`),
-                    fetch('http://localhost:8000/genre/get-list-genres') // Исправляем URL для получения жанров
-                ]);
-                const animeData = await animeResponse.json();
-                const genresData = await genresResponse.json();
-                setAnimeList(animeData);
-                setGenres(genresData);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
+        fetchAnimeList();
     }, [currentPage]);
+
+    // Добавляем функцию handleViewModeChange
+    const handleViewModeChange = (mode) => {
+        setViewMode(mode);
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('animeListViewMode', mode);
+        }
+    };
+
+    // Добавим компонент для пустого состояния
+    const EmptyState = () => (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-20 h-20 mb-6 rounded-full bg-white/5 flex items-center justify-center">
+                <svg className="w-10 h-10 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+            </div>
+            <h3 className="text-xl font-medium text-white/80 mb-2">Аниме не найдено</h3>
+            <p className="text-white/50 max-w-[400px]">
+                Попробуйте изменить поисковый запрос или сбросить фильтры
+            </p>
+        </div>
+    );
 
     if (loading) {
         return (
             <>
                 <SearchBar 
-                    setSearch={setSearch}
+                    setSearch={handleSearch}
                     viewMode={viewMode}
-                    setViewMode={handleViewModeChange}  // Используем новый обработчик
+                    setViewMode={handleViewModeChange}
                 />
                 <div className={viewMode === 'grid' 
                     ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6"
@@ -260,36 +315,74 @@ const AnimeList = () => {
     return (
         <div className="space-y-6">
             <SearchBar 
-                setSearch={setSearch}
+                setSearch={handleSearch}
                 viewMode={viewMode}
-                setViewMode={handleViewModeChange}  // Используем новый обработчик
+                setViewMode={handleViewModeChange}
             />
             
-            <div className={`
-                transition-all duration-300
-                ${viewMode === 'grid' 
-                    ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6"
-                    : "flex flex-col gap-4"
-                }
-            `}>
-                {animeList.map((anime) => (
-                    <div 
-                        key={anime.id}
-                        className="transition-opacity duration-300"
-                        style={{
-                            opacity: hoveredId === null || hoveredId === anime.id ? 1 : 0.3,
-                        }}
-                        onMouseEnter={() => setHoveredId(anime.id)}
-                        onMouseLeave={() => setHoveredId(null)}
-                    >
-                        {viewMode === 'grid' ? (
-                            <AnimeCard anime={anime} genres={genres} />
-                        ) : (
-                            <AnimeListItem anime={anime} genres={genres} />
+            {(!animeList || animeList.length === 0) ? (
+                <EmptyState />
+            ) : (
+                <>
+                    <div className={`
+                        transition-all duration-300
+                        ${viewMode === 'grid' 
+                            ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6"
+                            : "flex flex-col gap-4"
+                        }
+                    `}>
+                        <AnimatePresence mode="popLayout">
+                            {animeList.slice(0, displayLimit).map((anime) => (
+                                <motion.div 
+                                    key={anime.anime_id} // Изменяем key на anime_id
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="transition-opacity duration-300"
+                                    style={{
+                                        opacity: hoveredId === null || hoveredId === anime.id ? 1 : 0.3,
+                                    }}
+                                    onMouseEnter={() => setHoveredId(anime.id)}
+                                    onMouseLeave={() => setHoveredId(null)}
+                                >
+                                    {viewMode === 'grid' ? (
+                                        <AnimeCard anime={anime} genres={genres} />
+                                    ) : (
+                                        <AnimeListItem anime={anime} genres={genres} />
+                                    )}
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Кнопки загрузки/скрытия */}
+                    <div className="flex justify-center gap-4">
+                        {displayLimit < totalCount && (
+                            <button
+                                onClick={loadMore}
+                                className="px-6 h-10 bg-white/5 hover:bg-white/10 rounded-full text-sm font-medium transition-all"
+                            >
+                                Показать ещё
+                            </button>
+                        )}
+                        {displayLimit > limit && (
+                            <button
+                                onClick={showLess}
+                                className="px-6 h-10 bg-white/5 hover:bg-white/10 rounded-full text-sm font-medium transition-all"
+                            >
+                                Скрыть
+                            </button>
                         )}
                     </div>
-                ))}
-            </div>
+
+                    <Pagination 
+                        currentPage={currentPage}
+                        totalCount={totalCount}
+                        pageSize={limit}
+                    />
+                </>
+            )}
         </div>
     );
 };

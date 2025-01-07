@@ -1,31 +1,38 @@
 'use client'
-import { useState } from 'react';  // Это важно для работы useState
+import { useState } from 'react';
 import AnimeList from "@/widgets/AnimeList/AnimeList";
 import FilterSidebar from "@/widgets/AnimeList/FilterSidebar";
-import Paginations from "@/widgets/AnimeList/Pagination";
+import Pagination from "@/widgets/AnimeList/Pagination";
 import Navbar from "@/widgets/Header/Header";
 import Report from "@/features/Report/Report";
-import SearchBar from "@/widgets/AnimeList/SearchBar";
 import Footer from "@/widgets/Footer/Footer";
 
 const Page = () => {
-    const [search, setSearch] = useState('');
+    const [totalCount, setTotalCount] = useState(0);
+    const limit = 20; // Дублируем константу из AnimeList
+    const [currentPage, setCurrentPage] = useState(1);
 
+    // Функция для обновления totalCount, которую будем передавать в AnimeList
+    const handleUpdateTotalCount = (count) => {
+        setTotalCount(count);
+    };
 
     return (
-        <div className=''>
-            <Navbar></Navbar>
-            <Report></Report>
-            <main className="container mx-auto  mt-8  px-4 lg:mt-16">
+        <div>
+            <Navbar />
+            <Report />
+            <main className="container mx-auto mt-8 px-4 lg:mt-16">
                 <div className="grid grid-cols-1 justify-center lg:grid-cols-[3fr_1fr] lg:gap-10">
                     <div className="flex flex-col gap-8">
-                        <AnimeList/>
-                        <Paginations/>
+                        <AnimeList 
+                            onUpdateTotalCount={handleUpdateTotalCount}
+                            pageSize={limit}
+                        />
                     </div>
-                    <FilterSidebar/>
+                    <FilterSidebar />
                 </div>
             </main>
-            <Footer/>
+            <Footer />
         </div>
     );
 };

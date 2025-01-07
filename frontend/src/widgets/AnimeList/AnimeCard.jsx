@@ -106,6 +106,7 @@ const transformValue = (key, value) => {
 
 const AnimeCard = ({ anime, genres }) => {
     const [imgError, setImgError] = useState(false);
+    const [imgLoading, setImgLoading] = useState(true); // Добавляем состояние загрузки
 
     const getGenreName = (genreId) => {
         if (!genres || !Array.isArray(genres)) return '';
@@ -119,11 +120,37 @@ const AnimeCard = ({ anime, genres }) => {
         return Number(score).toFixed(1);
     };
 
+    // Функция транслитерации
+    const transliterate = (text) => {
+        const ru = {
+            'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e',
+            'ё': 'e', 'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k',
+            'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r',
+            'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'h', 'ц': 'ts',
+            'ч': 'ch', 'ш': 'sh', 'щ': 'sch', 'ъ': '', 'ы': 'y', 'ь': '',
+            'э': 'e', 'ю': 'yu', 'я': 'ya'
+        };
+
+        return text.toLowerCase().split('').map(char => ru[char] || char).join('');
+    };
+
+    // Обновляем функцию для генерации URL
+    const generateAnimeUrl = (anime) => {
+        const title = anime.russian || anime.name || '';
+        const slug = transliterate(title)
+            .replace(/[^a-z0-9\s]/g, '') // Оставляем только латинские буквы, цифры и пробелы
+            .trim()
+            .replace(/\s+/g, ' ') // Нормализуем пробелы
+            .replace(/ /g, '-'); // Заменяем пробелы на дефисы
+
+        return `/anime/${anime.anime_id}${slug ? '-' + slug : ''}`;
+    };
+
     return (
         <TooltipProvider>
             <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild>
-                    <Link href={`/anime/${anime.anime_id}`} className="block relative">
+                    <Link href={generateAnimeUrl(anime)} className="block relative">
                         {anime.score && (
                             <div className="absolute top-2 left-2 z-30 flex items-center gap-1 bg-black backdrop-blur-sm rounded-full px-2.5 py-1.5">
                                 <svg width="14" height="14" viewBox="0 0 24 24" className="white">
@@ -133,17 +160,30 @@ const AnimeCard = ({ anime, genres }) => {
                             </div>
                         )}
                         <div className="relative group">
-                            <div className="relative w-full aspect-[3/4] rounded-[14px] overflow-hidden">
+                            <div className="relative w-full aspect-[3/4] rounded-[14px] overflow-hidden bg-white/5">
+                                {/* Лоадер */}
+                                {imgLoading && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-white/5">
+                                        <div className="w-8 h-8 border-2 border-white/20 border-t-white/60 rounded-full animate-spin"></div>
+                                    </div>
+                                )}
+                                
                                 {!imgError ? (
                                     <img
-                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                        className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-110 ${
+                                            imgLoading ? 'opacity-0' : 'opacity-100'
+                                        }`}
                                         alt={anime.russian || anime.name}
                                         src={anime.poster_url}
-                                        onError={() => setImgError(true)}
+                                        onError={() => {
+                                            setImgError(true);
+                                            setImgLoading(false);
+                                        }}
+                                        onLoad={() => setImgLoading(false)}
                                     />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-default-100">
-                                        <span className="text-default-500">Изображение недоступно</span>
+                                    <div className="w-full h-full flex items-center justify-center">
+                                        <span className="text-white/40">Изображение недоступно</span>
                                     </div>
                                 )}
                             </div>

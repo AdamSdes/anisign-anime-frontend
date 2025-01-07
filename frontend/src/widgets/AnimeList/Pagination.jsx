@@ -2,13 +2,14 @@
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-const Paginations = () => {
+const Pagination = ({ currentPage, totalCount, pageSize }) => {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const currentPage = Number(searchParams.get('page')) || 1;
     const [inputPage, setInputPage] = useState('');
-    const totalPages = 101;
+    
+    // Вычисляем общее количество страниц
+    const totalPages = Math.ceil(totalCount / pageSize);
 
     const createPageURL = (pageNumber) => {
         const params = new URLSearchParams(searchParams);
@@ -58,16 +59,21 @@ const Paginations = () => {
             }
         }
 
-        // Добавляем инпут
-        pages.push('input');
+        // Добавляем многоточие перед последней страницей, если нужно
+        if (currentPage < totalPages - 3) {
+            pages.push('dots');
+        }
 
-        // Добавляем последнюю страницу
+        // Добавляем последнюю страницу, если она существует
         if (totalPages > 1) {
             pages.push(totalPages);
         }
 
         return pages;
     };
+
+    // Не показываем пагинацию, если всего одна страница
+    if (totalPages <= 1) return null;
 
     return (
         <div className="sticky bottom-2 z-50 flex items-center justify-center mb-5">
@@ -143,4 +149,4 @@ const Paginations = () => {
     );
 };
 
-export default Paginations;
+export default Pagination;

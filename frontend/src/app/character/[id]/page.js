@@ -13,20 +13,19 @@ const CharacterPage = ({ params }) => {
             try {
                 setLoading(true);
                 setError(null);
-                // Исправленный URL для соответствия API бэкенда
-                const response = await fetch(`http://localhost:8000/character/get-character-list?page=1&limit=100`);
+                // Используем правильный эндпоинт для получения персонажа по ID
+                const response = await fetch(`http://localhost:8000/character/${params.id}`, {
+                    headers: {
+                        'accept': 'application/json'
+                    }
+                });
+
                 if (!response.ok) {
-                    throw new Error('Failed to fetch characters');
-                }
-                const characters = await response.json();
-                // Находим нужного персонажа по ID
-                const character = characters.find(char => char.character_id === params.id);
-                
-                if (!character) {
                     throw new Error('Character not found');
                 }
-                
-                setCharacter(character);
+
+                const data = await response.json();
+                setCharacter(data);
             } catch (error) {
                 console.error('Error fetching character:', error);
                 setError(error.message);

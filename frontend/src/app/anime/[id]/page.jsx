@@ -15,44 +15,61 @@ import RelatedAnime from '@/widgets/AnimeDetails/RelatedAnime';
 
 export default function Page() {
     const { id } = useParams();
+    // Извлекаем только числовой ID из параметра
+    const animeId = id.split('-')[0];
     const [animeData, setAnimeData] = useState(null);
+    const [genres, setGenres] = useState(null); // Добавляем состояние для жанров
     const [loading, setLoading] = useState(true);
-    const [genres, setGenres] = useState(null);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchAnimeDetails = async () => {
             try {
-                const response = await fetch(`http://localhost:8000/anime/${id}`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch anime details');
-                }
-                const data = await response.json();
+                setLoading(true);
+                const [animeResponse, genresResponse] = await Promise.all([
+                    fetch(`http://localhost:8000/anime/id/${animeId}`), // Используем только ID
+                    fetch('http://localhost:8000/genre/get-list-genres')
+                ]);
 
-                if (data.screenshots) {
-                    data.screenshots = data.screenshots.slice(0, 4);
+                if (!animeResponse.ok || !genresResponse.ok) {
+                    throw new Error('Failed to fetch data');
                 }
 
-                // Fetch all genres
-                const genresPromises = data.genre_ids.map(id => 
-                    fetch(`http://localhost:8000/genre/get-genre/${id}`)
-                        .then(res => res.json())
-                );
-                
-                const genresData = await Promise.all(genresPromises);
-                
-                setAnimeData(data);
+                const [animeData, genresData] = await Promise.all([
+                    animeResponse.json(),
+                    genresResponse.json()
+                ]);
+
+                setAnimeData(animeData);
                 setGenres(genresData);
             } catch (error) {
-                console.error('Error fetching anime details:', error);
+                console.error('Error fetching data:', error);
+                setError(error.message);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchAnimeDetails();
-    }, [id]);
+        if (animeId) {
+            fetchAnimeDetails();
+        }
+    }, [animeId]);
 
-    if (!animeData && !loading) {
+    if (loading) {
+        return (
+            <>
+                <Header />
+                <Report />
+                <main className="container mx-auto max-w-[1400px] px-4 py-10">
+                    <div className="flex justify-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white/20"></div>
+                    </div>
+                </main>
+            </>
+        );
+    }
+
+    if (error || !animeData) {
         return (
             <>
                 <Header />
@@ -95,7 +112,10 @@ export default function Page() {
                         id="player" 
                         className="mt-10 scroll-mt-24 scroll-smooth" 
                     > 
-                        <h2 className="text-2xl font-bold mb-5">Смотреть онлайн</h2>
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-2xl font-bold mb-5">Смотреть онлайн</h2>
+                            <button>Сообщить об ошибке</button>
+                        </div>
                         {animeData?.anime_id && (
                             <VideoPlayer shikimoriId={animeData.anime_id} />
                         )}

@@ -11,7 +11,7 @@ import { Tooltip } from "@nextui-org/tooltip"
 import { Card, Skeleton } from "@nextui-org/react"
 
 const EmblaCarousel = ({ options }) => {
-    const [slides, setSlides] = useState([])
+    const [slides, setSlides] = useState([]);
     const [emblaRef, emblaApi] = useEmblaCarousel({ 
         ...options, 
         loop: false,
@@ -34,9 +34,11 @@ const EmblaCarousel = ({ options }) => {
                 setLoading(true)
                 const response = await fetch('http://localhost:8000/anime/get-anime-list?limit=10')
                 const data = await response.json()
-                setSlides(data)
+                // Обновляем для работы с новой структурой API
+                setSlides(data.anime_list || [])
             } catch (error) {
                 console.error('Error fetching anime:', error)
+                setSlides([])
             } finally {
                 setLoading(false)
             }
@@ -88,8 +90,8 @@ const EmblaCarousel = ({ options }) => {
         <section className="embla">
             <div className="embla__viewport" ref={emblaRef}>
                 <div className="embla__container">
-                    {slides.map((anime) => (
-                        <div className="embla__slide" key={anime.id}>
+                    {Array.isArray(slides) && slides.map((anime) => (
+                        <div className="embla__slide" key={anime.anime_id}>
                             <Tooltip
                                 delay={700}
                                 closeDelay={300}
