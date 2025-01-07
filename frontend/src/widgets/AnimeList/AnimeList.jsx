@@ -356,31 +356,12 @@ const AnimeList = () => {
                         </AnimatePresence>
                     </div>
 
-                    {/* Кнопки загрузки/скрытия */}
-                    <div className="flex justify-center gap-4">
-                        {displayLimit < totalCount && (
-                            <button
-                                onClick={loadMore}
-                                className="px-6 h-10 bg-white/5 hover:bg-white/10 rounded-full text-sm font-medium transition-all"
-                            >
-                                Показать ещё
-                            </button>
-                        )}
-                        {displayLimit > limit && (
-                            <button
-                                onClick={showLess}
-                                className="px-6 h-10 bg-white/5 hover:bg-white/10 rounded-full text-sm font-medium transition-all"
-                            >
-                                Скрыть
-                            </button>
-                        )}
-                    </div>
-
                     <Pagination 
                         currentPage={currentPage}
                         totalCount={totalCount}
                         pageSize={limit}
                     />
+                    <div className="mb-5"></div>
                 </>
             )}
         </div>

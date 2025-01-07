@@ -161,7 +161,7 @@ const ScrollToPlayerButton = () => {
 
     return (
         <motion.button
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ opacity: 0.8 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleClick}
             className="w-full flex items-center justify-center gap-2 h-[54px] bg-[#CCBAE4] hover:opacity-90 text-black font-medium rounded-xl px-5 transition-all duration-300"
@@ -189,17 +189,14 @@ const ListButton = () => {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <motion.button
-                    whileHover={{ scale: 1.02 }}
+                    whileHover={{ opacity: 0.8 }}
                     whileTap={{ scale: 0.98 }}
-                    className={`
-                        w-full flex items-center justify-between h-[60px] 
-                        ${activeStatus
-                            ? `bg-[${activeStatus.color}]/5 hover:bg-[${activeStatus.color}]/10`
-                            : 'bg-[rgba(255,255,255,0.02)] hover:bg-white/5'
-                        }
-                        text-white/90 font-medium rounded-xl px-5 
-                        border border-white/10 transition-all duration-300
-                    `}
+                    style={{
+                        backgroundColor: activeStatus ? `${activeStatus.color}10` : 'rgba(255,255,255,0.02)',
+                        borderColor: activeStatus ? `${activeStatus.color}20` : 'rgba(255,255,255,0.1)',
+                    }}
+                    className="relative w-full flex items-center justify-between h-[60px] hover:bg-opacity-10 
+                        text-white/90 font-medium rounded-xl px-5 border transition-all duration-300"
                 >
                     <div className="flex items-center gap-2">
                         {activeStatus ? (
@@ -208,7 +205,7 @@ const ListButton = () => {
                                     className="h-5 w-5"
                                     style={{ color: activeStatus.color }}
                                 />
-                                <span className="text-white/90">
+                                <span style={{ color: `${activeStatus.color}` }}>
                                     {activeStatus.label}
                                 </span>
                             </>
@@ -219,7 +216,25 @@ const ListButton = () => {
                             </>
                         )}
                     </div>
-                    <ChevronDown className="h-4 w-4" />
+                    <div className="flex items-center gap-2">
+                        {activeStatus && (
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setStatus(null);
+                                }}
+                                className="w-6 h-6 flex items-center justify-center rounded-full bg-black/50 
+                                    hover:bg-black/70 transition-colors"
+                            >
+                                <X className="w-4 h-4" style={{ color: activeStatus.color }} />
+                            </button>
+                        )}
+                        <ChevronDown 
+                            className="h-4 w-4" 
+                            style={{ color: activeStatus ? activeStatus.color : 'currentColor' }} 
+                        />
+                    </div>
                 </motion.button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[315px] bg-[#060606]/95 rounded-[14px] backdrop-blur-xl border-white/5">
@@ -227,9 +242,12 @@ const ListButton = () => {
                     <DropdownMenuItem
                         key={item.id}
                         onClick={() => setStatus(item.id)}
+                        style={{
+                            backgroundColor: status === item.id ? `${item.color}10` : 'transparent',
+                        }}
                         className={`
                             flex items-center gap-2 py-3 rounded-[14px] text-[15px] cursor-pointer
-                            ${status === item.id ? `bg-[${item.color}]/5` : `hover:bg-[${item.color}]/5`}
+                            hover:bg-opacity-10 hover:bg-white
                             transition-colors duration-200
                         `}
                     >
