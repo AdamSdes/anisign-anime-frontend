@@ -18,6 +18,22 @@ const nextConfig = {
             {
                 source: '/anime-list/:filters*',
                 destination: '/anime-list',
+            },
+            {
+                source: '/anime-list/rating-:rating',
+                destination: '/anime-list',
+            },
+            {
+                source: '/anime-list/kind-:kind/rating-:rating',
+                destination: '/anime-list',
+            },
+            {
+                source: '/anime-list/genre-:genre/rating-:rating',
+                destination: '/anime-list',
+            },
+            {
+                source: '/anime-list/kind-:kind/genre-:genre/rating-:rating',
+                destination: '/anime-list',
             }
         ];
     },

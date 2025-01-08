@@ -161,6 +161,27 @@ const FilterSidebar = ({ filters, setFilters }) => {
         }
     ];
 
+    const ratingOptions = [
+        { id: 'g', label: 'G', description: 'Для всех возрастов' },
+        { id: 'pg', label: 'PG', description: 'Рекомендуется присутствие родителей' },
+        { id: 'pg_13', label: 'PG-13', description: '13+' },
+        { id: 'r', label: 'R', description: '17+' },
+        { id: 'r_plus', label: 'R+', description: '18+' }
+    ];
+
+    const handleRatingChange = (ratingId) => {
+        const newRating = filters.rating === ratingId ? '' : ratingId;
+        setFilters(prev => ({
+            ...prev,
+            rating: newRating
+        }));
+    };
+
+    // Синхронизируем состояние с фильтрами
+    React.useEffect(() => {
+        setSelectedAgeRating(filters.rating || '');
+    }, [filters.rating]);
+
     // Добавим функцию сброса фильтров
     const handleReset = () => {
         setActiveSort('date');
@@ -284,40 +305,27 @@ const FilterSidebar = ({ filters, setFilters }) => {
                 </div>
             </div>
 
-            {/* Добавим блок возрастного рейтинга после блока статусов */}
+            {/* Обновленный блок рейтинга */}
             <div className="bg-[rgba(255,255,255,0.02)] border border-white/5 p-5 rounded-[14px]">
                 <div className="flex items-center gap-2 mb-4">
                     <Globe className="w-4 h-4 text-white/60" />
                     <h3 className="text-[14px] font-medium">Возрастной рейтинг</h3>
                 </div>
-                <TooltipProvider>
-                    <div className="flex flex-wrap gap-2">
-                        {ageRatings.map((rating) => (
-                            <Tooltip key={rating.id}>
-                                <TooltipTrigger asChild>
-                                    <button
-                                        onClick={() => setSelectedAgeRating(rating.id === selectedAgeRating ? '' : rating.id)}
-                                        className={`px-4 h-[35px] bg-[rgba(255,255,255,0.02)] rounded-full text-[13px] font-medium transition-all duration-300 ${
-                                            selectedAgeRating === rating.id 
-                                                ? 'bg-white/10' 
-                                                : 'hover:bg-[rgba(255,255,255,0.04)]'
-                                        }`}
-                                        style={{
-                                            color: selectedAgeRating === rating.id ? rating.color : 'rgba(255,255,255,0.6)',
-                                            borderColor: selectedAgeRating === rating.id ? rating.color : 'transparent',
-                                            borderWidth: '1px'
-                                        }}
-                                    >
-                                        {rating.label}
-                                    </button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>{rating.description}</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        ))}
-                    </div>
-                </TooltipProvider>
+                <div className="flex flex-wrap gap-2">
+                    {ratingOptions.map((rating) => (
+                        <button
+                            key={rating.id}
+                            onClick={() => handleRatingChange(rating.id)}
+                            className={`px-4 h-[35px] rounded-full text-[13px] font-medium transition-all duration-300 ${
+                                filters.rating === rating.id
+                                    ? 'bg-[#CCBAE4] text-black'
+                                    : 'bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.04)] text-white/60 hover:text-white'
+                            }`}
+                        >
+                            {rating.label}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Жанры */}

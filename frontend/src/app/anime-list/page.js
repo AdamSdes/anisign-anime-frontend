@@ -18,9 +18,11 @@ const Page = () => {
             // Извлекаем kinds из пути
             const kindMatch = pathname.match(/\/anime-list\/kind-([^/]+)/);
             const genreMatch = pathname.match(/\/genre-(\d+)/);
+            const ratingMatch = pathname.match(/\/rating-([^/]+)/);
             
             const kinds = kindMatch ? kindMatch[1].split('+') : [];
             const genres = genreMatch ? [genreMatch[1]] : [];
+            const rating = ratingMatch ? ratingMatch[1] : '';
             
             // Извлекаем page из query params
             const page = Number(searchParams.get('page')) || 1;
@@ -30,7 +32,8 @@ const Page = () => {
             setFilters(prev => ({
                 ...prev,
                 kinds: kinds,
-                genres: genres
+                genres: genres,
+                rating: rating
             }));
         };
 
@@ -40,7 +43,8 @@ const Page = () => {
     const [totalCount, setTotalCount] = useState(0);
     const [filters, setFilters] = useState({
         kinds: [],
-        genres: [] // Add genres filter
+        genres: [],
+        rating: '' // Пустая строка означает, что фильтр не применяется
     });
     const limit = 20; // Дублируем константу из AnimeList
     const [currentPage, setCurrentPage] = useState(1);

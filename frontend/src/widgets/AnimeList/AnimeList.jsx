@@ -102,9 +102,38 @@ const getGenreName = (genreId, genres) => {
     return genre ? genre.russian || genre.name : '...';
 };
 
+
+
+    // Функция транслитерации
+    const transliterate = (text) => {
+        const ru = {
+            'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e',
+            'ё': 'e', 'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k',
+            'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r',
+            'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'h', 'ц': 'ts',
+            'ч': 'ch', 'ш': 'sh', 'щ': 'sch', 'ъ': '', 'ы': 'y', 'ь': '',
+            'э': 'e', 'ю': 'yu', 'я': 'ya'
+        };
+
+        return text.toLowerCase().split('').map(char => ru[char] || char).join('');
+    };
+
+    // Обновляем функцию для генерации URL
+    const generateAnimeUrl = (anime) => {
+        const title = anime.russian || anime.name || '';
+        const slug = transliterate(title)
+            .replace(/[^a-z0-9\s]/g, '') // Оставляем только латинские буквы, цифры и пробелы
+            .trim()
+            .replace(/\s+/g, ' ') // Нормализуем пробелы
+            .replace(/ /g, '-'); // Заменяем пробелы на дефисы
+
+        return `/anime/${anime.anime_id}${slug ? '-' + slug : ''}`;
+    };
+
+
 // Модифицируем компонент AnimeListItem чтобы он принимал genres
 const AnimeListItem = ({ anime, genres }) => (
-    <Link href={`/anime/${anime.anime_id}`}>
+    <Link href={generateAnimeUrl(anime)}>
         <div className="group flex gap-6 p-5 rounded-xl bg-white/[0.02] hover:bg-[#0A0A0A] border border-transparent
             hover:border-white/5 transition-all duration-300">
             <div className="relative w-[120px] flex-shrink-0">
@@ -139,6 +168,14 @@ const AnimeListItem = ({ anime, genres }) => (
                         <span className="text-xs font-medium bg-white/5 px-2 py-0.5 rounded-full">
                             {transformValue('kind', anime.kind)}
                         </span>
+                        {anime.rating && (
+                            <>
+                                <span>•</span>
+                                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-white/5">
+                                    {transformValue('rating', anime.rating)}
+                                </span>
+                            </>
+                        )}
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -250,50 +287,79 @@ const AnimeList = ({ filters, onUpdateTotalCount }) => {
     const fetchAnimeList = async () => {
         try {
             setLoading(true);
-            let url = new URL('http://localhost:8000/anime/get-anime-list');
-            url.searchParams.append('limit', '10000');
-            url.searchParams.append('page', '1');
+            let filteredList = [];
+            let totalFilteredCount = 0;
 
-            // Сначала получаем весь список аниме
-            const response = await fetch(url.toString());
-            const data = await response.json();
-            let filteredList = data.anime_list || [];
+            // Базовый URL для получения списка аниме
+            const baseUrl = new URL('http://localhost:8000/anime/get-anime-list');
+            baseUrl.searchParams.append('page', currentPage.toString());
+            baseUrl.searchParams.append('limit', limit.toString());
 
-            // Фильтруем по жанрам (должны присутствовать ВСЕ выбранные жанры)
-            if (filters.genres && filters.genres.length > 0) {
-                filteredList = filteredList.filter(anime => {
-                    // Проверяем что все выбранные жанры присутствуют в аниме
-                    return filters.genres.every(genreId => 
-                        anime.genre_ids?.includes(genreId)
+            // Если рейтинг выбран, используем специальный эндпоинт
+            if (filters.rating && filters.rating !== '') {
+                const ratingUrl = new URL(`http://localhost:8000/anime/get-anime-list-by-rating/${filters.rating}`);
+                ratingUrl.searchParams.append('page', '1');
+                ratingUrl.searchParams.append('limit', '10000');
+
+                const ratingResponse = await fetch(ratingUrl.toString());
+                const ratingData = await ratingResponse.json();
+                filteredList = ratingData.anime_list || [];
+                totalFilteredCount = ratingData.total_count || 0;
+
+                // Применяем дополнительные фильтры если есть
+                if (filters.genres?.length > 0) {
+                    filteredList = filteredList.filter(anime =>
+                        filters.genres.every(genreId => anime.genre_ids?.includes(genreId))
                     );
-                });
+                }
+                if (filters.kinds?.length > 0) {
+                    filteredList = filteredList.filter(anime =>
+                        filters.kinds.includes(anime.kind)
+                    );
+                }
+                totalFilteredCount = filteredList.length;
+            } else {
+                // Используем стандартный эндпоинт с существующими фильтрами
+                const response = await fetch(baseUrl.toString());
+                const data = await response.json();
+                filteredList = data.anime_list || [];
+                totalFilteredCount = data.total_count || 0;
+
+                // Применяем фильтры на стороне клиента
+                if (filters.genres?.length > 0 || filters.kinds?.length > 0) {
+                    filteredList = filteredList.filter(anime => {
+                        const genreMatch = filters.genres?.length === 0 || 
+                            filters.genres.every(genreId => anime.genre_ids?.includes(genreId));
+                        const kindMatch = filters.kinds?.length === 0 || 
+                            filters.kinds.includes(anime.kind);
+                        return genreMatch && kindMatch;
+                    });
+                    totalFilteredCount = filteredList.length;
+                }
             }
 
-            // Затем фильтруем по типам
-            if (filters.kinds && filters.kinds.length > 0) {
-                filteredList = filteredList.filter(anime => 
-                    filters.kinds.includes(anime.kind)
-                );
-            }
-
-            const totalFilteredCount = filteredList.length;
-
-            // Применяем пагинацию
+            // Применяем пагинацию и обновляем состояние
             const startIndex = (currentPage - 1) * limit;
             const endIndex = startIndex + limit;
             const paginatedList = filteredList.slice(startIndex, endIndex);
 
-            // Загружаем жанры для отображения
-            const genresResponse = await fetch('http://localhost:8000/genre/get-list-genres');
-            const genresData = await genresResponse.json();
-
-            // Устанавливаем все данные после полной загрузки
             setAnimeList(paginatedList);
             setTotalCount(totalFilteredCount);
-            setGenres(genresData);
             if (onUpdateTotalCount) {
                 onUpdateTotalCount(totalFilteredCount);
             }
+
+            // Update URL
+            const urlParts = [];
+            if (filters.kinds?.length > 0) urlParts.push(`kind-${filters.kinds.join('+')}`);
+            if (filters.genres?.length > 0) urlParts.push(`genre-${filters.genres.join('+')}`);
+            if (filters.rating) urlParts.push(`rating-${filters.rating}`);
+
+            const newPath = urlParts.length > 0 
+                ? `/anime-list/${urlParts.join('/')}?page=${currentPage}`
+                : `/anime-list?page=${currentPage}`;
+                
+            router.push(newPath);
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -339,6 +405,21 @@ const AnimeList = ({ filters, onUpdateTotalCount }) => {
             localStorage.setItem('animeListViewMode', mode);
         }
     };
+
+    // Добавляем загрузку жанров
+    useEffect(() => {
+        const fetchGenres = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/genre/get-list-genres');
+                const data = await response.json();
+                setGenres(data);
+            } catch (error) {
+                console.error('Error fetching genres:', error);
+            }
+        };
+
+        fetchGenres();
+    }, []); // Загружаем жанры один раз при монтировании
 
     // Добавим компонент для пустого состояния
     const EmptyState = () => (

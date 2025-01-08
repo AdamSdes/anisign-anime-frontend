@@ -86,17 +86,52 @@ const CharacterTooltip = ({ id, name, imageUrl }) => {
     );
 };
 
+// Добавляем компонент AnimeTooltip
+const AnimeTooltip = ({ id, name }) => {
+    return (
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Link
+                        href={`/anime/${id}`}
+                        className="text-[#CCBAE4] hover:underline cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {name}
+                    </Link>
+                </TooltipTrigger>
+                <TooltipContent 
+                    side="top" 
+                    className="max-w-[300px] p-4 space-y-2 bg-black/90 backdrop-blur-xl border border-white/5"
+                >
+                    <p className="text-sm text-white/70">Перейти к аниме</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+    );
+};
+
+// Обновляем функцию transformDescription
 const transformDescription = (description) => {
     if (!description) return '';
 
-    const parts = description.split(/(\[character=\d+\][^\[]+\[\/character\])/g);
+    // Разбиваем текст на части, сохраняя разметку персонажей и аниме
+    const parts = description.split(/(\[character=\d+\][^\[]+\[\/character\]|\[anime=\d+\][^\[]+\[\/anime\])/g);
 
     return parts.map((part, index) => {
-        const match = part.match(/\[character=(\d+)\]([^\[]+)\[\/character\]/);
-        if (match) {
-            const [_, id, name] = match;
-            return <CharacterTooltip key={index} id={id} name={name} />;
+        const characterMatch = part.match(/\[character=(\d+)\]([^\[]+)\[\/character\]/);
+        const animeMatch = part.match(/\[anime=(\d+)\]([^\[]+)\[\/anime\]/);
+
+        if (characterMatch) {
+            const [_, id, name] = characterMatch;
+            return <CharacterTooltip key={`char-${index}`} id={id} name={name} />;
         }
+
+        if (animeMatch) {
+            const [_, id, name] = animeMatch;
+            return <AnimeTooltip key={`anime-${index}`} id={id} name={name} />;
+        }
+
         return part;
     });
 };
