@@ -8,13 +8,16 @@ const Pagination = ({ currentPage, totalCount, pageSize }) => {
     const searchParams = useSearchParams();
     const [inputPage, setInputPage] = useState('');
     
-    // Вычисляем общее количество страниц
+    // Обновляем вычисление totalPages
     const totalPages = Math.ceil(totalCount / pageSize);
 
     const createPageURL = (pageNumber) => {
         const params = new URLSearchParams(searchParams);
         params.set('page', pageNumber.toString());
-        return `${pathname}?${params.toString()}`;
+        
+        // Сохраняем структуру URL с фильтрами
+        const currentPath = pathname.split('?')[0]; // Берем путь без query params
+        return `${currentPath}?${params.toString()}`;
     };
 
     const handlePageInput = (e) => {

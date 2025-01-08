@@ -8,49 +8,48 @@ import { cn } from "@/lib/utils"
 import { Check, ChevronsUpDown, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
-const genres = {
-  "Основне": [
-    { value: "action", label: "Бойовик" },
-    { value: "adventure", label: "Пригоди" },
-    { value: "comedy", label: "Комедія" },
-    { value: "drama", label: "Драма" },
-    { value: "fantasy", label: "Фентезі" },
-    { value: "horror", label: "Жахи" },
-    { value: "mystery", label: "Загадкове" },
-    { value: "romance", label: "Романтика" },
-    { value: "sci-fi", label: "Фантастика" },
-    { value: "slice-of-life", label: "Буденність" },
-    { value: "sports", label: "Спорт" },
-    { value: "supernatural", label: "Надприродне" },
-    { value: "thriller", label: "Трилер" }
-  ],
-  "Тематичне": [
-    { value: "mecha", label: "Мехи" },
-    { value: "military", label: "Військове" },
-    { value: "music", label: "Музика" },
-    { value: "school", label: "Школа" },
-    { value: "space", label: "Космос" },
-    { value: "vampire", label: "Вампіри" },
-    { value: "harem", label: "Гарем" },
-    { value: "historical", label: "Історичне" },
-    { value: "isekai", label: "Ісекай" }
-  ]
-}
-
 export function GenreSelect({ className, value = [], onChange }) {
   const [open, setOpen] = React.useState(false)
   const [selectedGenres, setSelectedGenres] = React.useState(value)
   const [searchQuery, setSearchQuery] = React.useState("")
+  const [genres, setGenres] = React.useState({
+    "Все жанры": []
+  })
+  const [loading, setLoading] = React.useState(true)
 
-  const handleSelect = (genreValue) => {
-    setSelectedGenres(prev => {
-      const newSelected = prev.includes(genreValue)
-        ? prev.filter(item => item !== genreValue)
-        : [...prev, genreValue]
-      onChange?.(newSelected)
-      return newSelected
-    })
-  }
+  // Загрузка жанров с API
+  React.useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/genre/get-list-genres');
+        const data = await response.json();
+        
+        // Группируем жанры
+        setGenres({
+          "Все жанры": data.map(genre => ({
+            value: genre.genre_id,
+            label: genre.russian || genre.name
+          }))
+        });
+      } catch (error) {
+        console.error('Error fetching genres:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGenres();
+  }, []);
+
+  const handleSelect = (genreId) => {
+    // Изменяем на множественный выбор
+    const newSelected = selectedGenres.includes(genreId)
+      ? selectedGenres.filter(id => id !== genreId)
+      : [...selectedGenres, genreId];
+    
+    setSelectedGenres(newSelected);
+    onChange?.(newSelected);
+  };
 
   const handleClear = (e) => {
     e.stopPropagation()
@@ -67,19 +66,27 @@ export function GenreSelect({ className, value = [], onChange }) {
   }
 
   const filteredGenres = React.useMemo(() => {
-    if (!searchQuery) return genres
+    if (!searchQuery) return genres;
 
-    const filtered = {}
+    const filtered = {};
     Object.entries(genres).forEach(([category, items]) => {
       const matchedItems = items.filter(item =>
         item.label.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      );
       if (matchedItems.length > 0) {
-        filtered[category] = matchedItems
+        filtered[category] = matchedItems;
       }
-    })
-    return filtered
-  }, [searchQuery])
+    });
+    return filtered;
+  }, [searchQuery, genres]);
+
+  if (loading) {
+    return (
+      <Button variant="outline" className={cn("w-full h-full items-center py-4 rounded-[14px]", className)}>
+        Загрузка жанров...
+      </Button>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
