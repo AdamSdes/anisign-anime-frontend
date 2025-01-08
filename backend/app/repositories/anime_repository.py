@@ -113,11 +113,28 @@ class AnimeRepository():
         
         return {"total_count": total_count, "anime_list": anime_list}
     
+    async def get_anime_list_by_rating(self, rating: str, page: int, limit: int):
+        count_query = select(func.count()).select_from(Anime).where(Anime.rating == rating)
+        total_count_result = await self.db.execute(count_query)
+        total_count = total_count_result.scalar()
+        
+        query = select(Anime).where(Anime.rating == rating).limit(limit).offset((page - 1) * limit)
+        result = await self.db.execute(query)
+        anime_list = result.scalars().all()
+        
+        return {"total_count": total_count, "anime_list": anime_list}
+    
     async def get_all_kinds(self):
         query = select(distinct(Anime.kind))
         result = await self.db.execute(query)
         kinds = result.scalars().all()
         return kinds
+    
+    async def get_all_ratings(self):
+        query = select(distinct(Anime.rating))
+        result = await self.db.execute(query)
+        ratings = result.scalars().all()
+        return ratings
 #
 # class Anime(BaseTable):
     # __tablename__ = 'anime'
