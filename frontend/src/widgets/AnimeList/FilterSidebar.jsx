@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { Slider } from "@nextui-org/slider";
 import { GenreSelect } from "@/components/ui/genre-select";
 import { Button } from "@nextui-org/react";
@@ -26,8 +26,10 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useRouter } from 'next/navigation';
 
-const FilterSidebar = () => {
+const FilterSidebar = ({ filters, setFilters }) => {
+    const router = useRouter();
     const [activeSort, setActiveSort] = React.useState('date'); // Add this state
     const [years, setYears] = React.useState([1965, 2024]);
     const [inputValues, setInputValues] = React.useState([1965, 2024]);
@@ -36,6 +38,16 @@ const FilterSidebar = () => {
     const [selectedSeason, setSelectedSeason] = React.useState('');
     const [selectedTypes, setSelectedTypes] = React.useState([]); // Add this state
     const [selectedStatus, setSelectedStatus] = React.useState(''); // Add this state
+
+    React.useEffect(() => {
+        // Sync selectedTypes with filters.kinds
+        setSelectedTypes(filters.kinds || []);
+    }, [filters.kinds]);
+
+    // Синхронизируем состояние жанров
+    React.useEffect(() => {
+        setSelectedGenres(filters.genres || []);
+    }, [filters.genres]);
 
     const handleSliderChange = (newValue) => {
         setYears(newValue);
@@ -108,12 +120,14 @@ const FilterSidebar = () => {
         { id: 'fall', label: 'Осень' }
     ];
 
+    // Обновляем массив типов, чтобы он соответствовал API
     const types = [
         { id: 'tv', label: 'ТВ-Сериал' },
         { id: 'movie', label: 'Фильм' },
         { id: 'ova', label: 'OVA' },
         { id: 'ona', label: 'ONA' },
-        { id: 'special', label: 'Спешл' }
+        { id: 'special', label: 'Спешл' },
+        { id: 'tv_special', label: 'ТВ-Спешл' }
     ];
 
     const statusOptions = [
@@ -157,7 +171,35 @@ const FilterSidebar = () => {
         setSelectedSeason('');
         setSelectedTypes([]);
         setSelectedStatus('');
+        setFilters(prev => ({ ...prev, kinds: [] })); // Reset kinds filter
+        router.push('/anime-list');
     };
+
+    // Обновляем функцию handleTypeClick для поддержки множественного выбора
+    const handleTypeClick = (typeId) => {
+        const newKinds = selectedTypes.includes(typeId)
+            ? selectedTypes.filter(t => t !== typeId)
+            : [...selectedTypes, typeId];
+            
+        setSelectedTypes(newKinds);
+        setFilters(prev => ({
+            ...prev,
+            kinds: newKinds
+        }));
+    };
+
+    const handleGenreChange = (newGenres) => {
+        setSelectedGenres(newGenres);
+        setFilters(prev => ({
+            ...prev,
+            genres: newGenres
+        }));
+    };
+
+    // Синхронизируем состояние кнопок с фильтрами
+    useEffect(() => {
+        setSelectedTypes(filters.kinds || []);
+    }, [filters.kinds]);
 
     return (
         <aside className="hidden lg:block space-y-5 sticky top-20">
@@ -286,7 +328,7 @@ const FilterSidebar = () => {
                 </div>
                 <GenreSelect 
                     value={selectedGenres}
-                    onChange={setSelectedGenres}
+                    onChange={handleGenreChange}
                     className="bg-transparent"
                 />
             </div>
@@ -348,14 +390,7 @@ const FilterSidebar = () => {
                     {types.map((type) => (
                         <button
                             key={type.id}
-                            onClick={() => {
-                                setSelectedTypes(prev => {
-                                    if (prev.includes(type.id)) {
-                                        return prev.filter(t => t !== type.id);
-                                    }
-                                    return [...prev, type.id];
-                                });
-                            }}
+                            onClick={() => handleTypeClick(type.id)}
                             className={`px-4 h-[35px] rounded-full text-[13px] font-medium transition-all duration-300 ${
                                 selectedTypes.includes(type.id)
                                     ? 'bg-[#CCBAE4] text-black'

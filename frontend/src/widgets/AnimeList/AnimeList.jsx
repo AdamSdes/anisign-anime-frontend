@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LayoutGrid, List } from 'lucide-react';
 import AnimeCard from './AnimeCard';
@@ -81,7 +81,7 @@ const transformDescription = (description) => {
 };
 
 const AnimeCardSkeleton = ({ index }) => (
-    <div className="relative group animate-fadeIn">
+    <div className="relative mt-5 group animate-fadeIn">
         <div className="animate-pulse">
             <div className="relative">
                 <div className="w-full aspect-[3/4] rounded-[14px] bg-white/5" />
@@ -193,7 +193,8 @@ const AnimeListItem = ({ anime, genres }) => (
     </Link>
 );
 
-const AnimeList = () => {
+const AnimeList = ({ filters, onUpdateTotalCount }) => {
+    const router = useRouter();
     const [animeList, setAnimeList] = useState([]);
     const [genres, setGenres] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -209,6 +210,28 @@ const AnimeList = () => {
     const limit = 20;
     const [totalCount, setTotalCount] = useState(0);
     const [displayLimit, setDisplayLimit] = useState(limit); // Добавляем новый state
+
+    const updateURL = () => {
+        const params = new URLSearchParams(searchParams);
+        params.set('page', currentPage.toString());
+        
+        let newPath = '/anime-list';
+        
+        // Добавляем фильтры в URL
+        const urlParts = [];
+        if (filters.kinds && filters.kinds.length > 0) {
+            urlParts.push(`kind-${filters.kinds.join('+')}`);
+        }
+        if (filters.genres && filters.genres.length > 0) {
+            urlParts.push(`genre-${filters.genres.join('+')}`);
+        }
+        
+        if (urlParts.length > 0) {
+            newPath += '/' + urlParts.join('/');
+        }
+        
+        router.push(`${newPath}?${params.toString()}`);
+    };
 
     // Обновляем handleSearch для работы с результатами поиска
     const handleSearch = (searchResults) => {
@@ -227,20 +250,54 @@ const AnimeList = () => {
     const fetchAnimeList = async () => {
         try {
             setLoading(true);
-            const [animeResponse, genresResponse] = await Promise.all([
-                fetch(`http://localhost:8000/anime/get-anime-list?page=${currentPage}&limit=${limit}`),
-                fetch('http://localhost:8000/genre/get-list-genres')
-            ]);
-            const animeData = await animeResponse.json();
+            let url = new URL('http://localhost:8000/anime/get-anime-list');
+            url.searchParams.append('limit', '10000');
+            url.searchParams.append('page', '1');
+
+            // Сначала получаем весь список аниме
+            const response = await fetch(url.toString());
+            const data = await response.json();
+            let filteredList = data.anime_list || [];
+
+            // Фильтруем по жанрам (должны присутствовать ВСЕ выбранные жанры)
+            if (filters.genres && filters.genres.length > 0) {
+                filteredList = filteredList.filter(anime => {
+                    // Проверяем что все выбранные жанры присутствуют в аниме
+                    return filters.genres.every(genreId => 
+                        anime.genre_ids?.includes(genreId)
+                    );
+                });
+            }
+
+            // Затем фильтруем по типам
+            if (filters.kinds && filters.kinds.length > 0) {
+                filteredList = filteredList.filter(anime => 
+                    filters.kinds.includes(anime.kind)
+                );
+            }
+
+            const totalFilteredCount = filteredList.length;
+
+            // Применяем пагинацию
+            const startIndex = (currentPage - 1) * limit;
+            const endIndex = startIndex + limit;
+            const paginatedList = filteredList.slice(startIndex, endIndex);
+
+            // Загружаем жанры для отображения
+            const genresResponse = await fetch('http://localhost:8000/genre/get-list-genres');
             const genresData = await genresResponse.json();
-            
-            // Теперь используем anime_list из ответа
-            setAnimeList(animeData.anime_list || []);
-            setTotalCount(animeData.total_count || 0);
+
+            // Устанавливаем все данные после полной загрузки
+            setAnimeList(paginatedList);
+            setTotalCount(totalFilteredCount);
             setGenres(genresData);
+            if (onUpdateTotalCount) {
+                onUpdateTotalCount(totalFilteredCount);
+            }
+
         } catch (error) {
             console.error('Error fetching data:', error);
-            setAnimeList([]); // В случае ошибки устанавливаем пустой массив
+            setAnimeList([]);
             setTotalCount(0);
         } finally {
             setLoading(false);
@@ -265,9 +322,15 @@ const AnimeList = () => {
         setAnimeList(prev => prev.slice(0, limit));
     };
 
+    // Обрабатываем изменения фильтров и страницы вместе
     useEffect(() => {
-        fetchAnimeList();
-    }, [currentPage]);
+        // Используем setTimeout чтобы избежать частых запросов
+        const timer = setTimeout(() => {
+            fetchAnimeList();
+        }, 100);
+
+        return () => clearTimeout(timer);
+    }, [currentPage, JSON.stringify(filters)]);
 
     // Добавляем функцию handleViewModeChange
     const handleViewModeChange = (mode) => {
@@ -294,7 +357,7 @@ const AnimeList = () => {
 
     if (loading) {
         return (
-            <>
+            <div>
                 <SearchBar 
                     setSearch={handleSearch}
                     viewMode={viewMode}
@@ -308,19 +371,22 @@ const AnimeList = () => {
                         <AnimeCardSkeleton key={index} index={index} />
                     ))}
                 </div>
-            </>
+            </div>
         );
     }
 
+    // Добавляем проверку длины списка до рендера
+    const showEmptyState = !animeList || animeList.length === 0;
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 min-h-[500px]"> {/* Добавляем минимальную высоту */}
             <SearchBar 
                 setSearch={handleSearch}
                 viewMode={viewMode}
                 setViewMode={handleViewModeChange}
             />
             
-            {(!animeList || animeList.length === 0) ? (
+            {showEmptyState ? (
                 <EmptyState />
             ) : (
                 <>
