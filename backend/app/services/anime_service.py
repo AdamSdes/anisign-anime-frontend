@@ -251,6 +251,10 @@ class AnimeService:
         result = await self.anime_repository.get_anime_list_by_rating(rating, page, limit)
         return result
     
+    async def get_anime_list_by_status(self, status: str, page: int, limit: int):
+        result = await self.anime_repository.get_anime_list_by_status(status, page, limit)
+        return result
+    
     async def get_all_kinds(self):
         result = await self.anime_repository.get_all_kinds()
         return result

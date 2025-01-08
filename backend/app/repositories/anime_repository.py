@@ -124,6 +124,17 @@ class AnimeRepository():
         
         return {"total_count": total_count, "anime_list": anime_list}
     
+    async def get_anime_list_by_status(self, status: str, page: int, limit: int):
+        count_query = select(func.count()).select_from(Anime).where(Anime.status == status)
+        total_count_result = await self.db.execute(count_query)
+        total_count = total_count_result.scalar()
+        
+        query = select(Anime).where(Anime.status == status).limit(limit).offset((page - 1) * limit)
+        result = await self.db.execute(query)
+        anime_list = result.scalars().all()
+        
+        return {"total_count": total_count, "anime_list": anime_list}
+    
     async def get_all_kinds(self):
         query = select(distinct(Anime.kind))
         result = await self.db.execute(query)

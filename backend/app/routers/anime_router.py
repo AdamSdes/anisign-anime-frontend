@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 from app.services.user_service import get_current_user_from_token
-from app.utils.utils import KIND_ENUM ,RATING_ENUM
+from app.utils.utils import KIND_ENUM ,RATING_ENUM, STATUS_ENUM
 
 
 anime_router = APIRouter()
@@ -65,11 +65,21 @@ async def get_anime_list_by_rating(rating: str = Path(..., description="Select r
     result = await service.get_anime_list_by_rating(rating, page, limit)
     return result
 
+@anime_router.get("/get-anime-list-by-status/{status}")
+async def get_anime_list_by_status(status: str = Path(..., description="Select status", enum=STATUS_ENUM), page: int = 1, limit: int = 10, db: AsyncSession = Depends(get_session)):
+    service = AnimeService(db)
+    result = await service.get_anime_list_by_status(status, page, limit)
+    return result
+
 @anime_router.get("/kinds")
 async def get_all_kinds(db: AsyncSession = Depends(get_session)):
     service = AnimeService(db)
     result = await service.get_all_kinds()
     return result
+
+@anime_router.get("/statuses")
+async def get_all_statuses(db: AsyncSession = Depends(get_session)):
+    return STATUS_ENUM
 
 @anime_router.get("/ratings")
 async def get_all_ratings(db: AsyncSession = Depends(get_session)):
