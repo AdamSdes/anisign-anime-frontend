@@ -3,7 +3,8 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from app.db.base_models import BaseTable
 from sqlalchemy import Table, Column, String, ForeignKey
 from sqlalchemy.orm import relationship
-
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
 
 
 # genre_ids = Column(ARRAY(Integer))
@@ -62,8 +63,12 @@ class Character(BaseTable):
     poster_url = Column(String, index=True, nullable=False) # original
     description = Column(String, index=True, nullable=True)
     
-    # studio
-    # character roles
+class AnimeSaveList(BaseTable):
+    __tablename__ = 'anime_save_list'
+    list_name = Column(String, index=True, unique=True, nullable=False)
+    anime_ids = Column(ARRAY(Text))
+    user_id = Column(UUID)
+
     
 
     
