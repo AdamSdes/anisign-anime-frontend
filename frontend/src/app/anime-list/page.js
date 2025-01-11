@@ -44,8 +44,7 @@ const Page = () => {
     const [filters, setFilters] = useState({
         kinds: [],
         genres: [],
-        rating: '', // Пустая строка означает, что фильтр не применяется
-        status: '' // Добавляем состояние для фильтра по статусу
+        rating: '' // Пустая строка означает, что фильтр не применяется
     });
     const limit = 20; // Дублируем константу из AnimeList
     const [currentPage, setCurrentPage] = useState(1);
