@@ -4,6 +4,7 @@ from .routers.test_router import health_check_router
 from .routers.user_router import user_router, auth_router
 from .routers.anime_router import anime_router
 from .routers.genre_router import genre_router
+from .routers.anime_save_list_router import anime_save_list_router
 from .routers.character_router import character_router
 import uvicorn
 from .core.config import Settings
@@ -20,6 +21,7 @@ app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(anime_router, prefix="/anime", tags=["Anime"])
 app.include_router(genre_router, prefix="/genre", tags=["Genre"])
 app.include_router(character_router, prefix="/character", tags=["Character"])
+app.include_router(anime_save_list_router, prefix="/anime_save_list", tags=["AnimeSaveList"])
 
 app.add_middleware(
     CORSMiddleware,

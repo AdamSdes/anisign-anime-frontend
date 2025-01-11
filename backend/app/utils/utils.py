@@ -3,6 +3,7 @@ import bcrypt
 KIND_ENUM = ["tv", "tv_special", "ona", "movie", "ova", "special"]
 RATING_ENUM = ["g","pg","r_plus","r","pg_13"]
 STATUS_ENUM = ["anons", "ongoing", "released"]
+ANIME_SAVE_LIST_ENUM = ["Смотрю", "Просмотрено", "В планах", "Бросил", "Отложено"]
 
 async def hash_password(password: str) -> str:
     hashed_password = bcrypt.hashpw(
