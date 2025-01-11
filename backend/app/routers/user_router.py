@@ -17,6 +17,7 @@ from fastapi import HTTPException , File, UploadFile
 from app.schemas.auth_schemas import Token , RefreshToken
 from app.db.models import User
 from app.services.user_service import get_current_user_from_token
+from app.repositories.anime_save_list_repository import  AnimeSaveListRepository
 from fastapi import Response, Request
 
 
@@ -83,6 +84,7 @@ async def create_user(user_data: SignUpRequestSchema, db: AsyncSession = Depends
     """
     service = UserService(db)
     user = await service.create_user(user_data)
+    await  AnimeSaveListRepository(db).initialize_anime_save_lists(user.id)
     return user
 
 @user_router.put("/update-my-nickname")

@@ -20,6 +20,13 @@ class AnimeSaveListRepository():
     def __init__(self, db : AsyncSession):
         self.db = db
         
+    async def initialize_anime_save_lists(self, user_id: UUID):
+        list_names = ["Watching", "Completed", "On Hold", "Dropped", "Plan to Watch"]
+        for list_name in list_names:
+            anime_list = AnimeSaveList(list_name=list_name, user_id=user_id, anime_ids=[])
+            self.db.add(anime_list)
+        await self.db.commit()
+        
     async def create_anime_save_list(self, list_name: str, current_user_id: UUID) -> AnimeSaveList:
         anime_list = AnimeSaveList(list_name=list_name, user_id=current_user_id, anime_ids=[])
         self.db.add(anime_list)
