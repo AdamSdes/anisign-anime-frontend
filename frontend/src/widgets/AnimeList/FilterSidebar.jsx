@@ -139,18 +139,25 @@ const FilterSidebar = ({ filters, setFilters }) => {
             description: 'Выходит сейчас'
         },
         { 
-            id: 'released', 
+            id: 'finished', 
             label: 'Завершён',
             icon: Check,
             color: '#CCBAE4',
             description: 'Все серии доступны'
         },
         { 
-            id: 'anons', 
+            id: 'announced', 
             label: 'Анонс',
             icon: Clock,
             color: '#FFA726',
             description: 'Скоро выйдет'
+        },
+        { 
+            id: 'upcoming', 
+            label: 'Upcoming',
+            icon: Sparkles,
+            color: '#2196F3',
+            description: 'В планах на выход'
         }
     ];
 
@@ -215,16 +222,6 @@ const FilterSidebar = ({ filters, setFilters }) => {
         setSelectedTypes(filters.kinds || []);
     }, [filters.kinds]);
 
-    // Обновляем обработчик статуса
-    const handleStatusClick = (statusId) => {
-        const newStatus = selectedStatus === statusId ? '' : statusId;
-        setSelectedStatus(newStatus);
-        setFilters(prev => ({
-            ...prev,
-            status: newStatus
-        }));
-    };
-
     return (
         <aside className="hidden lg:block space-y-5 sticky top-20">
             <div className="w-[344px] flex items-center justify-between mb-2">
@@ -276,8 +273,8 @@ const FilterSidebar = ({ filters, setFilters }) => {
                         return (
                             <button
                                 key={status.id}
-                                onClick={() => handleStatusClick(status.id)}
-                                className={`group w-full flex flex-col items-start p-3 rounded-xl transition-all duration-300 ${
+                                onClick={() => setSelectedStatus(status.id === selectedStatus ? '' : status.id)}
+                                className={`group flex flex-col items-start p-3 rounded-xl transition-all duration-300 ${
                                     selectedStatus === status.id 
                                         ? 'bg-white/10' 
                                         : 'hover:bg-white/5'
@@ -394,7 +391,7 @@ const FilterSidebar = ({ filters, setFilters }) => {
             {/* Обновленный блок типов */}
             <div className="bg-[rgba(255,255,255,0.02)] border border-white/5 p-5 rounded-[14px]">
                 <div className="flex items-center gap-2 mb-4">
-                    <Film className="w-4 х-4 text-white/60" />
+                    <Film className="w-4 h-4 text-white/60" />
                     <h3 className="text-[14px] font-medium">Тип</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
