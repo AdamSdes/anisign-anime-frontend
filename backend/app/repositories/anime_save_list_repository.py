@@ -71,13 +71,14 @@ class AnimeSaveListRepository():
         return anime_list
 
     async def delete_anime_id_from_list(self, list_name: str, anime_id: str, current_user_id: UUID):
-        query = select(AnimeSaveList).where(AnimeSaveList.list_name == list_name, AnimeSaveList.user_id == current_user_id)
-        anime_list = await self.db.execute(query)
-        anime_list = anime_list.scalars().first()
-        if anime_id not in anime_list.anime_ids:
-            raise HTTPException(status_code=400, detail="Anime not in list")
+        query = select(AnimeSaveList).where(AnimeSaveList.user_id == current_user_id)
+        result = await self.db.execute(query)
+        anime_lists = result.scalars().all()
         
-        anime_list.anime_ids = list(set(anime_list.anime_ids) - {anime_id})
+        for anime_list in anime_lists:
+            if anime_id in anime_list.anime_ids:
+                anime_list.anime_ids = list(set(anime_list.anime_ids) - {anime_id})
+        
         await self.db.commit()
         await self.db.refresh(anime_list)
         
