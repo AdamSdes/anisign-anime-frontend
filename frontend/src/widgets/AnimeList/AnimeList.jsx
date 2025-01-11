@@ -292,11 +292,38 @@ const AnimeList = ({ filters, onUpdateTotalCount }) => {
 
             // Базовый URL для получения списка аниме
             const baseUrl = new URL('http://localhost:8000/anime/get-anime-list');
-            baseUrl.searchParams.append('page', currentPage.toString());
-            baseUrl.searchParams.append('limit', limit.toString());
 
-            // Если рейтинг выбран, используем специальный эндпоинт
-            if (filters.rating && filters.rating !== '') {
+            // Если нет специальных фильтров, используем пагинацию с сервера
+            if (!filters.status && !filters.rating) {
+                baseUrl.searchParams.append('page', currentPage.toString());
+                baseUrl.searchParams.append('limit', limit.toString());
+                const response = await fetch(baseUrl.toString());
+                const data = await response.json();
+                setAnimeList(data.anime_list || []);
+                setTotalCount(data.total_count || 0);
+                if (onUpdateTotalCount) {
+                    onUpdateTotalCount(data.total_count || 0);
+                }
+                return;
+            }
+
+            // Для фильтров получаем полный список
+            if (filters.status) {
+                const statusUrl = new URL(`http://localhost:8000/anime/get-anime-list-by-status/${filters.status}`);
+                statusUrl.searchParams.append('page', '1');
+                statusUrl.searchParams.append('limit', '10000');
+
+                const statusResponse = await fetch(statusUrl.toString());
+                const statusData = await statusResponse.json();
+                filteredList = statusData.anime_list || [];
+                totalFilteredCount = statusData.total_count || 0;
+
+                if (filters.rating) {
+                    filteredList = filteredList.filter(anime => anime.rating === filters.rating);
+                    totalFilteredCount = filteredList.length;
+                }
+            } 
+            else if (filters.rating) {
                 const ratingUrl = new URL(`http://localhost:8000/anime/get-anime-list-by-rating/${filters.rating}`);
                 ratingUrl.searchParams.append('page', '1');
                 ratingUrl.searchParams.append('limit', '10000');
@@ -305,55 +332,35 @@ const AnimeList = ({ filters, onUpdateTotalCount }) => {
                 const ratingData = await ratingResponse.json();
                 filteredList = ratingData.anime_list || [];
                 totalFilteredCount = ratingData.total_count || 0;
-
-                // Применяем дополнительные фильтры если есть
-                if (filters.genres?.length > 0) {
-                    filteredList = filteredList.filter(anime =>
-                        filters.genres.every(genreId => anime.genre_ids?.includes(genreId))
-                    );
-                }
-                if (filters.kinds?.length > 0) {
-                    filteredList = filteredList.filter(anime =>
-                        filters.kinds.includes(anime.kind)
-                    );
-                }
-                totalFilteredCount = filteredList.length;
-            } else {
-                // Используем стандартный эндпоинт с существующими фильтрами
-                const response = await fetch(baseUrl.toString());
-                const data = await response.json();
-                filteredList = data.anime_list || [];
-                totalFilteredCount = data.total_count || 0;
-
-                // Применяем фильтры на стороне клиента
-                if (filters.genres?.length > 0 || filters.kinds?.length > 0) {
-                    filteredList = filteredList.filter(anime => {
-                        const genreMatch = filters.genres?.length === 0 || 
-                            filters.genres.every(genreId => anime.genre_ids?.includes(genreId));
-                        const kindMatch = filters.kinds?.length === 0 || 
-                            filters.kinds.includes(anime.kind);
-                        return genreMatch && kindMatch;
-                    });
-                    totalFilteredCount = filteredList.length;
-                }
             }
 
-            // Применяем пагинацию и обновляем состояние
+            // Применяем дополнительные фильтры
+            if (filters.genres?.length > 0 || filters.kinds?.length > 0) {
+                filteredList = filteredList.filter(anime => {
+                    const genreMatch = !filters.genres?.length || 
+                        filters.genres.every(genreId => anime.genre_ids?.includes(genreId));
+                    const kindMatch = !filters.kinds?.length || 
+                        filters.kinds.includes(anime.kind);
+                    return genreMatch && kindMatch;
+                });
+                totalFilteredCount = filteredList.length;
+            }
+
+            // Пагинация для отфильтрованного списка
             const startIndex = (currentPage - 1) * limit;
             const endIndex = startIndex + limit;
-            const paginatedList = filteredList.slice(startIndex, endIndex);
-
-            setAnimeList(paginatedList);
+            setAnimeList(filteredList.slice(startIndex, endIndex));
             setTotalCount(totalFilteredCount);
             if (onUpdateTotalCount) {
                 onUpdateTotalCount(totalFilteredCount);
             }
 
-            // Update URL
+            // Обновляем URL
             const urlParts = [];
             if (filters.kinds?.length > 0) urlParts.push(`kind-${filters.kinds.join('+')}`);
             if (filters.genres?.length > 0) urlParts.push(`genre-${filters.genres.join('+')}`);
             if (filters.rating) urlParts.push(`rating-${filters.rating}`);
+            if (filters.status) urlParts.push(`status-${filters.status}`);
 
             const newPath = urlParts.length > 0 
                 ? `/anime-list/${urlParts.join('/')}?page=${currentPage}`
