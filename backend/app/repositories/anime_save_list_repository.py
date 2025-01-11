@@ -26,6 +26,7 @@ class AnimeSaveListRepository():
             anime_list = AnimeSaveList(list_name=list_name, user_id=user_id, anime_ids=[])
             self.db.add(anime_list)
         await self.db.commit()
+        return "Anime lists initialized successfully"
         
     async def create_anime_save_list(self, list_name: str, current_user_id: UUID) -> AnimeSaveList:
         anime_list = AnimeSaveList(list_name=list_name, user_id=current_user_id, anime_ids=[])
@@ -38,7 +39,7 @@ class AnimeSaveListRepository():
         query = delete(AnimeSaveList)
         await self.db.execute(query)
         await self.db.commit()
-        return "All lists deleted successfully"
+        return "list deleted successfully"
     
     async def get_anime_save_list_by_name(self, list_name: str,current_user_id:UUID) -> AnimeSaveList:
         anime_list = await self.db.execute(select(AnimeSaveList).where(AnimeSaveList.list_name == list_name,AnimeSaveList.user_id == current_user_id))

@@ -22,6 +22,7 @@ from fastapi import Depends
 from app.core.config import Settings
 from app.schemas.auth_schemas import TokenData
 from jose import JWTError
+from app.repositories.anime_save_list_repository import AnimeSaveListRepository
 from datetime import datetime
 from fastapi import status
 import os
@@ -61,6 +62,7 @@ async def get_current_user_from_token(token: str = Depends(oauth2_scheme), db: A
 class UserService:
     def __init__(self, db: AsyncSession):
         self.user_repository = UserRepository(db)
+        self.list_repository = AnimeSaveListRepository(db)
         
     async def check_user_permission_by_name(self, current_username: str, username: str):
         if current_username == username:
@@ -102,6 +104,11 @@ class UserService:
             user_data_dict["password"] = await hash_password(password)
             user = await self.user_repository.create_user(user_data_dict)
             user = UserDetailSchema(**user.__dict__)
+            user_id = user.id
+            try:
+                lists = await self.list_repository.initialize_anime_save_lists(user_id)
+            except:
+                raise HTTPException(status_code=400, detail="Error creating anime lists")
             return user
         else:
             raise HTTPException(status_code=400, detail="User already exists")

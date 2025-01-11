@@ -65,7 +65,7 @@ class Character(BaseTable):
     
 class AnimeSaveList(BaseTable):
     __tablename__ = 'anime_save_list'
-    list_name = Column(String, index=True, unique=True, nullable=False)
+    list_name = Column(String, index=True, nullable=False)
     anime_ids = Column(ARRAY(Text))
     user_id = Column(UUID)
 

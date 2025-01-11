@@ -6,6 +6,7 @@ from app.db.postgresql_connection import get_session
 from fastapi import APIRouter, HTTPException, status
 from app.services.user_service import UserService
 from app.services.anime_service import AnimeService
+from app.services.anime_save_list_service import AnimeSaveListService
 from app.schemas.user_schemas import SignUpRequestSchema ,UserDetailSchema
 from uuid import UUID
 from typing import List
@@ -74,7 +75,7 @@ async def get_user_by_username(username: str, db: AsyncSession = Depends(get_ses
         return user
 
 @user_router.post("/create-user")
-async def create_user(user_data: SignUpRequestSchema, db: AsyncSession = Depends(get_session)) -> UserDetailSchema:
+async def create_user(user_data: SignUpRequestSchema, db: AsyncSession = Depends(get_session)):
     """
     Create a new user.
     
@@ -84,7 +85,6 @@ async def create_user(user_data: SignUpRequestSchema, db: AsyncSession = Depends
     """
     service = UserService(db)
     user = await service.create_user(user_data)
-    await  AnimeSaveListRepository(db).initialize_anime_save_lists(user.id)
     return user
 
 @user_router.put("/update-my-nickname")
