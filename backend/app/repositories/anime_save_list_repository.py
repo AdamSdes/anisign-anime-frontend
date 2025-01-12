@@ -35,7 +35,7 @@ class AnimeSaveListRepository():
         await self.db.refresh(anime_list)
         return anime_list
     
-    async def delete_anime_list(self, list_name: str, current_user_id: UUID) -> AnimeSaveList:
+    async def delete_anime_list(self) -> AnimeSaveList:
         query = delete(AnimeSaveList)
         await self.db.execute(query)
         await self.db.commit()

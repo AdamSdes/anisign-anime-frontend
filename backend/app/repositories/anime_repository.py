@@ -4,6 +4,7 @@ from sqlalchemy import delete ,distinct
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 from app.db.models import Anime , Genre
+from sqlalchemy import select, func, Integer
 import logging
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
@@ -123,6 +124,16 @@ class AnimeRepository():
         anime_list = result.scalars().all()
         
         return {"total_count": total_count, "anime_list": anime_list}
+    
+    async def get_anime_by_year_range(self, start_year: int, end_year: int):
+        query = select(Anime).where(
+            func.cast(func.split_part(Anime.season, '_', 2), Integer) >= start_year,
+            func.cast(func.split_part(Anime.season, '_', 2), Integer) <= end_year
+        )
+        result = await self.db.execute(query)
+        animes = result.scalars().all()
+        count = len(animes)
+        return {"total_count": count, "anime_list": animes}
     
     async def get_anime_list_by_status(self, status: str, page: int, limit: int):
         count_query = select(func.count()).select_from(Anime).where(Anime.status == status)

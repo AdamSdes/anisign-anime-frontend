@@ -71,6 +71,11 @@ async def get_anime_list_by_status(status: str = Path(..., description="Select s
     result = await service.get_anime_list_by_status(status, page, limit)
     return result
 
+@anime_router.get("/anime/by-year-range")
+async def get_anime_by_year_range(start_year: int, end_year: int, db: AsyncSession = Depends(get_session)):
+    service = AnimeService(db)
+    return await service.get_anime_by_year_range(start_year, end_year)
+
 @anime_router.get("/kinds")
 async def get_all_kinds(db: AsyncSession = Depends(get_session)):
     service = AnimeService(db)

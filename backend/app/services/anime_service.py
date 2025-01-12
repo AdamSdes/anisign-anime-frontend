@@ -6,6 +6,7 @@ import requests
 import json
 import time
 import logging
+from fastapi import HTTPException
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -241,18 +242,32 @@ class AnimeService:
     
     async def get_anime_by_genre(self, genre_id: str, page: int, limit: int):
         result = await self.anime_repository.get_anime_by_genre(genre_id, page, limit)
+        if not result:
+            raise HTTPException(status_code=404, detail="No anime found")
         return result
     
     async def get_anime_list_by_kind(self, kind: str, page: int, limit: int):
         result = await self.anime_repository.get_anime_list_by_kind(kind, page, limit)
+        if not result:
+            raise HTTPException(status_code=404, detail="No anime found")
         return result
     
     async def get_anime_list_by_rating(self, rating: str, page: int, limit: int):
         result = await self.anime_repository.get_anime_list_by_rating(rating, page, limit)
+        if not result:
+            raise HTTPException(status_code=404, detail="No anime found")
         return result
     
     async def get_anime_list_by_status(self, status: str, page: int, limit: int):
         result = await self.anime_repository.get_anime_list_by_status(status, page, limit)
+        if not result:
+            raise HTTPException(status_code=404, detail="No anime found")
+        return result
+    
+    async def get_anime_by_year_range(self, start_year: int, end_year: int):
+        result = await self.anime_repository.get_anime_by_year_range(start_year, end_year)
+        if not result:
+            raise HTTPException(status_code=404, detail="No anime found")
         return result
     
     async def get_all_kinds(self):
