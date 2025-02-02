@@ -7,6 +7,7 @@ from app.db.models import Anime , Genre
 from sqlalchemy import select, func, Integer
 import logging
 from datetime import datetime
+from sqlalchemy import select, desc, asc, func, Integer
 from sqlalchemy.exc import SQLAlchemyError
 from dateutil import parser
 from sqlalchemy import select, or_ , func
@@ -157,6 +158,39 @@ class AnimeRepository():
         result = await self.db.execute(query)
         ratings = result.scalars().all()
         return ratings
+    
+    async def get_anime_list_filtered(self, genre_id: str = None, kind: str = None, rating: str = None, status: str = None, start_year: int = None, end_year: int = None, page: int = 1, limit: int = 10, sort_by: str = None, sort_order: str = 'asc'):
+        query = select(Anime)
+        
+        if genre_id:
+            query = query.where(Anime.genre_ids.contains([genre_id]))
+        if kind:
+            query = query.where(Anime.kind == kind)
+        if rating:
+            query = query.where(Anime.rating == rating)
+        if status:
+            query = query.where(Anime.status == status)
+        if start_year and end_year:
+            query = query.where(
+                func.cast(func.split_part(Anime.season, '_', 2), Integer) >= start_year,
+                func.cast(func.split_part(Anime.season, '_', 2), Integer) <= end_year
+            )
+        
+        if sort_by:
+            if sort_order == 'desc':
+                query = query.order_by(desc(getattr(Anime, sort_by)))
+            else:
+                query = query.order_by(asc(getattr(Anime, sort_by)))
+                
+        total_query = select(func.count()).select_from(query.alias())
+        total_result = await self.db.execute(total_query)
+        total_count = total_result.scalar()
+        
+        query = query.offset((page - 1) * limit).limit(limit)
+        result = await self.db.execute(query)
+        anime_list = result.scalars().all()
+        
+        return {"total_count": total_count, "anime_list": anime_list}
 #
 # class Anime(BaseTable):
     # __tablename__ = 'anime'
