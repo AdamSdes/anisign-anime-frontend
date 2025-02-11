@@ -10,7 +10,7 @@ from datetime import datetime
 from sqlalchemy import select, desc, asc, func, Integer
 from sqlalchemy.exc import SQLAlchemyError
 from dateutil import parser
-from sqlalchemy import select, or_ , func
+from sqlalchemy import select, or_ , func ,case
 from sqlalchemy.sql import text
 
 
@@ -159,7 +159,7 @@ class AnimeRepository():
         ratings = result.scalars().all()
         return ratings
     
-    async def get_anime_list_filtered(self, genre_id: str = None, kind: str = None, rating: str = None, status: str = None, start_year: int = None, end_year: int = None, page: int = 1, limit: int = 10, sort_by: str = None, sort_order: str = 'asc'):
+    async def get_anime_list_filtered(self, genre_id: str = None, kind: str = None, rating: str = None, status: str = None, start_year: int = None, end_year: int = None, page: int = 1, limit: int = 10, sort_by: str = None, sort_order: str = 'asc', filter_by_score: bool = False, filter_by_date: bool = False, filter_by_name: bool = False):
         query = select(Anime)
         
         if genre_id:
@@ -174,6 +174,18 @@ class AnimeRepository():
             query = query.where(
                 func.cast(func.split_part(Anime.season, '_', 2), Integer) >= start_year,
                 func.cast(func.split_part(Anime.season, '_', 2), Integer) <= end_year
+            )
+        if filter_by_score:
+            query = query.order_by(Anime.score.desc())
+        if filter_by_date:
+            query = query.order_by(Anime.aired_on.desc())
+        if filter_by_name:
+            query = query.order_by(
+                case(
+                    (Anime.russian.op('~')('^[А-Яа-я]'), 0),  # Russian letters first
+                    else_=1
+                ),
+                Anime.russian
             )
         
         if sort_by:

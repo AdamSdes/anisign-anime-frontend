@@ -77,9 +77,9 @@ async def get_anime_by_year_range(start_year: int, end_year: int, db: AsyncSessi
     return await service.get_anime_by_year_range(start_year, end_year)
 
 @anime_router.get("/get-anime-list-filtered")
-async def get_anime_list_filtered(genre_id: str = None, kind: str = None, rating: str = None, status: str = None, start_year: int = None, end_year: int = None, page: int = 1, limit: int = 10, sort_by: str = None, sort_order: str = 'asc', db: AsyncSession = Depends(get_session)):
+async def get_anime_list_filtered(genre_id: str = None, kind: str = None, rating: str = None, status: str = None, start_year: int = None, end_year: int = None, page: int = 1, limit: int = 10, sort_by: str = None, sort_order: str = 'asc', filter_by_score: bool = False, filter_by_date: bool = False, filter_by_name: bool = False, db: AsyncSession = Depends(get_session)):
     service = AnimeService(db)
-    return await service.get_anime_list_filtered(genre_id, kind, rating, status, start_year, end_year, page, limit, sort_by, sort_order)
+    return await service.get_anime_list_filtered(genre_id, kind, rating, status, start_year, end_year, page, limit, sort_by, sort_order, filter_by_score, filter_by_date, filter_by_name)
 
 @anime_router.get("/kinds")
 async def get_all_kinds(db: AsyncSession = Depends(get_session)):
