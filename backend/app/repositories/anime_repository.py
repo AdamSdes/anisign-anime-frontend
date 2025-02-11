@@ -5,6 +5,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 from app.db.models import Anime , Genre
 from sqlalchemy import select, func, Integer
+from fastapi import Depends ,Query ,Path ,Body
+from typing import List
 import logging
 from datetime import datetime
 from sqlalchemy import select, desc, asc, func, Integer
@@ -159,11 +161,12 @@ class AnimeRepository():
         ratings = result.scalars().all()
         return ratings
     
-    async def get_anime_list_filtered(self, genre_id: str = None, kind: str = None, rating: str = None, status: str = None, start_year: int = None, end_year: int = None, page: int = 1, limit: int = 10, sort_by: str = None, sort_order: str = 'asc', filter_by_score: bool = False, filter_by_date: bool = False, filter_by_name: bool = False):
+    async def get_anime_list_filtered(self, genre_ids_list: list, kind: str = None, rating: str = None, status: str = None, start_year: int = None, end_year: int = None, page: int = 1, limit: int = 10, sort_by: str = None, sort_order: str = 'asc', filter_by_score: bool = False, filter_by_date: bool = False, filter_by_name: bool = False):
         query = select(Anime)
         
-        if genre_id:
-            query = query.where(Anime.genre_ids.contains([genre_id]))
+        if genre_ids_list:
+            for genre_id in genre_ids_list:
+                query = query.where(Anime.genre_ids.contains([genre_id]))
         if kind:
             query = query.where(Anime.kind == kind)
         if rating:
