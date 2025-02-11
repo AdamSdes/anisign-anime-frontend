@@ -138,6 +138,15 @@ class UserService:
         else:
             raise HTTPException(status_code=404, detail="User not found")
         
+    async def update_status(self, user_id: UUID, status: str = "pro"):
+        user = self.user_repository.get_user_by_id(user_id)
+        if user:
+            result = await self.user_repository.update_status(user_id, status)
+            return result
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        
     async def update_banner(self, user_id: UUID, file: UploadFile = File(...)):
         if not os.path.exists(UPLOAD_DIR_BANNER):
             os.makedirs(UPLOAD_DIR_BANNER)

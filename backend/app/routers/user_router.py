@@ -134,6 +134,17 @@ async def upload_avatar(file: UploadFile, db : AsyncSession = Depends(get_sessio
     result = await service.update_banner(current_user.id, file)
     return result
 
+@user_router.get("/update-status")
+async def update_status(user_id: UUID,db: AsyncSession = Depends(get_session)):
+    """
+    Update the status of the user.
+
+    This endpoint is for administrative purposes and should be used with caution.
+    """
+    service = UserService(db)
+    result = await service.update_status(user_id)
+    return result
+
 @user_router.get("/get-my-avatar")
 async def get_my_avatar(db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
     """
