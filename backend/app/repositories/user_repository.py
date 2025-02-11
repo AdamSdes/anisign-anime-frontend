@@ -52,6 +52,14 @@ class UserRepository():
             return {"message": "Avatar updated successfully"}
         return {"message": "User not found"}
         
+    async def update_banner(self, user_id: UUID, banner_url: str):
+        user = await self.get_user_by_id(user_id)
+        if user:
+            user.user_banner = banner_url
+            await self.db.commit()
+            return {"message": "banner updated successfully"}
+        return {"message": "User not found"}
+    
     async def update_nickname(self, user_id: UUID, nickname: str):
         user = await self.get_user_by_id(user_id)
         if user:

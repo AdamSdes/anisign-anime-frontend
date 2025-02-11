@@ -33,6 +33,7 @@ from fastapi.responses import FileResponse
 settings = Settings()
 
 UPLOAD_DIR = "./uploads/avatars/"
+UPLOAD_DIR_BANNER = "./uploads/banners/"
 
 
 async def get_current_user_from_token(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_session)) -> UserDetailSchema:
@@ -133,6 +134,19 @@ class UserService:
         user = self.user_repository.get_user_by_id(user_id)
         if user:
             result = await self.user_repository.update_avatar(user_id, file_location)
+            return result
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+    async def update_banner(self, user_id: UUID, file: UploadFile = File(...)):
+        if not os.path.exists(UPLOAD_DIR_BANNER):
+            os.makedirs(UPLOAD_DIR_BANNER)
+        file_location = f"{UPLOAD_DIR_BANNER}{user_id}.png"
+        with open(file_location, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        user = self.user_repository.get_user_by_id(user_id)
+        if user:
+            result = await self.user_repository.update_banner(user_id, file_location)
             return result
         else:
             raise HTTPException(status_code=404, detail="User not found")
