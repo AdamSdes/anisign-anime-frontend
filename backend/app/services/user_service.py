@@ -12,7 +12,7 @@ import bcrypt
 import logging
 from app.db.postgresql_connection import get_session 
 from fastapi import HTTPException , File, UploadFile
-from app.db.models import User
+from app.db.models import User ,UserStatusEnum
 from uuid import UUID
 from app.utils.utils import verify_password, hash_password
 from typing import Annotated
@@ -102,6 +102,7 @@ class UserService:
         check = await self.user_repository.get_user_by_username(user_data_dict["username"])
         if not check:
             user_data_dict["password"] = await hash_password(password)
+            user_data_dict["status"] = UserStatusEnum.USER
             user = await self.user_repository.create_user(user_data_dict)
             user = UserDetailSchema(**user.__dict__)
             user_id = user.id

@@ -5,15 +5,27 @@ from sqlalchemy import Table, Column, String, ForeignKey
 from sqlalchemy.orm import relationship
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Enum
+from sqlalchemy.dialects.postgresql import ENUM
 
 
 # genre_ids = Column(ARRAY(Integer))
+class UserStatusEnum(Enum):
+    USER = "user"
+    ADMIN = "admin"
+    PRO = "pro"
+
+# Create the ENUM type with a name
+user_status_enum = ENUM(UserStatusEnum.USER, UserStatusEnum.ADMIN, UserStatusEnum.PRO, name='userstatusenum')
+
 class User(BaseTable):
     __tablename__ = 'users'
     username = Column(String, index=True, unique=True, nullable=False)
     nickname = Column(String, index=True, unique=True)
     password = Column(String, index=True ,nullable=False)
     user_avatar = Column(String, index=True, nullable=True)
+    user_banner = Column(String, index=True, nullable=True)
+    status = Column(user_status_enum, index=True, nullable=True)
 
 
 class Anime(BaseTable):
