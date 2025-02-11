@@ -10,7 +10,7 @@ from datetime import datetime
 from sqlalchemy import select, desc, asc, func, Integer
 from sqlalchemy.exc import SQLAlchemyError
 from dateutil import parser
-from sqlalchemy import select, or_ , func ,case
+from sqlalchemy import select, or_ , func ,case, extract
 from sqlalchemy.sql import text
 
 
@@ -172,9 +172,8 @@ class AnimeRepository():
             query = query.where(Anime.status == status)
         if start_year and end_year:
             query = query.where(
-                func.nullif(func.split_part(Anime.season, '_', 2), '') != None,
-                func.cast(func.split_part(Anime.season, '_', 2), Integer) >= start_year,
-                func.cast(func.split_part(Anime.season, '_', 2), Integer) <= end_year
+                extract('year', Anime.aired_on) >= start_year,
+                extract('year', Anime.aired_on) <= end_year
             )
         if filter_by_score:
             query = query.order_by(Anime.score.desc())
