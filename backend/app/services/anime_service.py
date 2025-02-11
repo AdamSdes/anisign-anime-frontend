@@ -273,7 +273,7 @@ class AnimeService:
         return result
     
     async def get_anime_list_filtered(self, genre_id: List[str], kind: str = None, rating: str = None, status: str = None, start_year: int = None, end_year: int = None, page: int = 1, limit: int = 10, sort_by: str = None, sort_order: str = 'asc', filter_by_score: bool = False, filter_by_date: bool = False, filter_by_name: bool = False):
-        genre_ids_list = list(set(genre_id))
+        genre_ids_list = list(set(genre_id)) if genre_id is not None else []
         result = await self.anime_repository.get_anime_list_filtered(genre_ids_list, kind, rating, status, start_year, end_year, page, limit, sort_by, sort_order , filter_by_score, filter_by_date, filter_by_name)
         if not result:
             raise HTTPException(status_code=404, detail="No anime found")
