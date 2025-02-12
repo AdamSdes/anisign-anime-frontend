@@ -180,6 +180,7 @@ class AnimeService:
             if data["data"]["animes"]:
                 for anime in data["data"]["animes"]:
                     character_ids = [character["character"]["id"] for character in anime.get("characterRoles", []) if character.get("character")]
+                    related_anime_texts = [related["relationText"] for related in anime.get("related", []) if related.get("anime")]
                     related_anime_ids = [related["anime"]["id"] for related in anime.get("related", []) if related.get("anime")]
                     genres = [{"genre_id": genre["id"], "name": genre["name"], "russian": genre["russian"]} for genre in anime["genres"]]
                     transformed_anime = {
@@ -205,6 +206,7 @@ class AnimeService:
                         "description": anime["description"],
                         "genres": genres,
                         "related_anime_ids": related_anime_ids,
+                        "related_anime_texts": related_anime_texts,
                         "character_ids": character_ids
                     }
                     animes.append(transformed_anime)
