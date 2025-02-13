@@ -134,6 +134,22 @@ async def upload_avatar(file: UploadFile, db : AsyncSession = Depends(get_sessio
     result = await service.update_banner(current_user.id, file)
     return result
 
+@user_router.get("/get-my-banner")
+async def get_my_banner(db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
+    """
+    Get the current user's banner.
+
+    Retrieve the banner for the current user.
+
+    - **db**: The database session.
+    - **current_user**: The current authenticated user.
+
+    Returns the banner file.
+    """
+    service = UserService(db)
+    banner = await service.get_banner(current_user.id)
+    return banner
+
 @user_router.get("/update-status")
 async def update_status(user_id: UUID,db: AsyncSession = Depends(get_session)):
     """
