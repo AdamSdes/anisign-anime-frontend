@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String , Text, Date, Boolean , Float
+from sqlalchemy import Column, Integer, String , Text, Date, Boolean , Float, DateTime, func
 from sqlalchemy.dialects.postgresql import ARRAY
 from app.db.base_models import BaseTable
 from sqlalchemy import Table, Column, String, ForeignKey
@@ -7,6 +7,7 @@ import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Enum
 from sqlalchemy.dialects.postgresql import ENUM
+import datetime
 
 
 # genre_ids = Column(ARRAY(Integer))
@@ -26,6 +27,7 @@ class User(BaseTable):
     user_avatar = Column(String, index=True, nullable=True)
     user_banner = Column(String, index=True, nullable=True)
     status = Column(user_status_enum, index=True, nullable=True)
+    comments = relationship('Comment', back_populates='user')
 
 
 class Anime(BaseTable):
@@ -54,6 +56,7 @@ class Anime(BaseTable):
     related_anime_ids = Column(ARRAY(Text), nullable=True)
     related_anime_texts = Column(ARRAY(Text), nullable=True)
     character_ids = Column(ARRAY(Text), nullable=True)
+    comments = relationship('Comment', back_populates='anime')
     
     # genres = relationship('Genre', secondary=anime_genre, back_populates='animes')
     
@@ -81,6 +84,16 @@ class AnimeSaveList(BaseTable):
     list_name = Column(String, index=True, nullable=False)
     anime_ids = Column(ARRAY(Text))
     user_id = Column(UUID)
+    
+class Comment(BaseTable):
+    __tablename__ = 'comment'
+    user_id = Column(UUID, ForeignKey('users.id'))
+    anime_id = Column(UUID, ForeignKey('anime.anime_id'))
+    text = Column(String, index=True, nullable=False)
+    
+    
+    user = relationship('User', back_populates='comments')
+    anime = relationship('Anime', back_populates='comments')
 
     
 

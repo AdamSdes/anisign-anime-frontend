@@ -14,6 +14,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from dateutil import parser
 from sqlalchemy import select, or_ , func ,case, extract
 from sqlalchemy.sql import text
+from uuid import UUID
 
 
 class AnimeRepository():
@@ -34,6 +35,11 @@ class AnimeRepository():
     
     async def get_anime_by_id(self, anime_id: str):
         anime = await self.db.execute(select(Anime).where(Anime.anime_id == anime_id))
+        anime = anime.scalars().first()
+        return anime
+    
+    async def get_anime_by_id_uuid(self, anime_id: UUID):
+        anime = await self.db.execute(select(Anime).where(Anime.id == anime_id))
         anime = anime.scalars().first()
         return anime
         
