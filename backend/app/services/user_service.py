@@ -94,7 +94,7 @@ class UserService:
         user_data_dict = user_data.dict()
         password = user_data_dict["password"]
         confirm_password = user_data_dict["confirm_password"]
-        
+        user_data_dict["nickname"] = user_data_dict["username"]
         # Перевірка, чи паролі однакові
         if password != confirm_password:
             raise HTTPException(status_code=400, detail="Passwords do not match")

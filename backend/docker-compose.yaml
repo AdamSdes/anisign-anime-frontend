@@ -16,7 +16,8 @@ services:
       - .env
     volumes:
       - ./app:/app
-      - avatar_storage:/app/avatars
+      - ./uploads/avatars:/backend/uploads/avatars
+      - ./uploads/banners:/backend/uploads/banners
 
   postgres:
     image: postgres:16
@@ -54,4 +55,4 @@ services:
 volumes:
   postgres_data:
   avatar_storage:
-    driver: local
+  banner_storage:
