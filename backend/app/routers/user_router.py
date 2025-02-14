@@ -70,7 +70,7 @@ async def get_user_by_username(username: str, db: AsyncSession = Depends(get_ses
     Returns the user's details if permission is granted.
     """
     service = UserService(db)
-    current_username = current_user.username
+    # current_username = current_user.username
     # check = await service.check_user_permission_by_name(current_username, username)
     # if check:
     user = await service.get_user_by_username(username)
