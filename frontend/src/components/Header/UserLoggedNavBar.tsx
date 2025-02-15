@@ -222,6 +222,9 @@ export const UserLoggedNavBar = ({
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center gap-2 outline-none">
           <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-white/90 mr-">
+                {nickname || username}
+              </span>
             <HeaderAvatar 
               username={username} 
               avatar={currentAvatar}
@@ -229,9 +232,6 @@ export const UserLoggedNavBar = ({
               onLoadingChange={handleAvatarLoadingChange}
             />
             <div className="flex flex-col items-start">
-              <span className="text-sm font-medium text-white/90">
-                {nickname || username}
-              </span>
               {isPro && (
                 <span className="text-xs text-yellow-500/90">PRO</span>
               )}

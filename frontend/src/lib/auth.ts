@@ -43,12 +43,6 @@ export const login = async (data: LoginData): Promise<LoginResponse> => {
 
 export const register = async (data: RegisterData): Promise<void> => {
   try {
-    console.log('Sending registration request:', {
-      username: data.username,
-      password: data.password,
-      confirm_password: data.confirm_password
-    });
-
     const response = await axiosInstance.post(
       '/user/create-user',
       {
@@ -64,17 +58,40 @@ export const register = async (data: RegisterData): Promise<void> => {
       }
     );
 
-    console.log('Registration response:', response.data);
+    if (!response.data) {
+      throw new Error('Ошибка при регистрации: нет ответа от сервера');
+    }
+
+    return response.data;
   } catch (error) {
     console.error('Registration error:', error);
-    if (error.response?.data?.detail) {
-      const detail = error.response.data.detail;
-      if (Array.isArray(detail)) {
-        throw new Error(detail.map(err => err.msg).join(', '));
+    
+    // Обработка ошибок от сервера
+    if (error.response?.data) {
+      const { data } = error.response;
+      
+      // Если ошибка содержит detail
+      if (data.detail) {
+        if (Array.isArray(data.detail)) {
+          throw new Error(data.detail.map(err => err.msg).join(', '));
+        }
+        throw new Error(data.detail);
       }
-      throw new Error(detail);
+      
+      // Если ошибка содержит message
+      if (data.message) {
+        throw new Error(data.message);
+      }
+
+      // Если есть ошибки валидации
+      if (data.errors) {
+        const errorMessages = Object.values(data.errors).flat();
+        throw new Error(errorMessages.join(', '));
+      }
     }
-    throw error;
+
+    // Общая ошибка
+    throw new Error('Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.');
   }
 };
 

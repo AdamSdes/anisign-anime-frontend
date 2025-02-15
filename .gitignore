@@ -60,3 +60,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 backend/alembic/versions/5ac7edbd71de_add_anime0002.py
+backend/uploads/avatars/59d0c777-b6c5-406b-98ca-58e8b43ba217.png
+backend/uploads/avatars/5a3b0aa0-96fc-4b4c-a3cc-3f2e3b139700.png
+backend/uploads/avatars/59d0c777-b6c5-406b-98ca-58e8b43ba217.png
+backend/uploads/avatars/5a3b0aa0-96fc-4b4c-a3cc-3f2e3b139700.png

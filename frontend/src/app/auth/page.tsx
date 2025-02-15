@@ -138,24 +138,54 @@ export default function Auth() {
       return;
     }
 
+    if (!username || !password || !confirmPassword) {
+      toast.error('Все поля обязательны для заполнения');
+      return;
+    }
+
     try {
       // Валидация
       const validatedData = registerSchema.parse({
         username,
         password,
-        confirm_password: confirmPassword
+        confirmPassword
       });
 
+      // Подготавливаем данные для API
+      const apiData = {
+        username: validatedData.username,
+        password: validatedData.password,
+        confirm_password: validatedData.confirmPassword // Преобразуем в формат API
+      };
+
       // Выполняем мутацию регистрации
-      await registerMutation.mutateAsync(validatedData);
-      
-      toast.success('Регистрация успешна! Теперь вы можете войти.');
-      setIsLogin(true);
+      await registerMutation.mutateAsync(apiData, {
+        onError: (error: any) => {
+          if (error.response?.data?.message) {
+            toast.error(error.response.data.message);
+          } else if (error.message) {
+            toast.error(error.message);
+          } else {
+            toast.error('Произошла ошибка при регистрации');
+          }
+        },
+        onSuccess: () => {
+          toast.success('Регистрация успешна! Теперь вы можете войти.');
+          setIsLogin(true);
+          // Очищаем поля после успешной регистрации
+          setUsername('');
+          setPassword('');
+          setConfirmPassword('');
+          setHasAgreedToToS(false);
+        }
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast.error(error.errors[0].message);
+        error.errors.forEach((err) => {
+          toast.error(err.message);
+        });
       } else {
-        toast.error(error.message || 'Ошибка при регистрации');
+        toast.error('Ошибка при регистрации');
       }
     }
   };
