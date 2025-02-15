@@ -59,3 +59,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+backend/alembic/versions/5ac7edbd71de_add_anime0002.py

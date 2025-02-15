@@ -1,10 +1,14 @@
 # frontend/Dockerfile
-FROM node:18.17.0-alpine
+FROM node:20-alpine
 
 WORKDIR /app/frontend
 
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+
+# Очищаем кэш npm и устанавливаем зависимости
+RUN npm cache clean --force && \
+    npm install --legacy-peer-deps && \
+    npm install --save-dev typescript @types/node --legacy-peer-deps
 
 COPY . .
 

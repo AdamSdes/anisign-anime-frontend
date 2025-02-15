@@ -1,42 +1,37 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // ...existing config...
+    images: {
+        domains: ['dere.shikimori.one', 'nyaa.shikimori.one', 'placehold.co'],
+        remotePatterns: [
+            {
+                protocol: 'http',
+                hostname: 'localhost',
+                port: '3000',
+                pathname: '/uploads/**',
+            }
+        ]
+    },
     async rewrites() {
         return [
             {
-                source: '/anime-list/kind-:kind',
-                destination: '/anime-list',
-            },
-            {
-                source: '/anime-list/genre-:genre',
-                destination: '/anime-list',
-            },
-            {
-                source: '/anime-list/kind-:kind/genre-:genre',
-                destination: '/anime-list',
-            },
-            {
-                source: '/anime-list/:filters*',
-                destination: '/anime-list',
-            },
-            {
-                source: '/anime-list/rating-:rating',
-                destination: '/anime-list',
-            },
-            {
-                source: '/anime-list/kind-:kind/rating-:rating',
-                destination: '/anime-list',
-            },
-            {
-                source: '/anime-list/genre-:genre/rating-:rating',
-                destination: '/anime-list',
-            },
-            {
-                source: '/anime-list/kind-:kind/genre-:genre/rating-:rating',
-                destination: '/anime-list',
+                source: '/api/:path*',
+                destination: 'http://localhost:8000/:path*'
             }
-        ];
+        ]
     },
+    async headers() {
+        return [
+            {
+                source: '/:path*',
+                headers: [
+                    { key: 'Access-Control-Allow-Credentials', value: 'true' },
+                    { key: 'Access-Control-Allow-Origin', value: '*' },
+                    { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT' },
+                    { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version' },
+                ]
+            }
+        ]
+    }
 };
 
 module.exports = nextConfig;
