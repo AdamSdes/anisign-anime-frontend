@@ -121,7 +121,7 @@ const ProfilePage = () => {
                             <AnimeList />
                         </div>
                         <div className="hidden min-[1000px]:block w-[1px] bg-white/5" />
-                        <div className="w-full min-[1020px]:w-[373px] space-y-16">
+                        <div className="w-full  min-[1020px]:w-[373px] space-y-16">
                             <ProfileFriends />
                             <History />
                         </div>

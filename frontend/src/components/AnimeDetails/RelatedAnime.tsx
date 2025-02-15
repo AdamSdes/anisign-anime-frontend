@@ -22,7 +22,7 @@ interface RelatedAnimeProps {
 
 const RelatedAnime: React.FC<RelatedAnimeProps> = ({ relatedAnime }) => {
     const [showAll, setShowAll] = useState(false);
-    const INITIAL_SHOW_COUNT = 6;
+    const INITIAL_SHOW_COUNT = 8;
 
     if (!relatedAnime || relatedAnime.length === 0) {
         return null;
@@ -52,7 +52,7 @@ const RelatedAnime: React.FC<RelatedAnimeProps> = ({ relatedAnime }) => {
             </div>
 
             <div className="space-y-6">
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8 gap-6">
                     {displayedAnime.map((anime) => (
                         <Link 
                             href={`/anime/${anime.anime_id}`} 

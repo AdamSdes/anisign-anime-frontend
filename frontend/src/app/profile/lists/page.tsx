@@ -188,7 +188,7 @@ export default function ListsPage() {
       animate="visible"
       exit="hidden"
       transition={{ duration: 0.3 }}
-      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-4"
     >
       {filteredAnimeList.map((anime) => {
         console.log('Rendering anime card:', anime);

@@ -5,7 +5,7 @@ import { Activity, Clock, Trophy, Heart, Star, Eye } from "lucide-react"
 const Statistics = () => {
   // Используем моковые данные вместо Redux
   const mockTimeOnSite = "5д 12ч 30м";
-  const activity = [100, 40, 80, 70, 20, 50, 10, 50, 100, 20, 35, 20, 20, 20];
+  const activity = [100, 40, 80, 70, 20, 50, 10, 50, 100, 20, 35, 20, 20, 20,20,20,20,50,50,100];
 
   const stats = [
     { icon: Trophy, label: 'Просмотрено', value: '42 аниме' },
