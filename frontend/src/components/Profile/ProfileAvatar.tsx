@@ -84,7 +84,7 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
 
     return (
         <>
-            <div className="relative flex flex-col items-center justify-center w-[185px] h-[247px] gap-3 rounded-[14px] border border-white/5 overflow-hidden">
+            <div className="relative flex flex-col items-center justify-center w-[185px] h-[247px] gap-3 rounded-[14px]  overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     {avatar && (
                         <>
@@ -93,7 +93,7 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
                                 alt="" 
                                 className="w-full h-full object-cover scale-105 blur-[2px]"
                             />
-                            <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px]" />
+                            <div className="absolute inset-0 bg-black/70 rounded-[12px] border border-white/5 backdrop-blur-[2px]" />
                         </>
                     )}
                     <div className="absolute inset-0 bg-[#060606]/80" />
