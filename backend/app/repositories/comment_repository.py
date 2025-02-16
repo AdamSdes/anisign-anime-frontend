@@ -16,5 +16,24 @@ class CommentRepository:
         return comment
     
     async def get_all_comments_for_anime(self, anime_id: UUID):
-        comments = await self.db.execute(select(Comment).where(Comment.anime_id == anime_id))
+        comments = await self.db.execute(
+            select(Comment).where(Comment.anime_id == anime_id).order_by(Comment.created_at.desc())
+        )
         return comments.scalars().all()
+    
+    async def delete_comment(self, comment_id: UUID):
+        comment = await self.db.execute(select(Comment).where(Comment.id == comment_id))
+        comment = comment.scalars().first()
+        if comment:
+            await self.db.delete(comment)
+            await self.db.commit()
+            return {"message": "Comment deleted successfully"}
+        else:
+            return {"message": "Comment not found"}
+    
+    async def update_comment(self, comment_id: UUID, text: str):
+        comment = await self.db.execute(select(Comment).where(Comment.id == comment_id))
+        comment = comment.scalars().first()
+        comment.text = text
+        await self.db.commit()
+        return {"message": "Comment updated successfully"}

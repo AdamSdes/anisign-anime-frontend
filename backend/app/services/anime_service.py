@@ -9,6 +9,7 @@ from fastapi import Depends ,Query ,Path ,Body
 from typing import List
 import logging
 from fastapi import HTTPException
+from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -183,6 +184,9 @@ class AnimeService:
                     related_anime_texts = [related["relationText"] for related in anime.get("related", []) if related.get("anime")]
                     related_anime_ids = [related["anime"]["id"] for related in anime.get("related", []) if related.get("anime")]
                     genres = [{"genre_id": genre["id"], "name": genre["name"], "russian": genre["russian"]} for genre in anime["genres"]]
+                    poster_url = anime["poster"]["originalUrl"] if anime["poster"] is not None else None
+                    
+                    
                     transformed_anime = {
                         "anime_id": anime["id"],
                         "english": anime["english"],
@@ -197,7 +201,7 @@ class AnimeService:
                         "aired_on": f"{anime['airedOn']['year']}-{anime['airedOn']['month']}-{anime['airedOn']['day']}" if anime["airedOn"] else None,
                         "released_on": f"{anime['releasedOn']['year']}-{anime['releasedOn']['month']}-{anime['releasedOn']['day']}" if anime["releasedOn"] else None,
                         "season": anime["season"],
-                        "poster_url": anime["poster"]["originalUrl"],
+                        "poster_url": poster_url,
                         "createdAt": anime["createdAt"],
                         "updatedAt": anime["updatedAt"],
                         "nextEpisodeAt": anime["nextEpisodeAt"],

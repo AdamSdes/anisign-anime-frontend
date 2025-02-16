@@ -47,12 +47,21 @@ class AnimeRepository():
         for anime in animes:
             try:
                 # Convert date strings to datetime.date objects
-                date_fields = ['aired_on', 'released_on', 'createdAt', 'updatedAt', 'nextEpisodeAt']
+                date_fields = ['createdAt', 'updatedAt', 'nextEpisodeAt']
                 for field in date_fields:
                     if anime[field]:
                         try:
+                            anime[field] = datetime.fromisoformat(anime[field]).replace(tzinfo=None)
+                        except Exception as e:
+                            logging.error(f"Error parsing date for field {field} in anime {anime}: {e}")
+                            anime[field] = None
+                            
+                date_fields_without_time = ['aired_on', 'released_on']
+                for field in date_fields_without_time:
+                    if anime[field]:
+                        try:
                             anime[field] = parser.parse(anime[field]).date()
-                        except (ValueError, parser.ParserError) as e:
+                        except Exception as e:
                             logging.error(f"Error parsing date for field {field} in anime {anime}: {e}")
                             anime[field] = None
                 

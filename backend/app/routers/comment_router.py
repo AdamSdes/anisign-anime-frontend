@@ -28,3 +28,15 @@ async def get_all_comments_for_anime(anime_id: str, db: AsyncSession = Depends(g
     service = CommentService(db)
     result = await service.get_all_comments_for_anime(anime_id)
     return result
+
+@comment_router.delete("/delete-comment/{comment_id}")
+async def delete_comment(comment_id: UUID, db: AsyncSession = Depends(get_session)):
+    service = CommentService(db)
+    result = await service.delete_comment(comment_id)
+    return result
+
+@comment_router.put("/update-comment/{comment_id}")
+async def update_comment(comment_id: UUID, text: str, db: AsyncSession = Depends(get_session)):
+    service = CommentService(db)
+    result = await service.update_comment(comment_id, text)
+    return result
