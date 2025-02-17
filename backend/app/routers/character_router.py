@@ -23,7 +23,7 @@ async def save_character_list_in_db(db: AsyncSession = Depends(get_session)):
     return result
 
 @character_router.get("/name/{name}")
-async def get_anime_by_name(name: str, db: AsyncSession = Depends(get_session)):
+async def get_character_by_name(name: str, db: AsyncSession = Depends(get_session)):
     service = CharacterService(db)
     result = await service.get_character_by_name(name)
     return result
