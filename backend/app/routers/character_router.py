@@ -22,6 +22,12 @@ async def save_character_list_in_db(db: AsyncSession = Depends(get_session)):
     result = await service.save_characters_list_in_db()
     return result
 
+@character_router.get("/name/{name}")
+async def get_anime_by_name(name: str, db: AsyncSession = Depends(get_session)):
+    service = CharacterService(db)
+    result = await service.get_character_by_name(name)
+    return result
+
 @character_router.delete("/delete-all-characters")
 async def delete_all_characters(db: AsyncSession = Depends(get_session)):
     service = CharacterService(db)

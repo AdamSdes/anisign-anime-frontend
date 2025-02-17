@@ -23,6 +23,8 @@ class CharacterService:
     async def get_character_by_id(self, character_id: str):
         return await self.character_repository.get_character_by_id(character_id)
     
+    async def get_character_by_name(self, name: str):
+        return await self.character_repository.get_character_by_name(name)
     
     async def parse_page_characters(self, page_num):
         characters = []
