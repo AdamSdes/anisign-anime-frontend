@@ -82,6 +82,10 @@ class UserService:
         user = UserSchema(**user.__dict__)
         return user
     
+    async def get_user_by_name(self, name: str) -> dict:
+        users_list = await self.user_repository.get_user_by_name(name)
+        return users_list
+    
     async def get_user_by_username(self, username: str) -> UserSchema:    
         user = await self.user_repository.get_user_by_username(username)
         user = UserSchema(**user.__dict__)

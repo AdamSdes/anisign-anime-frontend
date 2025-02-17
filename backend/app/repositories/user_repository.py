@@ -26,6 +26,17 @@ class UserRepository():
         user = await self.db.execute(select(User).where(User.id == user_id))
         user = user.scalars().first()
         return user
+    
+    async def get_user_by_name(self, name: str) -> dict:
+        query = select(User).where(
+                User.username.ilike(f'%{name}%')
+        )
+        result = await self.db.execute(query)
+        user_list = result.scalars().all()
+
+        total_count = len(user_list)
+
+        return {"total_count": total_count, "user_list": user_list}
         
     async def get_all_users(self, page: int, limit: int):
         query = select(User).limit(limit).offset((page - 1) * limit)

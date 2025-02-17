@@ -55,6 +55,12 @@ async def get_user_by_id(user_id: UUID, db: AsyncSession = Depends(get_session))
     # if check:
     user = await service.get_user_by_id(user_id)
     return user
+
+@user_router.get("/name/{name}")
+async def get_user_by_name(name: str, db: AsyncSession = Depends(get_session)):
+    service = UserService(db)
+    result = await service.get_user_by_name(name)
+    return result
     
 
 @user_router.get("/get-user-by-username/{username}")
