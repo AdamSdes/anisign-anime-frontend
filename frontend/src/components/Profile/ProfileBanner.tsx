@@ -63,7 +63,7 @@ const ProfileBanner: React.FC<ProfileBannerProps> = ({
     };
 
     return (
-        <div className="relative w-full h-full">
+        <div className="relative  w-full h-full">
             <div className="relative w-full h-full banner-background">
                 {!bannerUrl && (
                     <div className="w-full h-full bg-gradient-to-b from-white/[0.02] to-transparent" />
@@ -71,24 +71,17 @@ const ProfileBanner: React.FC<ProfileBannerProps> = ({
 
                 {/* Обновленная кнопка загрузки */}
                 {isOwnProfile && !isLoading && (
-                    <div className="absolute bottom-6 right-6 flex items-center gap-3">
+                    <div className="absolute z-1 top-5 right-6 flex items-center gap-3">
                         <motion.button
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             onClick={onUploadClick}
-                            className="group flex items-center gap-3 px-5 py-3 bg-[#060606]/90 hover:bg-[#060606] border border-white/10 hover:border-white/20 rounded-xl backdrop-blur-xl transition-all duration-300"
+                            className="group z-10 flex items-center gap-3 px-5 py-3 bg-[#060606]/90 hover:bg-[#060606] border border-white/10 hover:border-white/20 rounded-xl backdrop-blur-xl transition-all duration-300"
                         >
-                            <div className="p-2 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.08] transition-colors">
+                            <div className="p-2 rounded-lg transition-colors">
                                 <Camera className="w-4 h-4 text-white/60 group-hover:text-white/90 transition-colors" />
                             </div>
-                            <div className="flex flex-col items-start">
-                                <span className="text-sm font-medium text-white/80 group-hover:text-white/90">
-                                    Обновить баннер
-                                </span>
-                                <span className="text-xs text-white/40 group-hover:text-white/60">
-                                    JPG, PNG или WebP
-                                </span>
-                            </div>
+
                         </motion.button>
 
                     </div>

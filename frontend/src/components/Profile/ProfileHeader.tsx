@@ -81,7 +81,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
     return (
         <div className="relative">
-            <div className="absolute inset-x-0 top-0 w-full h-[350px]">
+            <div className="absolute inset-x-0  top-0 w-full h-[350px]">
                 <ProfileBanner 
                     banner={getBannerUrl(currentBanner)}
                     isOwnProfile={isOwnProfile}
