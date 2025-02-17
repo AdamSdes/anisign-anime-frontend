@@ -91,7 +91,7 @@ class CharacterService:
             return None
     
     async def save_characters_list_in_db(self):
-        for x in range(1, 100):
+        for x in range(1, 1000):
             characters = await self.parse_page_characters(x)
             if characters:
                 await self.character_repository.save_characters_list(characters)
