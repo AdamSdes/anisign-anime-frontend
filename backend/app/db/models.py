@@ -77,7 +77,7 @@ class Character(BaseTable):
     russian = Column(String, index=True, unique=True, nullable=False)
     japanese = Column(String, index=True, nullable=True)
     poster_url = Column(String, index=True, nullable=False) # original
-    description = Column(String, index=True, nullable=True)
+    description = Column(Text, nullable=True)
     
 class AnimeSaveList(BaseTable):
     __tablename__ = 'anime_save_list'

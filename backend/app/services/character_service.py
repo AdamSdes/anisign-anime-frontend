@@ -74,7 +74,7 @@ class CharacterService:
                         "name": character["name"],
                         "russian": character["russian"],
                         "japanese": character["japanese"],
-                        "poster_url": character["poster"]["originalUrl"],
+                        "poster_url": character["poster"]["originalUrl"] if character["poster"] else None,
                         "description": character["description"]
                     }
                     characters.append(transformed_character)
@@ -89,7 +89,7 @@ class CharacterService:
             return None
     
     async def save_characters_list_in_db(self):
-        for x in range(1, 10):
+        for x in range(1, 100):
             characters = await self.parse_page_characters(x)
             if characters:
                 await self.character_repository.save_characters_list(characters)
