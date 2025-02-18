@@ -11,16 +11,21 @@ from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 from app.services.user_service import get_current_user_from_token
-from app.utils.utils import KIND_ENUM ,RATING_ENUM, STATUS_ENUM
+from app.utils.utils import KIND_ENUM ,RATING_ENUM, STATUS_ENUM, COMMENT_TYPE_ENUM
 from app.db.models import User
+from typing import Optional
+
 
 
 comment_router = APIRouter()
 
-@comment_router.post("/create-comment-for-anime")
-async def create_comment_for_anime(anime_id: str, comment_text: str, db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
+@comment_router.post("/create-comment-for-anime/{comment_type}")
+async def create_comment_for_anime(anime_id: str, comment_text: str, reply_to_comment_id: Optional[UUID] = None, comment_type: str = Path(..., description="Select type", enum=COMMENT_TYPE_ENUM), db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
     service = CommentService(db)
-    result = await service.create_comment_for_anime(anime_id, comment_text, current_user.id)
+    if reply_to_comment_id:
+        result = await service.create_comment_for_anime(anime_id, comment_text, current_user.id, comment_type, reply_to_comment_id)
+    else:
+        result = await service.create_comment_for_anime(anime_id, comment_text, current_user.id, comment_type)
     return result
 
 @comment_router.get("/get-all-comments-for-anime/{anime_id}")
@@ -41,4 +46,18 @@ async def update_comment(comment_id: UUID, text: str, db: AsyncSession = Depends
     service = CommentService(db)
     current_user_id = current_user.id
     result = await service.update_comment(comment_id, text, current_user_id)
+    return result
+
+@comment_router.put("/like-comment/{comment_id}")
+async def like_comment(comment_id: UUID, db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
+    service = CommentService(db)
+    current_user_id = current_user.id
+    result = await service.like_comment(comment_id, current_user_id)
+    return result
+
+@comment_router.put("/dislike-comment/{comment_id}")
+async def dislike_comment(comment_id: UUID, db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
+    service = CommentService(db)
+    current_user_id = current_user.id
+    result = await service.dislike_comment(comment_id, current_user_id)
     return result

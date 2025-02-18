@@ -4,6 +4,7 @@ KIND_ENUM = ["tv", "tv_special", "ona", "movie", "ova", "special"]
 RATING_ENUM = ["g","pg","r_plus","r","pg_13"]
 STATUS_ENUM = ["anons", "ongoing", "released"]
 ANIME_SAVE_LIST_ENUM = ["Watching", "Completed", "On Hold", "Dropped", "Plan to Watch"]
+COMMENT_TYPE_ENUM = ["comment", "reply"]
 
 async def hash_password(password: str) -> str:
     hashed_password = bcrypt.hashpw(

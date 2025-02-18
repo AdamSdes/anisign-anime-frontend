@@ -15,9 +15,14 @@ class UserStatusEnum(Enum):
     USER = "user"
     ADMIN = "admin"
     PRO = "pro"
+    
+class CommentTypeEnum(Enum):
+    COMMENT = "comment"
+    REPLY = "reply"
 
 # Create the ENUM type with a name
 user_status_enum = ENUM(UserStatusEnum.USER, UserStatusEnum.ADMIN, UserStatusEnum.PRO, name='userstatusenum')
+comment_type_enum = ENUM(CommentTypeEnum.COMMENT, CommentTypeEnum.REPLY, name='commenttypeenum')
 
 class User(BaseTable):
     __tablename__ = 'users'
@@ -92,6 +97,10 @@ class Comment(BaseTable):
     text = Column(String, index=True, nullable=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
+    likes = Column(Integer, index=True, nullable=True)
+    user_liked_list = Column(ARRAY(UUID), nullable=True)
+    comment_type = Column(comment_type_enum, index=True, nullable=True)
+    reply_to_comment_id = Column(UUID, nullable=True)
     
     anime = relationship('Anime', back_populates='comments')
     user = relationship('User', back_populates='user_comments')
