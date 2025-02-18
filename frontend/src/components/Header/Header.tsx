@@ -132,7 +132,7 @@ const Header = ({ className = '' }) => {
                                                 </div>
                                             </DropdownMenuItem>
                                         </Link>
-
+                                        <Link href="/characters">
                                         <DropdownMenuItem className="flex items-center gap-3 p-3 text-white/60 hover:text-white focus:text-white rounded-lg data-[highlighted]:bg-white/5 cursor-pointer group">
                                             <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
                                                 <Users2 className="h-5 w-5 text-white/80" />
@@ -142,28 +142,31 @@ const Header = ({ className = '' }) => {
                                                 <span className="text-[12px] text-white/40 group-hover:text-white/60">База персонажей</span>
                                             </div>
                                         </DropdownMenuItem>
-
+                                        </Link>
                                         <DropdownMenuSeparator className="my-1 bg-white/5" />
                                         
                                         <DropdownMenuItem className="flex items-center gap-3 p-3 text-white/60 hover:text-white focus:text-white rounded-lg data-[highlighted]:bg-white/5 cursor-pointer group">
                                             <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
                                                 <Flame className="h-5 w-5 text-white/80" />
                                             </div>
-                                            <div className="flex flex-col gap-0.5">
-                                                <span className="text-[14px] font-medium">Популярное</span>
-                                                <span className="text-[12px] text-white/40 group-hover:text-white/60">Топ просмотров</span>
-                                            </div>
+                                            <Link href='/anime-list?order=desc&sort=score&page=1'>
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="text-[14px] font-medium">Популярное</span>
+                                                    <span className="text-[12px] text-white/40 group-hover:text-white/60">Топ просмотров</span>
+                                                </div>
+                                            </Link>
                                         </DropdownMenuItem>
-
-                                        <DropdownMenuItem className="flex items-center gap-3 p-3 text-white/60 hover:text-white focus:text-white rounded-lg data-[highlighted]:bg-white/5 cursor-pointer group">
-                                            <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
-                                                <PlayCircle className="h-5 w-5 text-white/80" />
-                                            </div>
-                                            <div className="flex flex-col gap-0.5">
-                                                <span className="text-[14px] font-medium">Онгоинги</span>
-                                                <span className="text-[12px] text-white/40 group-hover:text-white/60">Текущие релизы</span>
-                                            </div>
-                                        </DropdownMenuItem>
+                                        <Link href='/anime-list?page=1&status=ongoing&order=desc&sort=score'>
+                                            <DropdownMenuItem className="flex items-center gap-3 p-3 text-white/60 hover:text-white focus:text-white rounded-lg data-[highlighted]:bg-white/5 cursor-pointer group">
+                                                <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
+                                                    <PlayCircle className="h-5 w-5 text-white/80" />
+                                                </div>
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="text-[14px] font-medium">Онгоинги</span>
+                                                    <span className="text-[12px] text-white/40 group-hover:text-white/60">Текущие релизы</span>
+                                                </div>
+                                            </DropdownMenuItem>
+                                        </Link>
                                     </div>
                                 </DropdownMenuContent>
                             </DropdownMenu>

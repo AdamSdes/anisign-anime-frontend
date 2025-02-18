@@ -41,7 +41,12 @@ const EmblaCarousel = ({ options }: EmblaCarouselProps) => {
     useEffect(() => {
         const fetchAnimeList = async () => {
             try {
-                const data = await getAnimeList({ limit: 10 })
+                const data = await getAnimeList({ 
+                    limit: 10,
+                    status: 'ongoing',
+                    sort_by: 'score',
+                    sort_order: 'desc'
+                })
                 setAnimeList(data.anime_list)
                 setError(null)
             } catch (error) {
@@ -93,7 +98,7 @@ const EmblaCarousel = ({ options }: EmblaCarouselProps) => {
             <div className="grid grid-cols-4 gap-6">
                 {[...Array(4)].map((_, index) => (
                     <div key={index} className="animate-pulse">
-                        <div className="w-[261px] h-[368px] rounded-[16px] bg-white/5" />
+                        <div className="w-[200px] h-[300px] rounded-[16px] bg-white/5" />
                     </div>
                 ))}
             </div>
@@ -114,28 +119,48 @@ const EmblaCarousel = ({ options }: EmblaCarouselProps) => {
                 <div className="embla__container">
                     {animeList.map((anime) => (
                         <div className="embla__slide" key={anime.anime_id}>
-                            <Link href={generateAnimeUrl(anime)} className="relative w-[261px] h-[368px] rounded-[16px] overflow-hidden border-none bg-none group block">
-                                <Image
-                                    src={anime.poster_url}
-                                    alt={anime.russian || anime.name}
-                                    width={261}
-                                    height={368}
-                                    className="w-full h-full object-cover"
-                                    priority={animeList.indexOf(anime) === 0}
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent pointer-events-none z-10" />
-                                <div className="absolute bottom-0 w-full p-4 text-white z-20">
-                                    <p className="text-[14px] text-start font-semibold">
+                            <Link href={generateAnimeUrl(anime)} className="group relative w-[200px] block">
+                                {/* Image Container */}
+                                <div className="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-white/5">
+                                    {/* Score Badge */}
+                                    {anime.score && (
+                                        <div className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-2 py-0.5">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" className="text-[#FFE4A0]">
+                                                <path fill="currentColor" d="m12 17.27l4.15 2.51c.76.46 1.69-.22 1.49-1.08l-1.1-4.72l3.67-3.18c.67-.58.31-1.68-.57-1.75l-4.83-.41l-1.89-4.46c-.34-.81-1.5-.81-1.84 0L9.19 8.63l-4.83.41c-.88.07-1.24 1.17-.57 1.75l3.67 3.18l-1.1 4.72c-.2.86.73 1.54 1.49 1.08l4.15-2.5z"/>
+                                            </svg>
+                                            <span className="text-xs font-medium text-[#FFE4A0]">{anime.score.toFixed(1)}</span>
+                                        </div>
+                                    )}
+                                    
+                                    <Image
+                                        src={anime.poster_url}
+                                        alt={anime.russian || anime.name}
+                                        width={200}
+                                        height={300}
+                                        priority={animeList.indexOf(anime) === 0}
+                                        className="w-full h-full object-cover transition-transform duration-300 scale-105 group-hover:scale-110"
+                                    />
+                                </div>
+
+                                {/* Info */}
+                                <div className="mt-2 space-y-1">
+                                    <h3 className="text-xs font-medium line-clamp-2 text-white/90 group-hover:text-white transition-colors">
                                         {anime.russian || anime.name}
-                                    </p>
-                                    <div className="flex gap-[10px] text-sm mt-2 opacity-70">
-                                        <p className="text-[12px]">
-                                            {new Date(anime.aired_on).getFullYear()}
-                                        </p>
-                                        <span>/</span>
-                                        <p className="text-[12px]">
-                                            {transformValue('kind', anime.kind)}
-                                        </p>
+                                    </h3>
+                                    <div className="flex items-center text-[10px] text-white/50 gap-1.5">
+                                        <span>{transformValue('kind', anime.kind)}</span>
+                                        {anime.aired_on && (
+                                            <>
+                                                <div className="w-1 h-1 rounded-full bg-white/20" />
+                                                <span>{new Date(anime.aired_on).getFullYear()}</span>
+                                            </>
+                                        )}
+                                        {anime.episodes > 0 && (
+                                            <>
+                                                <div className="w-1 h-1 rounded-full bg-white/20" />
+                                                <span>{anime.episodes} эп.</span>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </Link>
@@ -152,11 +177,11 @@ const EmblaCarousel = ({ options }: EmblaCarouselProps) => {
                         disabled={prevBtnDisabled}
                         className={`
                             w-11 h-11 flex items-center justify-center rounded-full
-                            border border-white/10 bg-surface/80
-                            transition-all duration-300 backdrop-blur-sm
+                            border border-white/10 bg-white/[0.02]
+                            transition-all duration-200
                             ${prevBtnDisabled 
                                 ? 'opacity-40 cursor-not-allowed' 
-                                : 'hover:bg-white/5 hover:border-white/20'}
+                                : 'hover:bg-white/[0.04] hover:border-white/20'}
                         `}
                     />
                     <NextButton 
@@ -164,22 +189,22 @@ const EmblaCarousel = ({ options }: EmblaCarouselProps) => {
                         disabled={nextBtnDisabled}
                         className={`
                             w-11 h-11 flex items-center justify-center rounded-full
-                            border border-white/10 bg-surface/80
-                            transition-all duration-300 backdrop-blur-sm
+                            border border-white/10 bg-white/[0.02]
+                            transition-all duration-200
                             ${nextBtnDisabled 
                                 ? 'opacity-40 cursor-not-allowed' 
-                                : 'hover:bg-white/5 hover:border-white/20'}
+                                : 'hover:bg-white/[0.04] hover:border-white/20'}
                         `}
                     />
                 </div>
 
-                <div className="h-11 flex items-center gap-2 px-4 border border-white/10 bg-surface/80 backdrop-blur-sm rounded-full">
+                <div className="h-11 flex items-center gap-2 px-4 border border-white/10 bg-white/[0.02] rounded-full">
                     {scrollSnaps.map((_, index) => (
                         <DotButton
                             key={index}
                             onClick={() => onDotButtonClick(index)}
                             className={`
-                                h-1.5 rounded-full transition-all duration-300
+                                h-1.5 rounded-full transition-all duration-200
                                 ${index === selectedIndex 
                                     ? 'w-3 bg-white' 
                                     : 'w-1.5 bg-white/20 hover:bg-white/40'}
