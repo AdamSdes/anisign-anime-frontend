@@ -1,23 +1,14 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { Command } from 'cmdk';
-import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Image } from "@/components/ui/image";
 import { axiosInstance } from '@/lib/api/axiosConfig';
 import { Search, X, Calendar, Eye, Star } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
-
-interface SearchResult {
-  anime_id: string;
-  name: string;
-  russian: string;
-  score: string;
-  episodes: number;
-  episodes_aired: number;
-  aired_on: string;
-  poster_url: string;
-}
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { getAvatarUrl } from '@/utils/avatar';
+import { Anime } from '@/types/anime';
 
 interface UserSearchResult {
   username: string;
@@ -32,14 +23,28 @@ interface SearchModalProps {
   onClose: () => void;
 }
 
+const kindTransformations: Record<string, string> = {
+  tv: 'ТВ Сериал',
+  tv_special: 'ТВ Спешл',
+  movie: 'Фильм',
+  ova: 'OVA',
+  ona: 'ONA',
+  special: 'Спешл',
+  music: 'Клип'
+};
+
+const getTransformedKind = (kind: string): string => {
+  return kindTransformations[kind] || kind.toUpperCase();
+};
+
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [searchType, setSearchType] = useState<'anime' | 'users'>('anime');
-  const [animeResults, setAnimeResults] = useState<SearchResult[]>([]);
+  const [animeResults, setAnimeResults] = useState<Anime[]>([]);
   const [userResults, setUserResults] = useState<UserSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const debouncedSearch = useDebounce(query, 300);
+  const debouncedSearch = useDebounce(query, 500);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -53,34 +58,35 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       setIsLoading(true);
       try {
         if (searchType === 'anime') {
-          const response = await axiosInstance.get(`/anime/search?search=${debouncedSearch}`);
-          setAnimeResults(response.data.slice(0, 5));
+          try {
+            const response = await axiosInstance.get(`/anime/name/${encodeURIComponent(debouncedSearch)}`);
+            console.log('Anime search response:', response.data);
+            if (response.data && response.data.anime_list) {
+              console.log('First anime in list:', JSON.stringify(response.data.anime_list[0], null, 2));
+              setAnimeResults(response.data.anime_list.slice(0, 5));
+            } else {
+              setAnimeResults([]);
+            }
+          } catch (animeError) {
+            console.error('Error in anime search:', animeError);
+            setAnimeResults([]);
+          }
           setUserResults([]);
         } else {
           try {
-            const response = await axiosInstance.get(`/user/search?username=${debouncedSearch}`);
-            if (response.data && Array.isArray(response.data)) {
-              setUserResults(response.data.slice(0, 5));
-            } else if (response.data) {
-              setUserResults([response.data]);
+            const response = await axiosInstance.get(`/user/name/${debouncedSearch}`);
+            console.log('User search response:', response.data);
+            if (response.data && response.data.user_list) {
+              console.log('User list:', response.data.user_list);
+              setUserResults(response.data.user_list.slice(0, 5));
             } else {
+              console.log('No user list in response');
               setUserResults([]);
             }
             setAnimeResults([]);
           } catch (userError) {
             console.error('Error in user search:', userError);
-            // Try single user endpoint as fallback
-            try {
-              const singleUserResponse = await axiosInstance.get(`/user/get-user-by-username/${debouncedSearch}`);
-              if (singleUserResponse.data) {
-                setUserResults([singleUserResponse.data]);
-              } else {
-                setUserResults([]);
-              }
-            } catch (singleUserError) {
-              console.error('Error in single user search:', singleUserError);
-              setUserResults([]);
-            }
+            setUserResults([]);
           }
         }
       } catch (error) {
@@ -88,6 +94,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         setAnimeResults([]);
         setUserResults([]);
       } finally {
+        console.log('Setting isLoading to false');
         setIsLoading(false);
       }
     };
@@ -111,7 +118,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     return () => document.removeEventListener('keydown', down);
   }, [onClose]);
 
-  const handleSelect = (item: string, type: 'anime' | 'users') => {
+  const handleSelect = (item: string | number, type: 'anime' | 'users') => {
     if (type === 'anime') {
       router.push(`/anime/${item}`);
     } else {
@@ -120,166 +127,176 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     onClose();
   };
 
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
-        >
-          <div className="fixed inset-0 z-[100] flex items-start justify-center pt-24">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="relative w-full max-w-[640px] mx-4"
-            >
-              <Command className="rounded-xl border border-white/5 bg-[#060606]/95 backdrop-blur-xl shadow-2xl">
-                <div className="flex items-center border-b border-white/5 px-4">
-                  <Search className="h-5 w-5 text-white/40" />
-                  <Command.Input
-                    ref={inputRef}
-                    value={query}
-                    onValueChange={setQuery}
-                    placeholder={searchType === 'anime' ? "Поиск аниме..." : "Поиск пользователей..."}
-                    className="flex-1 bg-transparent px-4 py-5 outline-none placeholder:text-white/40 text-[15px] text-white/90"
-                  />
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setSearchType(searchType === 'anime' ? 'users' : 'anime')}
-                      className="px-3 py-1 text-sm text-white/60 hover:text-white/90 transition-colors"
-                    >
-                      {searchType === 'anime' ? 'Аниме' : 'Пользователи'}
-                    </button>
-                    <button
-                      onClick={onClose}
-                      className="p-2 hover:bg-white/5 rounded-lg transition-colors"
-                    >
-                      <X className="h-5 w-5 text-white/40" />
-                    </button>
-                  </div>
-                </div>
+  if (!isOpen) return null;
 
-                <Command.List className="max-h-[400px] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-                  {query.length < 2 ? (
-                    <div className="py-16 text-center">
-                      <Search className="h-8 w-8 text-white/20 mx-auto mb-4" />
-                      <p className="text-white/40 text-sm">
-                        {searchType === 'anime' 
-                          ? "Начните вводить название аниме..."
-                          : "Начните вводить имя пользователя..."}
-                      </p>
-                    </div>
-                  ) : isLoading ? (
-                    <div className="p-4 space-y-4">
-                      {[...Array(3)].map((_, i) => (
-                        <div key={i} className="flex gap-4 items-center animate-pulse">
-                          <div className="w-[100px] h-[140px] rounded-lg bg-white/5" />
-                          <div className="flex-1 space-y-3">
-                            <div className="h-4 w-2/3 bg-white/5 rounded" />
-                            <div className="h-3 w-1/2 bg-white/5 rounded" />
-                            <div className="h-3 w-1/3 bg-white/5 rounded" />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : searchType === 'anime' ? (
-                    animeResults.length === 0 ? (
-                      <div className="py-16 text-center">
-                        <p className="text-white/40 text-sm">Ничего не найдено</p>
-                      </div>
-                    ) : (
-                      animeResults.map((anime) => (
-                        <Command.Item
-                          key={anime.anime_id}
-                          value={anime.name}
-                          onSelect={() => handleSelect(anime.anime_id, 'anime')}
-                          className="px-4 py-3 rounded-lg hover:bg-white/5 cursor-pointer transition-colors"
-                        >
-                          <div className="flex gap-4">
-                            <div className="relative w-[100px] h-[140px] rounded-lg overflow-hidden bg-white/5">
-                              <Image
-                                src={anime.poster_url}
-                                alt={anime.russian || anime.name}
-                                className="object-cover"
-                                fill
-                                sizes="100px"
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-[15px] font-medium text-white/90 mb-2">
-                                {anime.russian || anime.name}
-                              </h4>
-                              <div className="flex items-center gap-4 text-[13px] text-white/40 mb-3">
-                                <div className="flex items-center gap-1.5">
-                                  <Calendar className="h-4 w-4" />
-                                  <span>{new Date(anime.aired_on).getFullYear()}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                  <Eye className="h-4 w-4" />
-                                  <span>{anime.episodes} эп.</span>
-                                </div>
-                                {anime.score && (
-                                  <div className="flex items-center gap-1.5">
-                                    <Star className="h-4 w-4" />
-                                    <span>{anime.score}</span>
-                                  </div>
-                                )}
-                              </div>
-                              <p className="text-[13px] text-white/40">
-                                {anime.name}
-                              </p>
-                            </div>
-                          </div>
-                        </Command.Item>
-                      ))
-                    )
-                  ) : (
-                    userResults.length === 0 ? (
-                      <div className="py-16 text-center">
-                        <p className="text-white/40 text-sm">Пользователь не найден</p>
-                      </div>
-                    ) : (
-                      userResults.map((user) => (
-                        <Command.Item
-                          key={user.id}
-                          value={user.username}
-                          onSelect={() => handleSelect(user.username, 'users')}
-                          className="px-4 py-3 rounded-lg hover:bg-white/5 cursor-pointer transition-colors"
-                        >
-                          <div className="flex gap-4 items-center">
-                            <div className="relative w-[50px] h-[50px] rounded-full overflow-hidden bg-white/5">
-                              <Image
-                                src={user.user_avatar}
-                                alt={user.username}
-                                className="object-cover"
-                                fill
-                                sizes="50px"
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-[15px] font-medium text-white/90">
-                                {user.nickname || user.username}
-                              </h4>
-                              <p className="text-[13px] text-white/40">
-                                @{user.username}
-                              </p>
-                            </div>
-                          </div>
-                        </Command.Item>
-                      ))
-                    )
-                  )}
-                </Command.List>
-              </Command>
-            </motion.div>
+  const EmptyState = () => (
+    <div className="py-20 text-center">
+      <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6">
+        <Search className="h-8 w-8 text-white/20" />
+      </div>
+      <p className="text-white/40 text-[15px]">
+        {query.length < 2
+          ? searchType === 'anime' 
+            ? "Начните вводить название аниме..."
+            : "Начните вводить имя пользователя..."
+          : searchType === 'anime' 
+            ? "Ничего не найдено" 
+            : "Пользователь не найден"
+        }
+      </p>
+    </div>
+  );
+
+  const LoadingState = () => (
+    <div className="px-4 space-y-4">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="flex gap-4 items-center animate-pulse">
+          <div className="w-[120px] h-[170px] rounded-xl bg-white/5" />
+          <div className="flex-1 space-y-4">
+            <div className="h-5 w-2/3 bg-white/5 rounded-lg" />
+            <div className="h-4 w-1/2 bg-white/5 rounded-lg" />
+            <div className="flex gap-3">
+              {[...Array(3)].map((_, j) => (
+                <div key={j} className="h-8 w-20 bg-white/5 rounded-lg" />
+              ))}
+            </div>
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm transition-all duration-200">
+      <div className="fixed inset-0 z-[100] flex items-start justify-center pt-20" onClick={onClose}>
+        <div className="relative w-full max-w-[700px] mx-4" onClick={(e) => e.stopPropagation()}>
+          <Command shouldFilter={false} className="rounded-2xl border border-white/5 bg-[#060606]/95 backdrop-blur-xl shadow-2xl overflow-hidden">
+            <div className="flex items-center border-b border-white/5 px-6">
+              <Search className="h-5 w-5 text-white/30" />
+              <Command.Input
+                ref={inputRef}
+                value={query}
+                onValueChange={setQuery}
+                placeholder={searchType === 'anime' ? "Поиск аниме..." : "Поиск пользователей..."}
+                className="flex-1 bg-transparent px-4 py-6 outline-none placeholder:text-white/30 text-[15px] text-white/90"
+              />
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSearchType(searchType === 'anime' ? 'users' : 'anime')}
+                  className={`px-4 py-1.5 rounded-full text-sm transition-all duration-200 ${
+                    searchType === 'anime' 
+                      ? 'bg-white/10 text-white' 
+                      : 'text-white/40 hover:text-white/60'
+                  }`}
+                >
+                  {searchType === 'anime' ? 'Аниме' : 'Пользователи'}
+                </button>
+                <div className="w-[1px] h-6 bg-white/5" />
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="p-2 hover:bg-white/5 rounded-lg transition-colors group"
+                >
+                  <X className="h-5 w-5 text-white/40 group-hover:text-white/60 transition-colors" />
+                </button>
+              </div>
+            </div>
+
+            <Command.List className="max-h-[600px] overflow-y-auto py-4 px-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+              {query.length < 2 || (searchType === 'anime' ? animeResults.length === 0 : userResults.length === 0) ? (
+                <EmptyState />
+              ) : isLoading ? (
+                <LoadingState />
+              ) : (
+                <Command.Group>
+                  {searchType === 'anime' && animeResults.map((anime) => (
+                    <Command.Item
+                      key={anime.anime_id}
+                      value={anime.russian || anime.english || ''}
+                      onSelect={() => handleSelect(anime.anime_id, 'anime')}
+                      className="px-4 py-3 rounded-xl hover:bg-white/5 cursor-pointer transition-all group"
+                    >
+                      <div className="flex gap-4">
+                        <div className="relative w-[120px] h-[170px] rounded-xl overflow-hidden bg-white/5 group-hover:shadow-lg transition-all">
+                          <Image
+                            src={anime.poster_url}
+                            alt={anime.russian || anime.english}
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            fill="true"
+                            sizes="120px"
+                          />
+                          {anime.score > 0 && (
+                            <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-2 py-0.5">
+                              <Star className="h-3 w-3 text-[#FFE4A0]" />
+                              <span className="text-xs font-medium text-[#FFE4A0]">{anime.score.toFixed(1)}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0 py-1">
+                          <h4 className="text-[15px] font-medium text-white/90 mb-2 group-hover:text-white transition-colors">
+                            {anime.russian || anime.english || anime.name}
+                          </h4>
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            <span className="px-3 py-1.5 text-xs rounded-lg bg-white/5 text-white/60">
+                              {getTransformedKind(anime.kind)}
+                            </span>
+                            {anime.episodes > 0 && (
+                              <span className="px-3 py-1.5 text-xs rounded-lg bg-white/5 text-white/60">
+                                {anime.episodes} эпизодов
+                              </span>
+                            )}
+                            {anime.aired_on && (
+                              <span className="px-3 py-1.5 text-xs rounded-lg bg-white/5 text-white/60">
+                                {new Date(anime.aired_on).getFullYear()}
+                              </span>
+                            )}
+                          </div>
+                          {anime.description && (
+                            <p className="text-sm text-white/40 line-clamp-2">
+                              {anime.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </Command.Item>
+                  ))}
+
+                  {searchType === 'users' && userResults.map((user) => (
+                    <Command.Item
+                      key={user.id}
+                      value={user.username}
+                      onSelect={() => handleSelect(user.username, 'users')}
+                      className="px-4 py-3 rounded-xl hover:bg-white/5 cursor-pointer transition-all group"
+                    >
+                      <div className="flex gap-4 items-center">
+                        <Avatar className="w-14 h-14 rounded-xl border-2 border-transparent group-hover:border-white/10 transition-all">
+                          <AvatarImage
+                            src={getAvatarUrl(user.user_avatar)}
+                            alt={user.username}
+                            className="object-cover"
+                          />
+                          <AvatarFallback className="text-lg font-medium">
+                            {user.nickname?.[0]?.toUpperCase() || user.username[0].toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-[15px] font-medium text-white/90 group-hover:text-white transition-colors">
+                            {user.nickname || user.username}
+                          </h4>
+                          <p className="text-sm text-white/40">
+                            @{user.username}
+                          </p>
+                        </div>
+                      </div>
+                    </Command.Item>
+                  ))}
+                </Command.Group>
+              )}
+            </Command.List>
+          </Command>
+        </div>
+      </div>
+    </div>
   );
 }
