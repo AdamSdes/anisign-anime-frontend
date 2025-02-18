@@ -73,7 +73,9 @@ class CommentRepository:
         comment.likes -= 1
         if comment.user_liked_list is None:
             comment.user_liked_list = []
-        comment.user_liked_list.remove(user_id)
+        else:
+            if user_id in comment.user_liked_list:
+                comment.user_liked_list = list(filter(lambda x: x != user_id, comment.user_liked_list))
         await self.db.commit()
         return {"message": "Comment disliked successfully"}
     
