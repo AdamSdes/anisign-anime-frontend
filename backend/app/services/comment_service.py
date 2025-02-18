@@ -49,6 +49,8 @@ class CommentService:
             logger.error(f"Error in create_comment_for_anime: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Internal Server Error {str(e)}")
         
+
+        
     async def get_all_comments_for_anime(self, anime_id: str):
         # Validate anime
         check = await self.anime_repository.get_anime_by_id_uuid(anime_id)
@@ -68,21 +70,42 @@ class CommentService:
             logger.error(f"Error in get_all_comments_for_anime: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Internal Server Error {str(e)}")
         
-    async def delete_comment(self, comment_id: UUID):
-        try:
-            result = await self.comment_repository.delete_comment(comment_id)
-            return result
-        except Exception as e:
-            logger.error(f"Error in delete_comment: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Internal Server Error {str(e)}")
         
-    async def update_comment(self, comment_id: UUID, text: str):
-        # Validate comment text
-        if not text or len(text.strip()) == 0:
-            raise HTTPException(status_code=400, detail="Comment text cannot be empty")
-        try:
-            result = await self.comment_repository.update_comment(comment_id, text)
-            return result
-        except Exception as e:
-            logger.error(f"Error in update_comment: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Internal Server Error {str(e)}")
+    async def delete_comment(self, comment_id: UUID, user_id: UUID):
+        check = await self.user_repository.get_user_by_id(user_id)
+        if not check:
+            raise HTTPException(status_code=404, detail="User not found")
+        check = await self.comment_repository.get_comment_by_id(comment_id)
+        if not check:
+            raise HTTPException(status_code=404, detail="Comment not found")
+        check_user_permission = await self.comment_repository.check_user_permission_to_comment(user_id, comment_id)
+        if not check_user_permission:
+            raise HTTPException(status_code=403, detail="You are not authorized to delete this comment")
+        else:
+            try:
+                result = await self.comment_repository.delete_comment(comment_id)
+                return result
+            except Exception as e:
+                logger.error(f"Error in delete_comment: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Internal Server Error {str(e)}")
+        
+    async def update_comment(self, comment_id: UUID, text: str, user_id: UUID):
+        check = await self.user_repository.get_user_by_id(user_id)
+        if not check:
+            raise HTTPException(status_code=404, detail="User not found")
+        check = await self.comment_repository.get_comment_by_id(comment_id)
+        if not check:
+            raise HTTPException(status_code=404, detail="Comment not found")
+        check_user_permission = await self.comment_repository.check_user_permission_to_comment(user_id, comment_id)
+        if not check_user_permission:
+            raise HTTPException(status_code=403, detail="You are not authorized to delete this comment")
+        else:
+            # Validate comment text
+            if not text or len(text.strip()) == 0:
+                raise HTTPException(status_code=400, detail="Comment text cannot be empty")
+            try:
+                result = await self.comment_repository.update_comment(comment_id, text)
+                return result
+            except Exception as e:
+                logger.error(f"Error in update_comment: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Internal Server Error {str(e)}")

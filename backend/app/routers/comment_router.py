@@ -30,13 +30,15 @@ async def get_all_comments_for_anime(anime_id: str, db: AsyncSession = Depends(g
     return result
 
 @comment_router.delete("/delete-comment/{comment_id}")
-async def delete_comment(comment_id: UUID, db: AsyncSession = Depends(get_session)):
+async def delete_comment(comment_id: UUID, db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
     service = CommentService(db)
-    result = await service.delete_comment(comment_id)
+    current_user_id = current_user.id
+    result = await service.delete_comment(comment_id, current_user_id)
     return result
 
 @comment_router.put("/update-comment/{comment_id}")
-async def update_comment(comment_id: UUID, text: str, db: AsyncSession = Depends(get_session)):
+async def update_comment(comment_id: UUID, text: str, db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
     service = CommentService(db)
-    result = await service.update_comment(comment_id, text)
+    current_user_id = current_user.id
+    result = await service.update_comment(comment_id, text, current_user_id)
     return result
