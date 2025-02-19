@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Search as SearchIcon, X, Filter } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
+import FilterSidebar from './FilterSidebar'
 
 const Search = () => {
     const router = useRouter()
@@ -13,6 +15,7 @@ const Search = () => {
     const searchParams = useSearchParams()
     const [inputValue, setInputValue] = useState(searchParams.get('search') ?? '')
     const [isFocused, setIsFocused] = useState(false)
+    const [isFilterOpen, setIsFilterOpen] = useState(false)
 
     // Debounced search handler
     const debouncedSearch = useCallback(
@@ -101,15 +104,27 @@ const Search = () => {
                     </AnimatePresence>
                 </div>
 
-                {/* Фильтр кнопка только для экранов меньше 1024px */}
+                {/* Фильтр кнопка для мобильной версии */}
                 <div className="lg:hidden pr-2">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="w-[42px] h-[42px] rounded-lg bg-white/5 hover:bg-white/10"
-                    >
-                        <Filter className="w-4 h-4 text-white[/60]" />
-                    </Button>
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="w-[42px] h-[42px] rounded-lg bg-white/5 hover:bg-white/10"
+                            >
+                                <Filter className="w-4 h-4 text-white/60" />
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="right" className="w-full sm:w-[540px] bg-[#060606]/95 backdrop-blur-xl border-white/5 p-6">
+                            <SheetTitle className="text-lg font-medium text-white/90 mb-6">
+                                Фильтры
+                            </SheetTitle>
+                            <div className="h-full overflow-y-auto">
+                                <FilterSidebar />
+                            </div>
+                        </SheetContent>
+                    </Sheet>
                 </div>
             </div>
         </div>

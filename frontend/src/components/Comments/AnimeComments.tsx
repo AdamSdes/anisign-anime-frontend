@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { getAvatarUrl } from '@/utils/avatar';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MessageCircle, Bold, Clock, EyeOff, Smile, Eye } from 'lucide-react';
+import { MessageCircle, Bold, Clock, EyeOff, Smile, Eye, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import EmojiPicker from 'emoji-picker-react';
 import {
@@ -21,7 +21,7 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import { MoreHorizontal, ThumbsUp, Reply, Flag, Edit, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Reply, Flag, Edit, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,6 +39,8 @@ interface Comment {
   user_id: string;
   anime_id: string;
   created_at?: string;
+  likes?: number;
+  user_liked_list: string[];
 }
 
 interface UserInfo {
@@ -226,14 +228,27 @@ CommentText.displayName = 'CommentText';
 export default function AnimeComments({ animeId }: AnimeCommentsProps) {
   const [comments, setComments] = useState<CommentWithUser[]>([]);
   const [newComment, setNewComment] = useState('');
-  const { user, token } = useAuthStore();
+  const { user, token, isAuthenticated } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formatting, setFormatting] = useState<CommentFormattingState>({
     isBold: false,
     isSpoiler: false,
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [likedComments, setLikedComments] = useState<{ [key: string]: boolean }>({});
+  const [optimisticLikes, setOptimisticLikes] = useState<{ [key: string]: boolean }>({});
 
   console.log('AnimeComments received animeId:', animeId, typeof animeId);
+
+  useEffect(() => {
+    if (comments) {
+      const initialLikedState = comments.reduce((acc, comment) => ({
+        ...acc,
+        [comment.id]: comment.user_liked_list?.includes(user?.username || '')
+      }), {});
+      setLikedComments(initialLikedState);
+    }
+  }, [comments, user]);
 
   // Мемоизируем функцию обработки изменения текста комментария
   const handleCommentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -242,132 +257,76 @@ export default function AnimeComments({ animeId }: AnimeCommentsProps) {
 
   const fetchUserInfo = async (userId: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/get-user/${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/get-user/${userId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch user info');
       }
-      const data = await response.json();
-      console.log('User info received:', data);
-      return data;
+      return await response.json();
     } catch (error) {
       console.error('Error fetching user info:', error);
       return null;
     }
   };
 
-  useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        console.log('Fetching comments for anime:', animeId);
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/comment/get-all-comments-for-anime/${animeId}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch comments: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('Received comments data:', data);
-        
-        if (Array.isArray(data)) {
-          // Получаем информацию о пользователях для каждого комментария
-          const commentsWithUserInfo = await Promise.all(
-            data.map(async (comment) => {
-              const userInfo = await fetchUserInfo(comment.user_id);
-              return { ...comment, userInfo };
-            })
-          );
-          setComments(commentsWithUserInfo);
-          console.log('Comments with user info:', commentsWithUserInfo);
-        } else {
-          console.error('Unexpected data structure:', data);
-          setComments([]);
-        }
-      } catch (error) {
-        console.error('Error fetching comments:', error);
-        setComments([]);
+  const fetchComments = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comment/get-all-comments-for-anime/${animeId}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch comments');
       }
-    };
 
-    if (animeId && token) {
-      fetchComments();
+      const data = await response.json();
+      
+      // Получаем информацию о пользователях для каждого комментария
+      const commentsWithUserInfo = await Promise.all(
+        data.map(async (comment: Comment) => {
+          const userInfo = await fetchUserInfo(comment.user_id);
+          return { ...comment, userInfo };
+        })
+      );
+
+      setComments(commentsWithUserInfo);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+    } finally {
+      setIsLoading(false);
     }
-  }, [animeId, token]);
+  }, [animeId]);
+
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
 
   const handleSubmitComment = async () => {
     if (!newComment.trim() || isSubmitting || !token || !animeId) return;
 
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
-      
       const params = new URLSearchParams({
         anime_id: animeId,
         comment_text: newComment.trim()
       });
-      
-      console.log('Sending request with params:', params.toString());
-      
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comment/create-comment-for-anime?${params.toString()}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
 
-      const responseData = await response.json();
-      console.log('Server response:', responseData);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/comment/create-comment-for-anime/comment?${params.toString()}`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'accept': 'application/json'
+          }
+        }
+      );
 
       if (!response.ok) {
-        const errorMessage = responseData.detail 
-          ? Array.isArray(responseData.detail)
-            ? responseData.detail.map((err: any) => {
-                console.log('Error detail:', err);
-                return `${err.loc?.join('.')}: ${err.msg}` || err;
-              }).join(', ')
-            : responseData.detail
-          : 'Failed to create comment';
-        throw new Error(errorMessage);
+        const errorText = await response.text();
+        throw new Error(`Failed to create comment: ${response.status} ${errorText}`);
       }
 
-      const newCommentData = responseData;
-      
-      const tempUserInfo = {
-        username: user?.username || 'anonymous',
-        user_avatar: user?.avatar || '',
-        user_banner: '',
-        nickname: user?.nickname || null,
-        id: user?.id || ''
-      };
-
-      const commentWithUser = { 
-        ...newCommentData, 
-        userInfo: tempUserInfo 
-      };
-      
-      setComments(prevComments => [commentWithUser, ...prevComments]);
       setNewComment('');
-
-      const userInfo = await fetchUserInfo(newCommentData.user_id);
-      if (userInfo) {
-        setComments(prevComments => 
-          prevComments.map(comment => 
-            comment.id === newCommentData.id 
-              ? { ...comment, userInfo }
-              : comment
-          )
-        );
-      }
+      await fetchComments();
     } catch (error) {
       console.error('Error creating comment:', error);
     } finally {
@@ -409,229 +368,312 @@ export default function AnimeComments({ animeId }: AnimeCommentsProps) {
     setNewComment(newText);
   };
 
+  const handleLike = async (comment: Comment) => {
+    if (!token || !user?.username) return;
+
+    const isCurrentlyLiked = optimisticLikes[comment.id] ?? comment.user_liked_list?.includes(user.username);
+    
+    // Оптимистично обновляем UI
+    setOptimisticLikes(prev => ({
+      ...prev,
+      [comment.id]: !isCurrentlyLiked
+    }));
+
+    try {
+      const endpoint = isCurrentlyLiked ? 'dislike-comment' : 'like-comment';
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/comment/${endpoint}/${comment.id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'accept': 'application/json',
+          },
+        }
+      );
+      if (!response.ok) {
+        // Если запрос не удался, возвращаем предыдущее состояние
+        setOptimisticLikes(prev => ({
+          ...prev,
+          [comment.id]: isCurrentlyLiked
+        }));
+        throw new Error(`Failed to ${isCurrentlyLiked ? 'remove like from' : 'like'} comment`);
+      }
+      await fetchComments();
+    } catch (error) {
+      console.error('Error handling like:', error);
+    }
+  };
+
+  const handleDislike = async (commentId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/comment/dislike-comment/${commentId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'accept': 'application/json',
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Failed to dislike comment');
+      }
+      await fetchComments();
+    } catch (error) {
+      console.error('Error disliking comment:', error);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Comment Form */}
-      <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <MessageCircle className="w-5 h-5 text-white/60" />
-            <h3 className="text-[18px] font-semibold text-white/90">
-              Комментарии 
-              <span className="text-[14px] text-white/40 ml-2">
-                {comments.length}
-              </span>
-            </h3>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-[13px] text-white/40 hover:text-white/90"
-            >
-              Новые
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-[13px] text-white/40 hover:text-white/90"
-            >
-              Старые
-            </Button>
-          </div>
-        </div>
-
-        <TooltipProvider>
-          <div className="flex gap-4">
-            <div className="flex flex-col items-center gap-2">
-              <CommentAvatar userInfo={user} />
+      {isAuthenticated && (
+        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <MessageCircle className="w-5 h-5 text-white/60" />
+              <h3 className="text-[18px] font-semibold text-white/90">
+                Комментарии 
+                <span className="text-[14px] text-white/40 ml-2">
+                  {comments.length}
+                </span>
+              </h3>
             </div>
-            <div className="flex-1 space-y-4">
-              <Textarea
-                value={newComment}
-                onChange={handleCommentChange}
-                placeholder="Написать комментарий..."
-                className="min-h-[100px] bg-white/[0.02] border-white/5 resize-none focus:ring-[#CCBAE4]/20 placeholder:text-white/40 text-[14px]"
-                disabled={isSubmitting}
-              />
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn("h-8 w-8", formatting.isBold && "bg-white/10")}
-                        onClick={() => insertFormatting('bold')}
-                      >
-                        <Bold className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Жирный текст</p>
-                    </TooltipContent>
-                  </Tooltip>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-[13px] text-white/40 hover:text-white/90"
+              >
+                Новые
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-[13px] text-white/40 hover:text-white/90"
+              >
+                Старые
+              </Button>
+            </div>
+          </div>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn("h-8 w-8", formatting.isSpoiler && "bg-white/10")}
-                        onClick={() => insertFormatting('spoiler')}
-                      >
-                        <EyeOff className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Спойлер</p>
-                    </TooltipContent>
-                  </Tooltip>
+          <TooltipProvider>
+            <div className="flex gap-4">
+              <div className="flex flex-col items-center gap-2">
+                <CommentAvatar userInfo={user} />
+              </div>
+              <div className="flex-1 space-y-4">
+                <Textarea
+                  value={newComment}
+                  onChange={handleCommentChange}
+                  placeholder="Написать комментарий..."
+                  className="min-h-[100px] bg-white/[0.02] border-white/5 resize-none focus:ring-[#CCBAE4]/20 placeholder:text-white/40 text-[14px]"
+                  disabled={isSubmitting}
+                />
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={cn("h-8 w-8", formatting.isBold && "bg-white/10")}
+                          onClick={() => insertFormatting('bold')}
+                        >
+                          <Bold className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Жирный текст</p>
+                      </TooltipContent>
+                    </Tooltip>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => insertFormatting('timestamp')}
-                      >
-                        <Clock className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Таймкод</p>
-                    </TooltipContent>
-                  </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={cn("h-8 w-8", formatting.isSpoiler && "bg-white/10")}
+                          onClick={() => insertFormatting('spoiler')}
+                        >
+                          <EyeOff className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Спойлер</p>
+                      </TooltipContent>
+                    </Tooltip>
 
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                      >
-                        <Smile className="h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80 p-0">
-                      <EmojiPicker
-                        onEmojiClick={onEmojiClick}
-                        width="100%"
-                        height={400}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => insertFormatting('timestamp')}
+                        >
+                          <Clock className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Таймкод</p>
+                      </TooltipContent>
+                    </Tooltip>
 
-                <div className="ml-auto">
-                  <Button
-                    onClick={handleSubmitComment}
-                    disabled={isSubmitting || !newComment.trim()}
-                    className={cn(
-                      "h-[45px] px-6 rounded-xl font-medium transition-all duration-200",
-                      "bg-[#CCBAE4] hover:bg-[#CCBAE4]/90 text-black",
-                      "disabled:opacity-50 disabled:cursor-not-allowed"
-                    )}
-                  >
-                    {isSubmitting ? (
-                      <div className="flex items-center gap-2">
-                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        <span>Отправка...</span>
-                      </div>
-                    ) : (
-                      'Отправить комментарий'
-                    )}
-                  </Button>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                        >
+                          <Smile className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80 p-0">
+                        <EmojiPicker
+                          onEmojiClick={onEmojiClick}
+                          width="100%"
+                          height={400}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="ml-auto">
+                    <Button
+                      onClick={handleSubmitComment}
+                      disabled={isSubmitting || !newComment.trim()}
+                      className={cn(
+                        "h-[45px] px-6 rounded-xl font-medium transition-all duration-200",
+                        "bg-[#CCBAE4] hover:bg-[#CCBAE4]/90 text-black",
+                        "disabled:opacity-50 disabled:cursor-not-allowed"
+                      )}
+                    >
+                      {isSubmitting ? (
+                        <div className="flex items-center gap-2">
+                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          <span>Отправка...</span>
+                        </div>
+                      ) : (
+                        'Отправить комментарий'
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </TooltipProvider>
-      </div>
+          </TooltipProvider>
+        </div>
+      )}
+      {!isAuthenticated && (
+        <div className="rounded-lg border border-white/[0.03] bg-white/[0.02] p-4 text-center text-white/60">
+          Чтобы оставить комментарий, необходимо <a href="/login" className="text-blue-400 hover:underline">войти</a> в аккаунт
+        </div>
+      )}
 
       {/* Comments List */}
       <div className="space-y-4">
-        {Array.isArray(comments) && comments.length > 0 ? (
+        {isLoading ? (
+          <div className="space-y-4">
+            {[...Array(3)].map((_, index) => (
+              <div
+                key={index}
+                className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6"
+              >
+                <div className="flex gap-4 items-start">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="flex-1">
+                    <Skeleton className="h-4 w-32 mb-2" />
+                    <Skeleton className="h-20 w-full" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : comments.length > 0 ? (
           comments.map((comment) => (
-            <div key={comment.id} className="group relative flex gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-6">
-              <div className="flex flex-col items-center gap-2">
+            <div
+              key={comment.id}
+              className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6"
+            >
+              <div className="flex gap-4 items-start">
                 <Popover>
-                  <PopoverTrigger asChild>
-                    <button className="hover:opacity-80 transition-opacity">
-                      <CommentAvatar userInfo={comment.userInfo} />
-                    </button>
+                  <PopoverTrigger>
+                    <CommentAvatar userInfo={comment.userInfo} />
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-80 border-white/[0.03] bg-[#060606] p-4">
                     <ProfileMiniCard userInfo={comment.userInfo} />
                   </PopoverContent>
                 </Popover>
-              </div>
 
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button className="font-medium text-white/90 hover:text-white transition-colors">
-                        {comment.userInfo?.nickname || comment.userInfo?.username || 'Пользователь'}
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <ProfileMiniCard userInfo={comment.userInfo} />
-                    </PopoverContent>
-                  </Popover>
-                  <span className="text-sm text-white/40">
-                    {comment.created_at ? new Date(comment.created_at).toLocaleString('ru-RU') : ''}
-                  </span>
-                </div>
-                <CommentText text={comment.text} />
-                <div className="flex items-center gap-4 pt-2">
-                  <button className="flex items-center gap-2 text-sm text-white/40 hover:text-white/90">
-                    <ThumbsUp className="h-4 w-4" />
-                    <span>Нравится</span>
-                  </button>
-                  <button className="flex items-center gap-2 text-sm text-white/40 hover:text-white/90">
-                    <Reply className="h-4 w-4" />
-                    <span>Ответить</span>
-                  </button>
+                <div className="flex-1">
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="font-medium text-white/90">
+                      {comment.userInfo?.nickname || comment.userInfo?.username}
+                    </span>
+                    <span className="flex items-center gap-1 text-sm text-white/40">
+                      <Clock className="h-4 w-4" />
+                      {comment.created_at ? new Date(comment.created_at).toLocaleString('ru-RU') : ''}
+                    </span>
+                  </div>
+
+                  <div className="text-white/80">
+                    <CommentText text={comment.text} />
+                  </div>
+
+                  <div className="mt-4 flex items-center gap-4">
+                    <button 
+                      className="flex items-center gap-2 text-white/40 hover:text-white/90 transition-colors"
+                      onClick={() => handleLike(comment)}
+                      disabled={!token}
+                    >
+                      <ThumbsUp className={cn("h-4 w-4", {
+                        "text-blue-500 fill-blue-500": optimisticLikes[comment.id] ?? likedComments[comment.id] ?? comment.user_liked_list?.includes(user?.username || '')
+                      })} />
+                      <span className="text-[13px]">
+                        {comment.likes || 0}
+                      </span>
+                    </button>
+                    <button className="flex items-center gap-2 text-white/40 hover:text-white/90 transition-colors">
+                      <Reply className="h-4 w-4" />
+                      <span className="text-[13px]">Ответить</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="absolute right-6 top-6 h-8 w-8 p-0 opacity-0 group-hover:opacity-100"
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem className="flex items-center gap-2">
-                    <Flag className="h-4 w-4" />
-                    <span>Пожаловаться</span>
-                  </DropdownMenuItem>
-                  {comment.user_id === user?.id && (
-                    <>
-                      <DropdownMenuItem className="flex items-center gap-2">
-                        <Edit className="h-4 w-4" />
-                        <span>Редактировать</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-2 text-red-500">
-                        <Trash2 className="h-4 w-4" />
-                        <span>Удалить</span>
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {isAuthenticated && comment.user_id === user?.id && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="absolute right-6 top-6 h-8 w-8 p-0 opacity-0 group-hover:opacity-100"
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem className="flex items-center gap-2">
+                      <Edit className="h-4 w-4" />
+                      <span>Редактировать</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center gap-2 text-red-500">
+                      <Trash2 className="h-4 w-4" />
+                      <span>Удалить</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           ))
         ) : (
-          <div className="text-center text-white/40 py-8">
-            Комментариев пока нет. Будьте первым!
+          <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 text-center text-white/40">
+            Пока нет комментариев. Будьте первым!
           </div>
         )}
       </div>
