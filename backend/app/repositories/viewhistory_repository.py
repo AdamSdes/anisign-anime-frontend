@@ -28,5 +28,7 @@ class ViewHistoryRepository:
         if not history:
             history = await self.initialize_anime_history(user_id)
         history.anime_id_list = list(history.anime_id_list) + [anime_id]
+        await self.db.commit()
+        await self.db.refresh(history)
         return history
         
