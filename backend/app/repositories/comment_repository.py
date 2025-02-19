@@ -3,6 +3,7 @@ from sqlalchemy.future import select
 from app.db.models import Anime, Comment, User
 from uuid import UUID
 from typing import Optional
+from fastapi import HTTPException, status
 
 class CommentRepository:
     
@@ -55,12 +56,18 @@ class CommentRepository:
     async def like_comment(self, comment_id: UUID, user_id: UUID):
         comment = await self.db.execute(select(Comment).where(Comment.id == comment_id))
         comment = comment.scalars().first()
+        
+        if comment.user_liked_list is None:
+            comment.user_liked_list = []
+    
+        if user_id in comment.user_liked_list:
+            return {"message": "User has already liked this comment"}
+        
         if comment.likes is None:
             comment.likes = 0
         comment.likes += 1
-        if comment.user_liked_list is None:
-            comment.user_liked_list = []
-        comment.user_liked_list.append(user_id)
+        comment.user_liked_list = list(set(comment.user_liked_list + [user_id]))
+        
         await self.db.commit()
         return {"message": "Comment liked successfully"}
     
@@ -70,13 +77,18 @@ class CommentRepository:
         comment = comment.scalars().first()
         if comment.likes is None:
             comment.likes = 0
-        comment.likes -= 1
+    
         if comment.user_liked_list is None:
             comment.user_liked_list = []
-        else:
-            if user_id in comment.user_liked_list:
-                comment.user_liked_list = list(filter(lambda x: x != user_id, comment.user_liked_list))
-        await self.db.commit()
+        
+        if user_id not in list(comment.user_liked_list):
+            return {"message": "User has not liked this comment or already disliked"}
+        
+        if comment.likes > 0:
+            comment.likes -= 1
+            comment.user_liked_list = list(filter(lambda x: x != user_id, comment.user_liked_list))
+            await self.db.commit()
+            
         return {"message": "Comment disliked successfully"}
     
     async def delete_reply_to_comment(self, comment_id: UUID):
