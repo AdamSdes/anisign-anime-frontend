@@ -33,6 +33,7 @@ class User(BaseTable):
     user_banner = Column(String, index=True, nullable=True)
     status = Column(user_status_enum, index=True, nullable=True)
     user_comments = relationship('Comment', back_populates='user', cascade='all, delete-orphan')
+    user_view_history = relationship('ViewHistory', back_populates='user', cascade='all, delete-orphan')
 
 
 class Anime(BaseTable):
@@ -62,7 +63,6 @@ class Anime(BaseTable):
     related_anime_texts = Column(ARRAY(Text), nullable=True)
     character_ids = Column(ARRAY(Text), nullable=True)
     comments = relationship('Comment', back_populates='anime', cascade='all, delete-orphan')
-    
     # genres = relationship('Genre', secondary=anime_genre, back_populates='animes')
     
     
@@ -92,7 +92,7 @@ class AnimeSaveList(BaseTable):
     
 class Comment(BaseTable):
     __tablename__ = 'comment'
-    user_id = Column(UUID, ForeignKey('users.id'))
+    user_id = Column(UUID, ForeignKey('users.id', ondelete='CASCADE'))
     anime_id = Column(UUID, ForeignKey('anime.id', ondelete='CASCADE'))
     text = Column(String, index=True, nullable=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
@@ -104,6 +104,15 @@ class Comment(BaseTable):
     
     anime = relationship('Anime', back_populates='comments')
     user = relationship('User', back_populates='user_comments')
+
+class ViewHistory(BaseTable):
+    __tablename__ = 'view_history'
+    user_id = Column(UUID, ForeignKey('users.id', ondelete='CASCADE'))
+    anime_id_list = Column(ARRAY(UUID))
+    last_watched_at = Column(DateTime, server_default=func.now(), nullable=False)
+    is_finished = Column(Boolean, index=True, nullable=True)
+    
+    user = relationship('User', back_populates='user_view_history')
 
     
 

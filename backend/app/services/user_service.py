@@ -17,12 +17,12 @@ from uuid import UUID
 from app.utils.utils import verify_password, hash_password
 from typing import Annotated
 from app.auth.jwt_auth import oauth2_scheme
-from jose import jwt
 from fastapi import Depends
 from app.core.config import Settings
 from app.schemas.auth_schemas import TokenData
 from jose import JWTError
 from app.repositories.anime_save_list_repository import AnimeSaveListRepository
+from app.repositories.viewhistory_repository import ViewHistoryRepository
 from datetime import datetime
 from fastapi import status
 import os
@@ -64,6 +64,7 @@ class UserService:
     def __init__(self, db: AsyncSession):
         self.user_repository = UserRepository(db)
         self.list_repository = AnimeSaveListRepository(db)
+        self.viewhistory_repository = ViewHistoryRepository(db)
         
     async def check_user_permission_by_name(self, current_username: str, username: str):
         if current_username == username:
@@ -115,7 +116,10 @@ class UserService:
                 lists = await self.list_repository.initialize_anime_save_lists(user_id)
             except:
                 raise HTTPException(status_code=400, detail="Error creating anime lists")
-            return user
+            try:
+                history = await self.viewhistory_repository.initialize_anime_history(user_id)
+            except:
+                return HTTPException(status_code=400, detail="Error creating view history")
         else:
             raise HTTPException(status_code=400, detail="User already exists")
         
