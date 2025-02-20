@@ -238,7 +238,7 @@ async def login_for_token(remember_me: bool, form_data: Annotated[OAuth2Password
     return {"access_token": access_token, "refresh_token": "set in cookie", "token_type": "bearer"}
 
 @auth_router.get("/refresh-token")
-async def refresh_token(request: Request, response: Response, db: AsyncSession = Depends(get_session)):
+async def refresh_token(remember_me: bool, request: Request, response: Response, db: AsyncSession = Depends(get_session)):
     auth = JWTAuth()
     refresh_token = request.cookies.get("refresh_token")
     if not refresh_token:
@@ -246,7 +246,7 @@ async def refresh_token(request: Request, response: Response, db: AsyncSession =
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Refresh token not found in cookies",
         )
-    access_token = await auth.refresh_access_token(refresh_token)
+    access_token = await auth.refresh_access_token(refresh_token, remember_me)
     refresh_token =  access_token.refresh_token
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=True)
     return {"access_token": access_token.access_token, "refresh_token": "reset in cookie", "token_type": "bearer"}

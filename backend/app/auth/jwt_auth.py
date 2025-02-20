@@ -48,7 +48,7 @@ class JWTAuth():
             to_encode, self.secret_key, algorithm=self.algorithm)
         return encoded_jwt
 
-    async def refresh_access_token(self, refresh_token: str) -> Token:
+    async def refresh_access_token(self, refresh_token: str, remember_me: bool) -> Token:
         try:
             payload = jwt.decode(refresh_token, self.secret_key, algorithms=[self.algorithm])
             exp = payload.get("exp")
@@ -59,7 +59,7 @@ class JWTAuth():
             if username is None:
                 raise JWTError()
             new_access_token = await self.create_access_token({"sub": username})
-            new_refresh_token = await self.create_refresh_token({"sub": username})
+            new_refresh_token = await self.create_refresh_token({"sub": username}, remember_me)
             return Token(access_token=new_access_token, refresh_token=new_refresh_token, token_type="bearer")
         except JWTError:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
