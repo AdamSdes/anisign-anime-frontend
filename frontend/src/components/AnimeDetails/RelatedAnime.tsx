@@ -16,6 +16,20 @@ interface RelatedAnime {
     score?: number;
 }
 
+const kindTransformations: Record<string, string> = {
+    tv: 'ТВ Сериал',
+    tv_special: 'ТВ Спешл',
+    movie: 'Фильм',
+    ova: 'OVA',
+    ona: 'ONA',
+    special: 'Спешл',
+    music: 'Клип'
+};
+
+const getTransformedKind = (kind: string): string => {
+    return kindTransformations[kind] || kind.toUpperCase();
+};
+
 interface RelatedAnimeProps {
     relatedAnime: RelatedAnime[];
 }
@@ -97,7 +111,7 @@ const RelatedAnime: React.FC<RelatedAnimeProps> = ({ relatedAnime }) => {
                                 </h4>
                                 
                                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-white/40">
-                                    <span className="capitalize">{anime.kind}</span>
+                                    <span className="capitalize">{getTransformedKind(anime.kind)}</span>
                                     {anime.aired_on && (
                                         <>
                                             <span className="w-1 h-1 rounded-full bg-white/20" />
