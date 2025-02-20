@@ -7,19 +7,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { initAuth, hydrated } = useAuthStore();
 
   useEffect(() => {
-    console.log('[AuthProvider] Checking hydration status:', hydrated);
-    
     if (hydrated) {
-      console.log('[AuthProvider] Store is hydrated, initializing auth');
       initAuth().catch(error => {
-        console.error('[AuthProvider] Error initializing auth:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error initializing auth:', error);
+        }
       });
     }
   }, [hydrated, initAuth]);
 
   if (!hydrated) {
-    console.log('[AuthProvider] Waiting for store hydration');
-    return null;
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
+        <div className="h-10 w-10 animate-spin border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
   }
 
   return <>{children}</>;

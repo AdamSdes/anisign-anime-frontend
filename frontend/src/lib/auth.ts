@@ -58,10 +58,7 @@ export const register = async (data: RegisterData): Promise<void> => {
       }
     );
 
-    if (!response.data) {
-      throw new Error('Ошибка при регистрации: нет ответа от сервера');
-    }
-
+    // Успешная регистрация, даже если response.data пустой
     return response.data;
   } catch (error) {
     console.error('Registration error:', error);

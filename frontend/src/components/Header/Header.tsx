@@ -17,7 +17,7 @@ import { UserLoggedNavBar } from './UserLoggedNavBar';
 import { useAuthStore } from '@/hooks/useAuth';
 import { getAvatarUrl } from '@/utils/avatar';
 import HeaderAvatar from './HeaderAvatar';
-import { handleLogout } from '@/lib/auth';
+import { logout } from '@/lib/auth';
 
 const UserNotLoggedNavBar = () => {
     return (
@@ -328,7 +328,7 @@ const Header = ({ className = '' }) => {
                                             </Button>
                                         </Link>
                                         <Button variant="ghost" 
-                                                onClick={handleLogout}
+                                                onClick={logout}
                                                 className="w-full justify-start h-11 text-red-400 hover:text-red-300 hover:bg-red-500/10">
                                             Выйти
                                         </Button>

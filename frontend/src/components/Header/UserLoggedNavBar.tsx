@@ -248,7 +248,7 @@ export const UserLoggedNavBar = ({
 
       {/* User Dropdown */}
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex items-center gap-4 px-4 py-2 rounded-xl hover:bg-white/[0.02] transition-colors outline-none group">
+        <DropdownMenuTrigger className="flex items-center gap-4 pr-[20px] pl-[10px] py-2 rounded-full hover:bg-white/[0.02] transition-colors outline-none group">
           <div className="flex items-center gap-4">
             <HeaderAvatar 
               username={username} 

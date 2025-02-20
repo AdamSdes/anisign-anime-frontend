@@ -3,227 +3,189 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { jwtDecode } from "jwt-decode";
-import { AuthState, User } from '@/lib/types/auth';
+import { User } from '@/lib/types/auth';
 import { axiosInstance } from '@/lib/api/axiosConfig';
+
+interface AuthState {
+  isAuthenticated: boolean;
+  token: string | null;
+  user: User | null;
+  hydrated: boolean;
+  isRefreshing: boolean;
+  login: (token: string) => Promise<void>;
+  logout: () => Promise<void>;
+  checkTokenExpiration: () => void;
+  setHydrated: (value: boolean) => void;
+  initAuth: () => Promise<void>;
+}
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
+      isAuthenticated: false,
       token: null,
       user: null,
-      isAuthenticated: false,
       hydrated: false,
+      isRefreshing: false,
 
-      setUser: (user) => {
-        console.log('[useAuth] Setting user:', user);
-        set({ user });
-      },
-      
-      setIsAuthenticated: (value) => {
-        console.log('[useAuth] Setting isAuthenticated:', value);
-        set({ isAuthenticated: value });
-      },
-
-      setHydrated: (value: boolean) => {
-        console.log('[useAuth] Setting hydrated:', value);
-        set({ hydrated: value });
-      },
-      
-      login: async (token) => {
-        console.log('[useAuth] Login called with token');
-        set({ token, isAuthenticated: true });
+      login: async (token: string) => {
+        set({ isAuthenticated: true, token });
         
         try {
-          console.log('[useAuth] Decoding token...');
           const decoded = jwtDecode(token);
-          console.log('[useAuth] Token decoded:', decoded);
-          
           if (decoded && typeof decoded === 'object' && 'sub' in decoded) {
-            // Получаем полные данные пользователя
-            console.log('[useAuth] Fetching full user data for:', decoded.sub);
             const response = await axiosInstance.get(`/user/get-user-by-username/${decoded.sub}`);
             const userData = response.data;
-            console.log('[useAuth] Received user data:', userData);
-
-            const updateUserData = (userData: any) => {
-              console.log('[useAuth] Updating user data:', userData);
-              set({
-                user: {
-                  id: userData.id,
-                  username: userData.username,
-                  email: userData.email,
-                  user_avatar: userData.user_avatar || userData.avatar, // Поддерживаем оба варианта
-                  user_banner: userData.user_banner || userData.banner, // Поддерживаем оба варианта
-                  nickname: userData.nickname,
-                  isPro: userData.isPro,
-                  isVerified: userData.isVerified,
-                  joinedDate: userData.joinedDate,
-                },
-                isAuthenticated: true,
-              });
-            };
-
-            updateUserData(userData);
-          } else {
-            console.error('[useAuth] Invalid token payload:', decoded);
-            throw new Error('Invalid token payload');
-          }
-        } catch (error) {
-          console.error('[useAuth] Error during login:', error);
-          set({ token: null, user: null, isAuthenticated: false });
-          throw error;
-        }
-      },
-
-      logout: async () => {
-        console.log('[useAuth] Logout called');
-        try {
-          await axiosInstance.post('/auth/logout');
-          console.log('[useAuth] Logout request successful');
-        } catch (error) {
-          console.error('[useAuth] Error during logout request:', error);
-        }
-        
-        console.log('[useAuth] Clearing auth state');
-        set({ 
-          isAuthenticated: false, 
-          user: null,
-          token: null
-        });
-      },
-
-      checkSession: async () => {
-        console.log('[useAuth] Checking session...');
-        const token = get().token;
-        
-        if (!token) {
-          console.log('[useAuth] No token found, logging out');
-          get().logout();
-          return false;
-        }
-
-        try {
-          console.log('[useAuth] Decoding token for session check');
-          const decoded = jwtDecode(token);
-          console.log('[useAuth] Decoded token:', decoded);
-          
-          if (typeof decoded === 'object' && 'exp' in decoded) {
-            const expirationTime = (decoded.exp as number) * 1000;
-            const now = Date.now();
-            console.log('[useAuth] Token expiration check:', {
-              expirationTime: new Date(expirationTime).toISOString(),
-              now: new Date(now).toISOString(),
-              isExpired: expirationTime <= now
-            });
-            
-            if (expirationTime <= now) {
-              console.log('[useAuth] Token expired, logging out');
-              await get().logout();
-              return false;
-            }
-            console.log('[useAuth] Token is valid');
-            return true;
-          } else {
-            console.warn('[useAuth] Token does not contain expiration time');
-          }
-        } catch (error) {
-          console.error('[useAuth] Error checking session:', error);
-          await get().logout();
-        }
-
-        return false;
-      },
-
-      updateUserData: async (username: string) => {
-        try {
-          console.log('[useAuth] Updating user data for:', username);
-          const response = await axiosInstance.get(`/user/get-user-by-username/${username}`);
-          const userData = response.data;
-          console.log('[useAuth] Received user data:', userData);
-
-          const updateUserData = (userData: any) => {
-            console.log('[useAuth] Updating user data:', userData);
             set({
               user: {
                 id: userData.id,
                 username: userData.username,
                 email: userData.email,
-                user_avatar: userData.user_avatar || userData.avatar, // Поддерживаем оба варианта
-                user_banner: userData.user_banner || userData.banner, // Поддерживаем оба варианта
-                nickname: userData.nickname,
-                isPro: userData.isPro,
-                isVerified: userData.isVerified,
-                joinedDate: userData.joinedDate,
-              },
-              isAuthenticated: true,
+                user_avatar: userData.user_avatar || userData.avatar,
+                user_banner: userData.user_banner || userData.banner,
+                nickname: userData.nickname
+              }
             });
-          };
-
-          updateUserData(userData);
-          return userData;
+          }
         } catch (error) {
-          console.error('[useAuth] Error updating user data:', error);
-          throw error;
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Error fetching user data:', error);
+          }
+        }
+
+        // Запускаем проверку срока действия токена
+        get().checkTokenExpiration();
+      },
+
+      logout: async () => {
+        try {
+          // Используем правильный endpoint для logout
+          await axiosInstance.post('/auth/logout', {}, {
+            withCredentials: true
+          });
+        } catch (error) {
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Logout error:', error);
+          }
+        } finally {
+          // Всегда очищаем состояние, даже если запрос не удался
+          set({ isAuthenticated: false, token: null, user: null });
         }
       },
 
-      initAuth: async () => {
-        console.log('[useAuth] Initializing auth');
-        const isValid = await get().checkSession();
-        console.log('[useAuth] Session check result:', isValid);
-        
-        if (!isValid) {
-          console.log('[useAuth] Session invalid, logging out');
-          await get().logout();
-        } else {
-          console.log('[useAuth] Session valid, updating user data');
-          const token = get().token;
-          if (token) {
-            const decoded = jwtDecode(token);
-            if (decoded && typeof decoded === 'object' && 'sub' in decoded) {
-              // Получаем актуальные данные пользователя
-              console.log('[useAuth] Fetching current user data for:', decoded.sub);
-              try {
-                const response = await axiosInstance.get(`/user/get-user-by-username/${decoded.sub}`);
-                const userData = response.data;
-                console.log('[useAuth] Received current user data:', userData);
+      checkTokenExpiration: () => {
+        const token = get().token;
+        if (!token) return;
 
-                const updateUserData = (userData: any) => {
-                  console.log('[useAuth] Updating user data:', userData);
-                  set({
-                    user: {
-                      id: userData.id,
-                      username: userData.username,
-                      email: userData.email,
-                      user_avatar: userData.user_avatar || userData.avatar, // Поддерживаем оба варианта
-                      user_banner: userData.user_banner || userData.banner, // Поддерживаем оба варианта
-                      nickname: userData.nickname,
-                      isPro: userData.isPro,
-                      isVerified: userData.isVerified,
-                      joinedDate: userData.joinedDate,
-                    },
-                    isAuthenticated: true,
-                  });
-                };
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expirationTime = payload.exp * 1000;
+        const currentTime = Date.now();
+        const timeUntilExpiration = expirationTime - currentTime;
 
-                updateUserData(userData);
-              } catch (error) {
-                console.error('[useAuth] Error updating user data:', error);
-              }
-            }
-          }
+        // Логируем состояние токена только в режиме разработки
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Token status:', {
+            expiresIn: Math.floor(timeUntilExpiration / 1000),
+            willRefreshIn: Math.floor((timeUntilExpiration - 300000) / 1000),
+            currentTime: new Date(currentTime).toISOString(),
+            expirationTime: new Date(expirationTime).toISOString()
+          });
         }
-      }
+
+        // Обновляем токен только если до истечения осталось менее 5 минут
+        // и у нас еще нет активного запроса на обновление
+        if (timeUntilExpiration < 300000 && !get().isRefreshing) {
+          set({ isRefreshing: true });
+          
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Attempting to refresh token...');
+          }
+
+          axiosInstance.get('/auth/refresh-token', {
+            params: {
+              remember_me: true
+            }
+          })
+            .then(response => {
+              const { access_token } = response.data;
+              if (process.env.NODE_ENV === 'development') {
+                console.log('Token refreshed successfully');
+              }
+              get().login(access_token);
+            })
+            .catch(error => {
+              console.error('Token refresh error:', error);
+              get().logout();
+            })
+            .finally(() => {
+              set({ isRefreshing: false });
+            });
+        }
+      },
+
+      setHydrated: (value: boolean) => {
+        set({ hydrated: value });
+      },
+
+      initAuth: async () => {
+        try {
+          const token = get().token;
+          if (!token) {
+            set({ hydrated: true });
+            return;
+          }
+
+          // Проверяем срок действия токена
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const expirationTime = payload.exp * 1000;
+          const currentTime = Date.now();
+
+          if (currentTime >= expirationTime) {
+            // Токен истек, пробуем обновить
+            try {
+              const response = await axiosInstance.get('/auth/refresh-token', {
+                params: {
+                  remember_me: true
+                }
+              });
+              const { access_token } = response.data;
+              await get().login(access_token);
+            } catch (error) {
+              if (process.env.NODE_ENV === 'development') {
+                console.error('Failed to refresh token during init:', error);
+              }
+              await get().logout();
+            }
+          } else {
+            // Токен действителен, получаем данные пользователя
+            const decoded = jwtDecode(token);
+            const response = await axiosInstance.get(`/user/get-user-by-username/${decoded.sub}`);
+            set({ user: response.data, isAuthenticated: true });
+
+            // Устанавливаем интервал проверки токена
+            const checkInterval = setInterval(() => {
+              get().checkTokenExpiration();
+            }, 300000); // Проверяем каждые 5 минут вместо каждой минуты
+
+            // Очищаем интервал при выходе
+            window.addEventListener('beforeunload', () => {
+              clearInterval(checkInterval);
+            });
+          }
+        } catch (error) {
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Auth initialization error:', error);
+          }
+          await get().logout();
+        } finally {
+          set({ hydrated: true });
+        }
+      },
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({
-        token: state.token,
-        user: state.user,
-        isAuthenticated: state.isAuthenticated
-      }),
+      partialize: (state) => ({ token: state.token }),
       onRehydrateStorage: () => (state) => {
-        console.log('[useAuth] Rehydrating storage');
         if (state) {
           state.setHydrated(true);
         }
@@ -231,18 +193,3 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
-
-export type AuthState = {
-  token: string | null;
-  user: User | null;
-  isAuthenticated: boolean;
-  isHydrated: boolean;
-  setUser: (user: User | null) => void;
-  setIsAuthenticated: (value: boolean) => void;
-  setHydrated: (value: boolean) => void;
-  updateUserData: (username: string) => Promise<any>;
-  login: (token: string) => Promise<void>;
-  logout: () => Promise<void>;
-  checkSession: () => Promise<boolean>;
-  initAuth: () => Promise<void>;
-};
