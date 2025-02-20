@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.user_repository import UserRepository
 from app.schemas.user_schemas import SignUpRequestSchema , UserDetailSchema
 from app.db.models import User
+from jose import jwt
 from fastapi import HTTPException, status
 from app.utils.utils import verify_password , hash_password
 from typing import List, Optional
