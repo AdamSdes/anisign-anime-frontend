@@ -39,8 +39,8 @@ const ReportModal = ({ isOpen, onClose }: ReportModalProps) => {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-[500px] p-0 bg-[#0A0A0A] border-white/5">
-                <DialogHeader className="p-6 border-b border-white/5">
+            <DialogContent className="max-w-[500px] p-0 bg-[#060606] border-white/5">
+                <DialogHeader className="px-8 py-6 border-b border-white/5">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <AlertCircle className="w-5 h-5 text-white/40" />
@@ -51,7 +51,7 @@ const ReportModal = ({ isOpen, onClose }: ReportModalProps) => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="w-8 h-8 rounded-full hover:bg-white/5"
+                            className="w-9 h-9 rounded-full hover:bg-white/5"
                             onClick={onClose}
                         >
                             <X className="w-4 h-4 text-white/40" />
@@ -59,26 +59,27 @@ const ReportModal = ({ isOpen, onClose }: ReportModalProps) => {
                     </div>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    <div className="space-y-2">
+                <form onSubmit={handleSubmit} className="p-8 space-y-5">
+                    <div className="space-y-2.5">
                         <label className="text-sm text-white/60">
                             Тип проблемы
                         </label>
                         <Select onValueChange={setProblemType}>
                             <SelectTrigger 
-                                className="w-full h-[50px] bg-white/[0.02] border-white/5 
-                                         hover:bg-white/[0.04] rounded-xl text-white/60
-                                         focus:ring-0 focus:ring-offset-0"
+                                className="w-full h-[54px] bg-white/[0.02] border-white/5 
+                                         hover:bg-white/[0.04] rounded-xl text-white/80
+                                         focus:ring-0 focus:ring-offset-0 px-4"
                             >
                                 <SelectValue placeholder="Выберите тип проблемы" />
                             </SelectTrigger>
-                            <SelectContent className="bg-[#0A0A0A] border-white/5">
+                            <SelectContent className="bg-[#060606] border-white/5 p-2">
                                 {PROBLEM_TYPES.map((type) => (
                                     <SelectItem 
                                         key={type.id} 
                                         value={type.id}
-                                        className="text-white/80 hover:bg-white/[0.04] focus:bg-white/[0.04]
-                                                 cursor-pointer py-2.5"
+                                        className="text-white/60 hover:text-white focus:text-white
+                                                 hover:bg-white/[0.04] focus:bg-white/[0.04]
+                                                 cursor-pointer py-3 px-4 rounded-xl transition-colors"
                                     >
                                         {type.label}
                                     </SelectItem>
@@ -87,7 +88,7 @@ const ReportModal = ({ isOpen, onClose }: ReportModalProps) => {
                         </Select>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                         <label className="text-sm text-white/60">
                             Опишите проблему
                         </label>
@@ -95,14 +96,14 @@ const ReportModal = ({ isOpen, onClose }: ReportModalProps) => {
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
                             placeholder="Подробно опишите найденную проблему или баг..."
-                            className="h-[120px] bg-white/[0.02] border-white/5 
+                            className="min-h-[140px] bg-white/[0.02] border-white/5 
                                      focus-visible:ring-1 focus-visible:ring-[#CCBAE4]
-                                     placeholder:text-white/20"
+                                     placeholder:text-white/20 px-4 py-3 resize-none"
                             required
                         />
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                         <label className="text-sm text-white/60">
                             Контакт для обратной связи
                         </label>
@@ -110,19 +111,18 @@ const ReportModal = ({ isOpen, onClose }: ReportModalProps) => {
                             value={contact}
                             onChange={(e) => setContact(e.target.value)}
                             placeholder="Telegram, Discord или Email..."
-                            className="bg-white/[0.02] border-white/5
+                            className="h-[54px] bg-white/[0.02] border-white/5
                                      focus-visible:ring-1 focus-visible:ring-[#CCBAE4]
-                                     placeholder:text-white/20"
+                                     placeholder:text-white/20 px-4"
                         />
                     </div>
 
-                    <div className="pt-4">
+                    <div className="pt-3">
                         <Button
                             type="submit"
-                            className="w-full h-[50px] bg-[#CCBAE4] hover:bg-[#CCBAE4]/90 
+                            className="w-full h-[54px] bg-[#CCBAE4] hover:bg-[#CCBAE4]/90 
                                      text-black font-medium rounded-xl"
                         >
-                            <AlertCircle className="w-4 h-4 mr-2" />
                             Отправить
                         </Button>
                     </div>

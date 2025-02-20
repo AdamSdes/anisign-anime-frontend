@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { HiMenu, HiX, HiSearch, HiChevronDown } from 'react-icons/hi';
-import { Calendar, Users2, Flame, PlayCircle } from 'lucide-react';
+import { Calendar, Users2, Flame, PlayCircle, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { SearchModal } from '@/components/SearchModal';
 import { UserLoggedNavBar } from './UserLoggedNavBar';
@@ -182,6 +182,33 @@ const Header = ({ className = '' }) => {
                     </div>
 
                     <div className="hidden md:flex items-center gap-5">
+                        {/* PRO Button - новый вариант */}
+                        <Button 
+                            variant="ghost"
+                            className="relative group h-[50px] px-5 rounded-xl 
+                                     bg-[#0A0A0A] border border-[#CCBAE4]/20
+                                     hover:border-[#CCBAE4]/40 transition-all duration-300"
+                        >
+                            <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100
+                                          transition-opacity duration-500 overflow-hidden">
+                                <div className="absolute inset-0 bg-[#CCBAE4]/5" />
+                                <div className="absolute -inset-1 bg-gradient-to-r from-[#CCBAE4]/0 via-[#CCBAE4]/5 to-[#CCBAE4]/0
+                                              blur-xl group-hover:animate-shimmer" />
+                            </div>
+                            
+                            <div className="relative flex items-center gap-2">
+                                <div className="relative">
+                                    <Sparkles className="w-4 h-4 text-[#CCBAE4] animate-pulse" />
+                                    <div className="absolute -inset-1 bg-[#CCBAE4]/20 blur-xl animate-pulse" />
+                                </div>
+                                <span className="text-[14px] font-medium text-white/90">
+                                    PRO
+                                </span>
+                                <span className="text-[14px] text-white/40">
+                                    от 99₽
+                                </span>
+                            </div>
+                        </Button>
                         <Button 
                             variant="ghost" 
                             className="h-[50px] pl-4 pr-3 rounded-[12px] border border-white/5 hover:border-white/10 transition-all duration-200 flex items-center gap-4"
@@ -214,6 +241,16 @@ const Header = ({ className = '' }) => {
                     </div>
 
                     <div className="flex md:hidden items-center gap-3">
+                        <Button 
+                            variant="ghost"
+                            className="h-11 px-4 rounded-xl bg-[#0A0A0A] border border-[#CCBAE4]/20
+                                     hover:border-[#CCBAE4]/40 transition-all duration-300"
+                        >
+                            <div className="relative">
+                                <Sparkles className="w-4 h-4 text-[#CCBAE4] animate-pulse" />
+                                <div className="absolute -inset-1 bg-[#CCBAE4]/20 blur-xl animate-pulse" />
+                            </div>
+                        </Button>
                         <Button 
                             variant="ghost" 
                             size="icon"

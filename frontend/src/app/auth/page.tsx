@@ -161,12 +161,25 @@ export default function Auth() {
       // Выполняем мутацию регистрации
       await registerMutation.mutateAsync(apiData, {
         onError: (error: any) => {
-          if (error.response?.data?.message) {
-            toast.error(error.response.data.message);
-          } else if (error.message) {
-            toast.error(error.message);
+          // Проверяем сообщение об ошибке
+          const errorMessage = error.message;
+          
+          if (errorMessage === 'User already exists') {
+            toast.error('Пользователь с таким именем уже существует');
+          } else if (errorMessage.includes('detail')) {
+            try {
+              // Пытаемся распарсить JSON сообщение
+              const errorData = JSON.parse(errorMessage);
+              if (errorData.detail === 'User already exists') {
+                toast.error('Пользователь с таким именем уже существует');
+              } else {
+                toast.error(errorData.detail || 'Произошла ошибка при регистрации');
+              }
+            } catch {
+              toast.error(errorMessage);
+            }
           } else {
-            toast.error('Произошла ошибка при регистрации');
+            toast.error(errorMessage);
           }
         },
         onSuccess: () => {

@@ -58,36 +58,19 @@ export const register = async (data: RegisterData): Promise<void> => {
       }
     );
 
-    // Успешная регистрация, даже если response.data пустой
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Registration error:', error);
     
-    // Обработка ошибок от сервера
-    if (error.response?.data) {
-      const { data } = error.response;
-      
-      // Если ошибка содержит detail
-      if (data.detail) {
-        if (Array.isArray(data.detail)) {
-          throw new Error(data.detail.map(err => err.msg).join(', '));
-        }
-        throw new Error(data.detail);
-      }
-      
-      // Если ошибка содержит message
-      if (data.message) {
-        throw new Error(data.message);
-      }
-
-      // Если есть ошибки валидации
-      if (data.errors) {
-        const errorMessages = Object.values(data.errors).flat();
-        throw new Error(errorMessages.join(', '));
-      }
+    // Проверяем наличие detail в response.data
+    if (error.response?.data?.detail) {
+      throw new Error(error.response.data.detail);
+    } else if (error.response?.data) {
+      // Если есть другие данные в response.data
+      throw new Error(JSON.stringify(error.response.data));
     }
-
-    // Общая ошибка
+    
+    // Если нет данных в response, используем общее сообщение об ошибке
     throw new Error('Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.');
   }
 };
