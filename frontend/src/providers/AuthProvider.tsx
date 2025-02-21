@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   if (!hydrated) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <div className="h-10 w-10 animate-spin border-4 border-primary border-t-transparent rounded-full" />
+        <div className="h-5 w-5 animate-spin border-2 border-[#CCBAE4] border-t-transparent rounded-full" />
       </div>
     );
   }
