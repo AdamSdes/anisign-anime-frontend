@@ -10,6 +10,7 @@ from typing import List
 import logging
 from fastapi import HTTPException
 from datetime import datetime
+from uuid import UUID
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -294,52 +295,10 @@ class AnimeService:
         return result
         
         
-        # for num in range(1, 2):
-        #     get_suka_list_anime(num)
-
-
+    async def get_current_episode(self, anime_id: UUID, user_id: UUID):
+        result = await self.anime_repository.get_current_episode(anime_id, user_id)
+        return result
     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        # api_token = self.settings.api_token
-        # url = f"https://kodikapi.com/list?token={api_token}&limit=100"
-        # response_total = requests.get(url)
-        # total = json.loads(response_total.text)["total"]
-        # items = []
-        
-        # while len(items) < total:
-        #     response = requests.get(url)
-        #     data = json.loads(response.text)
-            
-        #     items.extend(data["results"])
-            
-        #     if "next_page" in data and data["next_page"]:
-        #         url = data["next_page"]
-        #     else:
-        #         break
-        
-        # result = await self.anime_repository.save_anime_list(items)
-        # return {"message": f"{result}" , "total": f"{total}"}
-        
-            
-        
-        
-        
-        
+    async def update_current_episode(self, anime_id: UUID, user_id: UUID, episode_number: int):
+        result = await self.anime_repository.update_current_episode(anime_id, user_id, episode_number)
+        return result

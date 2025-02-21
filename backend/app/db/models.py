@@ -33,7 +33,9 @@ class User(BaseTable):
     user_banner = Column(String, index=True, nullable=True)
     status = Column(user_status_enum, index=True, nullable=True)
     user_comments = relationship('Comment', back_populates='user', cascade='all, delete-orphan')
+    
     user_view_history = relationship('ViewHistory', back_populates='user', cascade='all, delete-orphan')
+    current_episodes = relationship('AnimeCurrentEpisode', back_populates='user', cascade='all, delete-orphan')
 
 
 class Anime(BaseTable):
@@ -62,7 +64,9 @@ class Anime(BaseTable):
     related_anime_ids = Column(ARRAY(Text), nullable=True)
     related_anime_texts = Column(ARRAY(Text), nullable=True)
     character_ids = Column(ARRAY(Text), nullable=True)
+    
     comments = relationship('Comment', back_populates='anime', cascade='all, delete-orphan')
+    current_episodes = relationship('AnimeCurrentEpisode', back_populates='anime', cascade='all, delete-orphan')
     # genres = relationship('Genre', secondary=anime_genre, back_populates='animes')
     
     
@@ -113,6 +117,17 @@ class ViewHistory(BaseTable):
     is_finished = Column(Boolean, index=True, nullable=True)
     
     user = relationship('User', back_populates='user_view_history')
+    
+
+class AnimeCurrentEpisode(BaseTable):
+    __tablename__ = 'anime_current_episode'
+    anime_id = Column(UUID, ForeignKey('anime.id', ondelete='CASCADE'), primary_key=True)
+    user_id = Column(UUID, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    current_episode = Column(Integer, index=True, nullable=False)
+    last_updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
+    
+    anime = relationship('Anime', back_populates='current_episodes')
+    user = relationship('User', back_populates='current_episodes')
 
     
 
