@@ -10,33 +10,6 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Genre } from '@/types/anime'
 import { motion } from 'framer-motion'
 
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.3
-    }
-  }
-}
-
-const item = {
-  hidden: { 
-    opacity: 0,
-    y: 20,
-  },
-  show: { 
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 15
-    }
-  }
-}
-
 const AnimeList = () => {
     const router = useRouter()
     const pathname = usePathname()
@@ -77,23 +50,14 @@ const AnimeList = () => {
                 className="space-y-8"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
             >
                 <Search />
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
                     {Array(15).fill(0).map((_, index) => (
-                        <motion.div
-                            key={index}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{
-                                duration: 0.3,
-                                delay: index * 0.05,
-                                ease: 'easeOut'
-                            }}
-                        >
+                        <div key={index}>
                             <AnimeCardSkeleton />
-                        </motion.div>
+                        </div>
                     ))}
                 </div>
             </motion.div>
@@ -119,7 +83,7 @@ const AnimeList = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
         >
             <Search />
             
@@ -147,27 +111,19 @@ const AnimeList = () => {
             ) : (
                 <motion.div 
                     className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"
-                    variants={container}
-                    initial="hidden"
-                    animate="show"
+                    key={searchParams.toString()} // This forces re-render on page change
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
                 >
                     {animeList?.map((anime, index) => (
-                        <motion.div
-                            key={anime.anime_id}
-                            variants={item}
-                            layout
-                            whileHover={{ 
-                                scale: 1.02,
-                                transition: { duration: 0.2 }
-                            }}
-                            whileTap={{ scale: 0.98 }}
-                        >
+                        <div key={anime.anime_id}>
                             <AnimeCard
                                 anime={anime}
                                 genres={genres}
                                 priority={index < 4}
                             />
-                        </motion.div>
+                        </div>
                     ))}
                 </motion.div>
             )}
@@ -175,9 +131,9 @@ const AnimeList = () => {
             {pagination && pagination.pages > 1 && (
                 <motion.div 
                     className="sticky bottom-2 z-10 flex items-center justify-center"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
                 >
                     <div className="w-fit rounded-xl border border-white/10 bg-[#060606]/95 backdrop-blur-sm p-2 shadow-lg">
                         <Pagination
