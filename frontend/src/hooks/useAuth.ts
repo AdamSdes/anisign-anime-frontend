@@ -52,14 +52,10 @@ export const useAuthStore = create<AuthState>()(
             console.error('Error fetching user data:', error);
           }
         }
-
-        // Запускаем проверку срока действия токена
-        get().checkTokenExpiration();
       },
 
       logout: async () => {
         try {
-          // Используем правильный endpoint для logout
           await axiosInstance.post('/auth/logout', {}, {
             withCredentials: true
           });
@@ -68,7 +64,6 @@ export const useAuthStore = create<AuthState>()(
             console.error('Logout error:', error);
           }
         } finally {
-          // Всегда очищаем состояние, даже если запрос не удался
           set({ isAuthenticated: false, token: null, user: null });
         }
       },
@@ -77,49 +72,39 @@ export const useAuthStore = create<AuthState>()(
         const token = get().token;
         if (!token) return;
 
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const expirationTime = payload.exp * 1000;
-        const currentTime = Date.now();
-        const timeUntilExpiration = expirationTime - currentTime;
-
-        // Логируем состояние токена только в режиме разработки
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Token status:', {
-            expiresIn: Math.floor(timeUntilExpiration / 1000),
-            willRefreshIn: Math.floor((timeUntilExpiration - 300000) / 1000),
-            currentTime: new Date(currentTime).toISOString(),
-            expirationTime: new Date(expirationTime).toISOString()
-          });
-        }
-
-        // Обновляем токен только если до истечения осталось менее 5 минут
-        // и у нас еще нет активного запроса на обновление
-        if (timeUntilExpiration < 300000 && !get().isRefreshing) {
-          set({ isRefreshing: true });
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const expirationTime = payload.exp * 1000;
+          const currentTime = Date.now();
+          const timeUntilExpiration = expirationTime - currentTime;
           
-          if (process.env.NODE_ENV === 'development') {
-            console.log('Attempting to refresh token...');
+          // Обновляем токен только если:
+          // 1. До истечения осталось менее 5 минут
+          // 2. У нас еще нет активного запроса на обновление
+          // 3. Токен действительно существует и не истек
+          if (timeUntilExpiration > 0 && 
+              timeUntilExpiration < 300000 && 
+              !get().isRefreshing) {
+            
+            set({ isRefreshing: true });
+            
+            axiosInstance.get('/auth/refresh-token', {
+              params: { remember_me: true }
+            })
+              .then(response => {
+                const { access_token } = response.data;
+                get().login(access_token);
+              })
+              .catch(() => {
+                get().logout();
+              })
+              .finally(() => {
+                set({ isRefreshing: false });
+              });
           }
-
-          axiosInstance.get('/auth/refresh-token', {
-            params: {
-              remember_me: true
-            }
-          })
-            .then(response => {
-              const { access_token } = response.data;
-              if (process.env.NODE_ENV === 'development') {
-                console.log('Token refreshed successfully');
-              }
-              get().login(access_token);
-            })
-            .catch(error => {
-              console.error('Token refresh error:', error);
-              get().logout();
-            })
-            .finally(() => {
-              set({ isRefreshing: false });
-            });
+        } catch (error) {
+          // Если возникла ошибка при парсинге токена, выходим из системы
+          get().logout();
         }
       },
 
@@ -135,61 +120,38 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
 
-          // Проверяем срок действия токена
           const payload = JSON.parse(atob(token.split('.')[1]));
           const expirationTime = payload.exp * 1000;
           const currentTime = Date.now();
 
           if (currentTime >= expirationTime) {
-            // Токен истек, пробуем обновить
             try {
               const response = await axiosInstance.get('/auth/refresh-token', {
-                params: {
-                  remember_me: true
-                }
+                params: { remember_me: true }
               });
               const { access_token } = response.data;
               await get().login(access_token);
             } catch (error) {
-              if (process.env.NODE_ENV === 'development') {
-                console.error('Failed to refresh token during init:', error);
-              }
               await get().logout();
             }
           } else {
-            // Токен действителен, получаем данные пользователя
-            const decoded = jwtDecode(token);
-            const response = await axiosInstance.get(`/user/get-user-by-username/${decoded.sub}`);
-            set({ user: response.data, isAuthenticated: true });
-
-            // Устанавливаем интервал проверки токена
-            const checkInterval = setInterval(() => {
-              get().checkTokenExpiration();
-            }, 300000); // Проверяем каждые 5 минут вместо каждой минуты
-
-            // Очищаем интервал при выходе
-            window.addEventListener('beforeunload', () => {
-              clearInterval(checkInterval);
-            });
+            await get().login(token);
           }
         } catch (error) {
-          if (process.env.NODE_ENV === 'development') {
-            console.error('Auth initialization error:', error);
-          }
           await get().logout();
         } finally {
           set({ hydrated: true });
         }
-      },
+      }
     }),
     {
       name: 'auth-storage',
       partialize: (state) => ({ token: state.token }),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          state.setHydrated(true);
-        }
-      }
+      onRehydrateStorage: () => {
+        return (state) => {
+          state?.setHydrated(true);
+        };
+      },
     }
   )
 );

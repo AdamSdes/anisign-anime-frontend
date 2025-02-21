@@ -8,6 +8,8 @@ import Header from "@/components/Header/Header";
 import Report from "@/components/Report/Report";
 import Footer from "@/components/Footer/Footer";
 import VideoPlayer from '@/components/anime/VideoPlayer';
+import { useAuthStore } from '@/hooks/useAuth';
+import { axiosInstance } from '@/lib/api/axiosConfig';
 
 import AnimeComments from '@/components/Comments/AnimeComments';
 
@@ -44,6 +46,7 @@ interface Genre {
 
 export default function Page() {
     const { id } = useParams();
+    const { user, token } = useAuthStore();
     const animeId = typeof id === 'string' ? id.split('-')[0] : id?.[0]?.split('-')[0];
     const [animeData, setAnimeData] = useState<AnimeData | null>(null);
     const [genres, setGenres] = useState<Genre[]>([]);
@@ -57,35 +60,62 @@ export default function Page() {
                 setLoading(true);
                 // Fetch both anime details and genres
                 const [animeResponse, genresResponse] = await Promise.all([
-                    fetch(`http://localhost:8000/anime/id/${animeId}`),
-                    fetch('http://localhost:8000/genre/get-list-genres')
+                    axiosInstance.get(`/anime/id/${animeId}`),
+                    axiosInstance.get('/genre/get-list-genres')
                 ]);
 
-                if (!animeResponse.ok || !genresResponse.ok) {
-                    throw new Error('Failed to fetch data');
-                }
-
-                const [animeData, genresData] = await Promise.all([
-                    animeResponse.json(),
-                    genresResponse.json()
-                ]);
+                const [animeData, genresData] = [animeResponse.data, genresResponse.data];
 
                 setAnimeData(animeData);
                 setGenres(genresData);
+
+                // Add to view history if user is logged in
+                if (user?.id && animeData?.id && token) {
+                    try {
+                        console.log('Full animeData:', JSON.stringify(animeData, null, 2));
+                        
+                        console.log('View history request:', {
+                            url: `/viewhistory/add-anime-to-view-history-of-user/${user.id}?anime_id=${animeData.id}`,
+                            method: 'POST'
+                        });
+                        
+                        const response = await axiosInstance.post(
+                            `/viewhistory/add-anime-to-view-history-of-user/${user.id}?anime_id=${animeData.id}`,
+                            null,
+                            {
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                }
+                            }
+                        );
+                        
+                        console.log('View history response:', response.data);
+                    } catch (error: any) {
+                        console.error('Error updating view history:', error.message);
+                        console.error('Full error:', error);
+                        if (error.response) {
+                            console.error('Error response:', {
+                                data: error.response.data,
+                                status: error.response.status,
+                                headers: error.response.headers
+                            });
+                        }
+                    }
+                }
 
                 // Fetch related anime if there are any
                 if (animeData.related_anime_ids && animeData.related_anime_ids.length > 0) {
                     const relatedPromises = animeData.related_anime_ids.map(async (id: string, index: number) => {
                         try {
                             // Сначала проверяем существование аниме в базе
-                            const checkResponse = await fetch(`http://localhost:8000/anime/id/${id}`);
+                            const checkResponse = await axiosInstance.get(`anime/id/${id}`);
                             
-                            if (!checkResponse.ok) {
+                            if (!checkResponse.data) {
                                 console.log(`Anime with id ${id} not found in database`);
                                 return null;
                             }
 
-                            const relatedAnimeData = await checkResponse.json();
+                            const relatedAnimeData = checkResponse.data;
 
                             // Проверяем наличие всех необходимых полей до обращения к ним
                             if (!relatedAnimeData || typeof relatedAnimeData !== 'object') {
