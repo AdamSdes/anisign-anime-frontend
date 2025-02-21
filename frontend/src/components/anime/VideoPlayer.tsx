@@ -3,23 +3,27 @@ import React, { useEffect, useState } from "react";
 import { Film, BugPlay, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EpisodeController } from "./EpisodeController";
-import { toast } from "sonner"; // Добавляем импорт toast
+import { toast } from "sonner";
+import { useAuthStore } from '@/hooks/useAuth';
 
 interface VideoPlayerProps {
   shikimoriId: string;
-  totalEpisodes: number;
-  animeName: string; // Добавляем название аниме
+  totalEpisodes?: number;
+  animeName?: string;
+  animeId: string;
 }
 
 const VideoPlayer = ({
   shikimoriId,
   totalEpisodes = 12,
-  animeName,
+  animeName = '',
+  animeId,
 }: VideoPlayerProps) => {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentEpisode, setCurrentEpisode] = useState(1);
-  const [lastEpisodeWatched, setLastEpisodeWatched] = useState(4); // Добавляем для тестирования
+  const [lastEpisodeWatched, setLastEpisodeWatched] = useState(4);
+  const { user } = useAuthStore();
 
   const createIframe = (src: string) => {
     const iframe = document.createElement("iframe");
@@ -93,7 +97,6 @@ const VideoPlayer = ({
     console.log(`Переключение на эпизод ${episode}`);
     setLastEpisodeWatched(Math.max(lastEpisodeWatched, episode));
 
-    // Улучшим уведомление
     toast.success(`Эпизод ${episode}`, {
       description: "Переключение эпизода...",
       duration: 2000,
@@ -192,13 +195,14 @@ const VideoPlayer = ({
       </div>
 
       {/* Episode Controller */}
-      <EpisodeController
-        currentEpisode={currentEpisode}
-        totalEpisodes={totalEpisodes}
-        lastWatched={lastEpisodeWatched} // Добавляем для отображения прогресса
-        animeName={animeName} // Убедимся, что передаем название
-        onEpisodeChange={handleEpisodeChange}
-      />
+      {user?.id && (
+        <EpisodeController
+          animeId={animeId}
+          userId={user.id}
+          totalEpisodes={totalEpisodes}
+          animeName={animeName}
+        />
+      )}
     </section>
   );
 };

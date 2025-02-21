@@ -236,7 +236,10 @@ export default function Page() {
                             
                             <VideoPlayer 
                                 shikimoriId={animeData.anime_id}
-                                />
+                                animeId={animeData.id}
+                                totalEpisodes={animeData.episodes || 12}
+                                animeName={animeData.russian || animeData.name}
+                            />
                                 
                                 
                                 {relatedAnime.length > 0 && (

@@ -1,74 +1,114 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Minus, Plus, Trophy } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
+import { axiosInstance } from '@/lib/api/axiosConfig';
 
 interface EpisodeControllerProps {
-  currentEpisode: number;
+  animeId: string;
+  userId: string;
   totalEpisodes: number;
-  lastWatched?: number;
-  animeName?: string; // Добавляем название аниме
-  onEpisodeChange: (episode: number) => void;
+  animeName?: string;
 }
 
 export function EpisodeController({ 
-  currentEpisode, 
-  totalEpisodes, 
-  lastWatched = 0,
-  animeName = '', // Добавляем параметр
-  onEpisodeChange 
+  animeId,
+  userId,
+  totalEpisodes,
+  animeName = '',
 }: EpisodeControllerProps) {
+  const [currentEpisode, setCurrentEpisode] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
   const progress = (currentEpisode / totalEpisodes) * 100;
 
+  // Получаем текущий эпизод при загрузке
   useEffect(() => {
-    if (currentEpisode === totalEpisodes) {
-      // Первый залп конфетти
-      confetti({
-        particleCount: 150,
-        spread: 100,
-        origin: { y: 0.6 },
-        colors: ['#CCBAE4', '#D1B0ED', '#FFE4A0']
-      });
+    const fetchCurrentEpisode = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `/anime/current-episode/${animeId}/for-user/${userId}`
+        );
+        if (response.data && response.data.current_episode) {
+          setCurrentEpisode(response.data.current_episode);
+        }
+      } catch (error) {
+        console.error('Error fetching current episode:', error);
+        toast.error('Не удалось загрузить текущий эпизод');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-      // Второй залп конфетти
-      setTimeout(() => {
+    if (userId && animeId) {
+      fetchCurrentEpisode();
+    }
+  }, [userId, animeId]);
+
+  // Обновляем эпизод
+  const handleEpisodeChange = async (newEpisode: number) => {
+    try {
+      await axiosInstance.post(
+        `/anime/update-current-episode/${animeId}/for-user/${userId}?episode_number=${newEpisode}`
+      );
+      setCurrentEpisode(newEpisode);
+
+      // Показываем поздравление при завершении
+      if (newEpisode === totalEpisodes) {
+        // Первый залп конфетти
         confetti({
-          particleCount: 100,
-          spread: 80,
-          origin: { y: 0.7 },
+          particleCount: 150,
+          spread: 100,
+          origin: { y: 0.6 },
           colors: ['#CCBAE4', '#D1B0ED', '#FFE4A0']
         });
-      }, 200);
 
-      // Обновленное поздравление с улучшенными стилями
-      toast.custom((t) => (
-        <div className="bg-[#060606] border border-white/5 rounded-lg p-6 max-w-md mx-auto text-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="p-3 rounded-full bg-[#FFE4A0]/20">
-              <Trophy className="w-8 h-8 text-[#FFE4A0]" />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-white mb-2">
-                Поздравляем с завершением! 🎉
-              </h3>
-              <p className="text-base text-white/70">
-                {animeName 
-                  ? `Вы завершили просмотр аниме "${animeName}"`
-                  : "Вы просмотрели все эпизоды этого аниме"}
-              </p>
+        // Второй залп конфетти
+        setTimeout(() => {
+          confetti({
+            particleCount: 100,
+            spread: 80,
+            origin: { y: 0.7 },
+            colors: ['#CCBAE4', '#D1B0ED', '#FFE4A0']
+          });
+        }, 200);
+
+        // Обновленное поздравление с улучшенными стилями
+        toast.custom((t) => (
+          <div className="bg-[#060606] border border-white/5 rounded-lg p-6 max-w-md mx-auto text-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="p-3 rounded-full bg-[#FFE4A0]/20">
+                <Trophy className="w-8 h-8 text-[#FFE4A0]" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  Поздравляем с завершением! 🎉
+                </h3>
+                <p className="text-base text-white/70">
+                  {animeName 
+                    ? `Вы завершили просмотр аниме "${animeName}"`
+                    : "Вы просмотрели все эпизоды этого аниме"}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      ), {
-        duration: 6000,
-        position: 'top-center'
-      });
+        ), {
+          duration: 6000,
+          position: 'top-center'
+        });
+      }
+    } catch (error) {
+      console.error('Error updating episode:', error);
+      toast.error('Не удалось обновить эпизод');
     }
-  }, [currentEpisode, totalEpisodes, animeName]);
+  };
+
+  if (isLoading) {
+    return <div className="mt-6 text-white/40">Загрузка...</div>;
+  }
 
   return (
     <div className="mt-6 space-y-4 relative z-30">
@@ -82,7 +122,7 @@ export function EpisodeController({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onEpisodeChange(Math.max(1, currentEpisode - 1))}
+            onClick={() => handleEpisodeChange(Math.max(1, currentEpisode - 1))}
             className="w-10 h-10 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/5"
             disabled={currentEpisode <= 1}
           >
@@ -91,7 +131,7 @@ export function EpisodeController({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onEpisodeChange(Math.min(totalEpisodes, currentEpisode + 1))}
+            onClick={() => handleEpisodeChange(Math.min(totalEpisodes, currentEpisode + 1))}
             className="w-10 h-10 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/5"
             disabled={currentEpisode >= totalEpisodes}
           >
@@ -135,7 +175,7 @@ export function EpisodeController({
             <div
               key={index}
               className="flex-1 cursor-pointer hover:bg-white/10 transition-colors"
-              onClick={() => onEpisodeChange(index + 1)}
+              onClick={() => handleEpisodeChange(index + 1)}
             />
           ))}
         </div>
@@ -144,14 +184,7 @@ export function EpisodeController({
       {/* Информация о просмотре */}
       <div className="flex items-center justify-between text-xs text-white/40">
         <span>Текущий эпизод</span>
-        <div className="flex items-center gap-3">
-          <span>{currentEpisode}/{totalEpisodes} эп.</span>
-          {lastWatched > 0 && lastWatched !== currentEpisode && (
-            <span className="px-2 py-0.5 rounded-full bg-white/5">
-              Последний просмотренный: {lastWatched} эп.
-            </span>
-          )}
-        </div>
+        <span>{currentEpisode}/{totalEpisodes} эп.</span>
       </div>
     </div>
   );
