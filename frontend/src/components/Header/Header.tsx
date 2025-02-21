@@ -18,6 +18,7 @@ import { useAuthStore } from '@/hooks/useAuth';
 import { getAvatarUrl } from '@/utils/avatar';
 import HeaderAvatar from './HeaderAvatar';
 import { logout } from '@/lib/auth';
+import { motion } from 'framer-motion';
 
 const UserNotLoggedNavBar = () => {
     return (
@@ -60,20 +61,26 @@ const Header = ({ className = '' }) => {
 
     useEffect(() => {
         const navbar = navbarRef.current;
+        let lastScroll = 0;
 
-        const observer = new IntersectionObserver(([entry]) => {
-            setIsScrolled(!entry.isIntersecting);
-        }, { threshold: [0.1] });
+        const handleScroll = () => {
+            const currentScroll = window.scrollY;
+            // Add some threshold to prevent micro-movements triggering state changes
+            const threshold = 5;
+            
+            if (Math.abs(currentScroll - lastScroll) < threshold) return;
 
-        if (navbar) {
-            observer.observe(navbar);
-        }
-
-        return () => {
-            if (navbar) {
-                observer.unobserve(navbar);
+            if (currentScroll > lastScroll && currentScroll > 50) {
+                setIsScrolled(true);
+            } else if (currentScroll < lastScroll || currentScroll < 50) {
+                setIsScrolled(false);
             }
+            
+            lastScroll = currentScroll;
         };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     useEffect(() => {
@@ -102,14 +109,26 @@ const Header = ({ className = '' }) => {
     return (
         <>
             <div ref={navbarRef} />
-            <header className={`
-                border-b-[1px] flex items-center border-white/5 
-                sticky top-0 left-0 w-full 
-                bg-[#060606]/60 backdrop-blur-xl z-50 
-                transition-all duration-300
-                ${isScrolled ? 'bg-[#060606]/90 shadow-lg py-3' : 'bg-transparent h-[89px] flex items-center'}
-                ${className}
-            `}>
+            <motion.header
+                initial={false}
+                animate={{
+                    height: isScrolled ? '72px' : '89px',
+                    paddingTop: isScrolled ? '16px' : '0px',
+                    paddingBottom: isScrolled ? '16px' : '0px',
+                    backgroundColor: isScrolled ? 'rgba(6, 6, 6, 0.95)' : 'rgba(6, 6, 6, 0.6)',
+                }}
+                transition={{
+                    duration: 0.3,
+                    ease: [0.4, 0, 0.2, 1], // Ease out cubic
+                }}
+                className={`
+                    border-b-[1px] flex items-center border-white/5 
+                    sticky top-0 left-0 w-full 
+                    backdrop-blur-xl z-50
+                    ${isScrolled ? 'shadow-lg' : ''}
+                    ${className}
+                `}
+            >
                 <nav className="container mx-auto px-4 flex justify-between items-center">
                     <div className="navbar-left flex gap-4 sm:gap-6 items-center">
                         <Link href='/' className="flex gap-3 sm:gap-5 items-center opacity-100 hover:opacity-80 transition-all">
@@ -186,17 +205,26 @@ const Header = ({ className = '' }) => {
                         <Button 
                             variant="ghost"
                             className="relative group h-[50px] px-5 rounded-xl 
-                                     border border-[#CCBAE4]/20
+                                     bg-[#0A0A0A] border border-[#CCBAE4]/20
                                      hover:border-[#CCBAE4]/40 transition-all duration-300"
                         >
-
+                            <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100
+                                          transition-opacity duration-500 overflow-hidden">
+                                <div className="absolute inset-0 bg-[#CCBAE4]/5" />
+                                <div className="absolute -inset-1 bg-gradient-to-r from-[#CCBAE4]/0 via-[#CCBAE4]/5 to-[#CCBAE4]/0
+                                              blur-xl group-hover:animate-shimmer" />
+                            </div>
                             
                             <div className="relative flex items-center gap-2">
                                 <div className="relative">
                                     <Sparkles className="w-4 h-4 text-[#CCBAE4] animate-pulse" />
+                                    <div className="absolute -inset-1 bg-[#CCBAE4]/20 blur-xl animate-pulse" />
                                 </div>
-                                <span className="text-[14px] font-medium text-[#CCBAE4]/70">
+                                <span className="text-[14px] font-medium text-white/90">
                                     PRO
+                                </span>
+                                <span className="text-[14px] text-white/40">
+                                    от 99₽
                                 </span>
                             </div>
                         </Button>
@@ -259,11 +287,11 @@ const Header = ({ className = '' }) => {
                         </button>
                     </div>
                 </nav>
-            </header>
+            </motion.header>
 
             {/* Мобильное меню */}
             {isMobileMenuOpen && (
-                <div className="md:hidden fixed inset-0 bg-[#060606]/95 backdrop-blur-xl z-60 pt-[89px]">
+                <div className="md:hidden fixed inset-0 bg-[#060606]/95 backdrop-blur-xl z-40 pt-[89px]">
                     <div className="container h-[calc(100vh-89px)] mx-auto px-4 py-6 flex flex-col">
                         <div className="flex-1 flex flex-col gap-6">
                             {/* Навигация */}
