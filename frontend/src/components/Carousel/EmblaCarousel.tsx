@@ -125,7 +125,7 @@ const EmblaCarousel = ({ options }: EmblaCarouselProps) => {
                                     alt={anime.russian || anime.name}
                                     width={261}
                                     height={368}
-                                    className="w-full h-full object-cover"
+                                    className="object-cover transition-transform duration-300 scale-105 group-hover:scale-110"
                                     priority={animeList.indexOf(anime) === 0}
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent pointer-events-none z-10" />
@@ -152,8 +152,8 @@ const EmblaCarousel = ({ options }: EmblaCarouselProps) => {
             {/* Navigation */}
             <div className="flex items-center justify-between mt-8">
                 <div className="flex items-center gap-2">
-                    <PrevButton 
-                        onClick={onPrevButtonClick} 
+                    <PrevButton
+                        onClick={onPrevButtonClick}
                         disabled={prevBtnDisabled}
                         className={`
                             w-11 h-11 flex items-center justify-center rounded-full
