@@ -186,6 +186,12 @@ export default function Page() {
         }
     }, [animeId]);
 
+    useEffect(() => {
+        if (animeData) {
+            document.title = animeData.russian || animeData.name;
+        }
+    }, [animeData]);
+
     if (loading) {
         return (
             <>

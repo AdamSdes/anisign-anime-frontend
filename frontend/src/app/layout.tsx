@@ -14,6 +14,9 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: 'Anisign - Аниме портал',
   description: 'Удобный сайт для просмотра аниме',
+  icons: {
+    icon: '/logo_header.png'
+  },
 }
 
 export default function RootLayout({
