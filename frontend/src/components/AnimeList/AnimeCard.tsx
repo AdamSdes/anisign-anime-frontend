@@ -129,7 +129,7 @@ const AnimeCard: React.FC<AnimeCardProps> = ({ anime, genres, priority = false }
 
     return (
         <TooltipProvider>
-            <Tooltip delayDuration={300}>
+            <Tooltip delayDuration={700} skipDelayDuration={0}>
                 <TooltipTrigger asChild>
                     <Link href={`/anime/${anime.anime_id}`}>
                         <div className="group relative">

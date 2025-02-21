@@ -170,7 +170,7 @@ export default function AnimeDetails({ anime, genres, isLoading }: AnimeDetailsP
                         {anime.description && anime.description.trim() ? (
                             parseDescription(anime.description)
                         ) : (
-                            <div className="h-[220px] bg-white/[0.02] border border-white/5 rounded-xl flex items-center justify-center">
+                            <div className="h-[220px] rounded-xl flex items-center justify-center">
                                 <div className="text-center space-y-2">
                                     <p className="text-[24px]">😢</p>
                                     <p className="text-white/40">Описание отсутствует</p>
