@@ -71,7 +71,7 @@ export function EpisodeController({
   }, [currentEpisode, totalEpisodes, animeName]);
 
   return (
-    <div className="mt-6 space-y-4 relative z-50">
+    <div className="mt-6 space-y-4 relative z-30">
       {/* Верхняя строка с информацией */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">

@@ -47,7 +47,7 @@ export const HeaderAvatar: React.FC<HeaderAvatarProps> = ({
                 />
             )}
             <AvatarPrimitive.Fallback
-                className="flex h-full w-full items-center justify-center rounded-full bg-muted"
+                className="flex h-full text-[12px] w-full items-center justify-center rounded-full bg-white/5 text-white/60 uppercase"
             >
                 {username.slice(0, 2)}
             </AvatarPrimitive.Fallback>

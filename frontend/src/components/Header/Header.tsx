@@ -186,26 +186,17 @@ const Header = ({ className = '' }) => {
                         <Button 
                             variant="ghost"
                             className="relative group h-[50px] px-5 rounded-xl 
-                                     bg-[#0A0A0A] border border-[#CCBAE4]/20
+                                     border border-[#CCBAE4]/20
                                      hover:border-[#CCBAE4]/40 transition-all duration-300"
                         >
-                            <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100
-                                          transition-opacity duration-500 overflow-hidden">
-                                <div className="absolute inset-0 bg-[#CCBAE4]/5" />
-                                <div className="absolute -inset-1 bg-gradient-to-r from-[#CCBAE4]/0 via-[#CCBAE4]/5 to-[#CCBAE4]/0
-                                              blur-xl group-hover:animate-shimmer" />
-                            </div>
+
                             
                             <div className="relative flex items-center gap-2">
                                 <div className="relative">
                                     <Sparkles className="w-4 h-4 text-[#CCBAE4] animate-pulse" />
-                                    <div className="absolute -inset-1 bg-[#CCBAE4]/20 blur-xl animate-pulse" />
                                 </div>
-                                <span className="text-[14px] font-medium text-white/90">
+                                <span className="text-[14px] font-medium text-[#CCBAE4]/70">
                                     PRO
-                                </span>
-                                <span className="text-[14px] text-white/40">
-                                    от 99₽
                                 </span>
                             </div>
                         </Button>
@@ -272,7 +263,7 @@ const Header = ({ className = '' }) => {
 
             {/* Мобильное меню */}
             {isMobileMenuOpen && (
-                <div className="md:hidden fixed inset-0 bg-[#060606]/95 backdrop-blur-xl z-40 pt-[89px]">
+                <div className="md:hidden fixed inset-0 bg-[#060606]/95 backdrop-blur-xl z-60 pt-[89px]">
                     <div className="container h-[calc(100vh-89px)] mx-auto px-4 py-6 flex flex-col">
                         <div className="flex-1 flex flex-col gap-6">
                             {/* Навигация */}
