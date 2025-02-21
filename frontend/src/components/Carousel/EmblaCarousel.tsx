@@ -128,7 +128,7 @@ const EmblaCarousel = ({ options }: EmblaCarouselProps) => {
                                     className="object-cover transition-transform duration-300 scale-105 group-hover:scale-110"
                                     priority={animeList.indexOf(anime) === 0}
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent pointer-events-none z-10" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent  z-10" />
                                 <div className="absolute bottom-0 w-full p-4 text-white z-20">
                                     <p className="text-[14px] text-start font-semibold">
                                         {anime.russian || anime.name}
