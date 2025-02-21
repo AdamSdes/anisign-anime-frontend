@@ -98,4 +98,16 @@ async def get_all_ratings(db: AsyncSession = Depends(get_session)):
     return result
 
 
+@anime_router.get("/current-episode/{anime_id}/for-user/{user_id}")
+async def get_current_episode(anime_id: UUID, user_id: UUID, db: AsyncSession = Depends(get_session)):
+    service = AnimeService(db)
+    result = await service.get_current_episode(anime_id, user_id)
+    return result
+
+@anime_router.post("/update-current-episode/{anime_id}/for-user/{user_id}")
+async def update_current_episode(anime_id: UUID, episode_number: int, user_id: UUID, db: AsyncSession = Depends(get_session)):
+    service = AnimeService(db)
+    result = await service.update_current_episode(anime_id, user_id, episode_number)
+    return result
+
     

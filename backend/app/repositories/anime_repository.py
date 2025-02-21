@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete ,distinct
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
-from app.db.models import Anime , Genre
+from app.db.models import Anime , Genre , AnimeCurrentEpisode
 from sqlalchemy import select, func, Integer
 from fastapi import Depends ,Query ,Path ,Body
 from typing import List
@@ -221,22 +221,29 @@ class AnimeRepository():
         anime_list = result.scalars().all()
         
         return {"total_count": total_count, "anime_list": anime_list}
-#
-# class Anime(BaseTable):
-    # __tablename__ = 'anime'
-    # title = Column(String, index=True, unique=True, nullable=False)
-    # description = Column(String, index=True)
-    # anime_images = Column(ARRAY(Text))
-    # rating = Column(Integer, index=True)
-    # category = Column(ARRAY(String), index=True)
-    # year = Column(Integer, index=True)
-    # created_at = Column(String, index=True)
-    # last_season = Column(Integer, index=True)
-    # last_episode = Column(Integer, index=True)
-    # episodes_count = Column(Integer, index=True)
-    # imdb_id = Column(String, index=True)
-    # shikimori_id = Column(String, index=True)
-    # quality = Column(String, index=True)
-    # other_title = Column(String, index=True)
-    # link = Column(String, index=True)
-    # id_kodik = Column(String, index=True)
+
+    async def get_current_episode(self, anime_id: str, user_id: UUID):
+        query = select(AnimeCurrentEpisode).where(
+            AnimeCurrentEpisode.anime_id == anime_id,
+            AnimeCurrentEpisode.user_id == user_id
+        )
+        result = await self.db.execute(query)
+        current_episode = result.scalars().first()
+        if not current_episode:
+            current_episode = AnimeCurrentEpisode(anime_id=anime_id, user_id=user_id, current_episode=1)
+            self.db.add(current_episode)
+            await self.db.commit()
+            return current_episode
+        return current_episode
+    
+    async def update_current_episode(self, anime_id: UUID, user_id: UUID, episode_number: int):
+        current_episode_obj = await self.get_current_episode(anime_id, user_id)
+        if current_episode_obj:
+            current_episode_obj.current_episode = episode_number
+            await self.db.commit()
+            return {"message": "Current episode updated successfully"}
+        
+        current_episode = AnimeCurrentEpisode(anime_id=anime_id, user_id=user_id, current_episode=episode_number)
+        self.db.add(current_episode)
+        await self.db.commit()
+        return {"message": "Current episode created successfully"}
