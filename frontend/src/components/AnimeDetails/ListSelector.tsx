@@ -183,8 +183,8 @@ export const ListSelector: React.FC<ListSelectorProps> = ({ animeId, onListChang
                             </>
                         ) : (
                             <>
-                                <Plus className="h-5 w-5" />
-                                <span>Добавить в список</span>
+                                <Plus className="h-4 w-4 text-white/60" />
+                                <span className='text-white/60'>Добавить в список</span>
                             </>
                         )}
                     </div>

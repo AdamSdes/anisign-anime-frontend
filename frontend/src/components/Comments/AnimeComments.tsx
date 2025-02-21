@@ -89,7 +89,7 @@ const CommentAvatar = memo(({ userInfo }: { userInfo?: UserInfo }) => {
           onError={() => setIsLoading(false)}
         />
       )}
-      <AvatarFallback className="bg-white/[0.02] text-white/60 text-lg font-medium">
+      <AvatarFallback className="bg-white/[0.02] text-white/60 text-[14px] font-medium">
         {fallbackText}
       </AvatarFallback>
     </Avatar>
@@ -292,111 +292,121 @@ const CommentForm = memo(({
 
   return (
     <div className="flex gap-4">
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex-shrink-0">
         <CommentAvatar userInfo={user} />
       </div>
       <div className="flex-1 space-y-4">
         {replyTo && (
-          <div className="flex items-center gap-2 text-sm text-white/60 bg-white/[0.02] p-2 rounded-lg">
-            <span>Ответ на комментарий от {replyTo.userInfo?.nickname || replyTo.userInfo?.username}</span>
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+            <Reply className="h-4 w-4 text-white/40" />
+            <span className="text-sm text-white/60">
+              Ответ для {replyTo.userInfo?.nickname || replyTo.userInfo?.username}
+            </span>
             {onCancelReply && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onCancelReply}
-                className="h-6 px-2 text-xs"
+                className="ml-auto h-7 px-3 text-xs hover:text-white/90"
               >
                 Отменить
               </Button>
             )}
           </div>
         )}
-        <Textarea
-          value={commentText}
-          onChange={(e) => setCommentText(e.target.value)}
-          placeholder={replyTo ? "Написать ответ..." : "Написать комментарий..."}
-          className="min-h-[100px] bg-white/[0.02] border-white/5 resize-none focus:ring-[#CCBAE4]/20 placeholder:text-white/40 text-[14px]"
-          disabled={disabled}
-          data-reply-to={replyTo?.id || 'main'}
-        />
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn("h-8 w-8", formatting.isBold && "bg-white/10")}
-                  onClick={() => insertFormatting('bold')}
-                >
-                  <Bold className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Жирный текст</p>
-              </TooltipContent>
-            </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn("h-8 w-8", formatting.isSpoiler && "bg-white/10")}
-                  onClick={() => insertFormatting('spoiler')}
-                >
-                  <EyeOff className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Спойлер</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => insertFormatting('timestamp')}
-                >
-                  <Clock className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Таймкод</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                >
-                  <Smile className="h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 p-0">
-                <EmojiPicker
-                  onEmojiClick={onEmojiClick}
-                  width="100%"
-                  height={400}
-                />
-              </PopoverContent>
-            </Popover>
+        <div className="space-y-4">
+          <div className="relative group">
+            <Textarea
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder={replyTo ? "Написать ответ..." : "Написать комментарий..."}
+              className="min-h-[120px] bg-white/[0.02] border-white/5 resize-none focus-visible:ring-1 focus-visible:ring-[#CCBAE4]/50 placeholder:text-white/40 rounded-xl pr-3"
+              disabled={disabled}
+              data-reply-to={replyTo?.id || 'main'}
+            />
+            <div className="absolute right-3 bottom-3 opacity-0 group-focus-within:opacity-100 transition-opacity">
+              <span className="text-xs text-white/30">Ctrl+Enter для отправки</span>
+            </div>
           </div>
 
-          <div className="ml-auto">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 p-1 rounded-lg bg-white/[0.02] border border-white/5">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-white/5"
+                        onClick={() => insertFormatting('bold')}
+                      >
+                        <Bold className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="bg-[#18181B] border-white/5">
+                      <p>Жирный текст</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-white/5"
+                        onClick={() => insertFormatting('spoiler')}
+                      >
+                        <EyeOff className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="bg-[#18181B] border-white/5">
+                      <p>Спойлер</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-white/5"
+                        onClick={() => insertFormatting('timestamp')}
+                      >
+                        <Clock className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="bg-[#18181B] border-white/5">
+                      <p>Таймкод</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white/5">
+                        <Smile className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 p-0 border-white/5 bg-[#18181B]">
+                      <EmojiPicker
+                        onEmojiClick={onEmojiClick}
+                        width="100%"
+                        height={400}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </TooltipProvider>
+              </div>
+            </div>
+
             <Button
               onClick={handleSubmit}
               disabled={disabled || !commentText.trim()}
               className={cn(
-                "h-[45px] px-6 rounded-xl font-medium transition-all duration-200",
-                "bg-[#CCBAE4] hover:bg-[#CCBAE4]/90 text-black",
-                "disabled:opacity-50 disabled:cursor-not-allowed"
+                "h-10 px-6 rounded-lg font-medium transition-all duration-200",
+                "bg-[#CCBAE4] hover:bg-[#CCBAE4]/90 text-black shadow-lg shadow-[#CCBAE4]/10",
+                "disabled:bg-white/5 disabled:text-white/40 disabled:shadow-none"
               )}
             >
               {disabled ? (
@@ -408,7 +418,7 @@ const CommentForm = memo(({
                   <span>Отправка...</span>
                 </div>
               ) : (
-                replyTo ? 'Отправить ответ' : 'Отправить комментарий'
+                replyTo ? 'Отправить ответ' : 'Отправить'
               )}
             </Button>
           </div>
@@ -735,49 +745,54 @@ export default function AnimeComments({ animeId }: AnimeCommentsProps) {
     <TooltipProvider>
       <div className="space-y-8">
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-lg mb-4">
-            {error}
-          </div>
-        )}
-        {/* Main Comment Form */}
-        {isAuthenticated && (
-          <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <MessageCircle className="w-5 h-5 text-white/60" />
-                <h3 className="text-[18px] font-semibold text-white/90">
-                  Комментарии 
-                  <span className="text-[14px] text-white/40 ml-2">
-                    {comments.length}
-                  </span>
-                </h3>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-[13px] text-white/40 hover:text-white/90"
-                >
-                  Новые
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-[13px] text-white/40 hover:text-white/90"
-                >
-                  Старые
-                </Button>
-              </div>
-            </div>
-            <CommentForm
-              onSubmit={handleSubmitComment}
-              disabled={isSubmitting}
-            />
+          <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl text-sm">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span>{error}</span>
           </div>
         )}
 
-        {/* Comments List */}
-        <div className="space-y-4">
+        <div className="rounded-xl border border-white/5 bg-[rgba(255,255,255,0.02)] backdrop-blur-sm p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <MessageCircle className="w-5 h-5 text-[#CCBAE4]" />
+              <div className="flex items-baseline gap-2">
+                <h3 className="text-[18px] font-semibold text-white/90">Комментарии</h3>
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/[0.04] text-xs text-white/60">
+                  <span>{comments.length}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-1 p-1 rounded-lg bg-white/[0.02] border border-white/5">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-[13px] text-white/40 hover:text-white/90 hover:bg-white/5"
+              >
+                Новые
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-[13px] text-white/40 hover:text-white/90 hover:bg-white/5"
+              >
+                Старые
+              </Button>
+            </div>
+          </div>
+
+          {isAuthenticated && (
+            <CommentForm 
+              onSubmit={handleSubmitComment}
+              disabled={isSubmitting}
+            />
+          )}
+        </div>
+
+        {/* Комментарии */}
+        <div className="space-y-6">
           {isLoading ? (
             <div className="space-y-4">
               {[...Array(3)].map((_, index) => (
@@ -797,8 +812,14 @@ export default function AnimeComments({ animeId }: AnimeCommentsProps) {
             </div>
           ) : groupedComments.topLevelComments.length > 0 ? (
             groupedComments.topLevelComments.map((comment) => (
-              <div key={comment.id} className="space-y-4">
-                <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6">
+              <motion.div 
+                key={comment.id} 
+                className="space-y-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 hover:bg-white/[0.03] transition-colors duration-200">
                   <div className="flex gap-4 items-start">
                     <Popover>
                       <PopoverTrigger>
@@ -944,7 +965,12 @@ export default function AnimeComments({ animeId }: AnimeCommentsProps) {
 
                 {/* Reply Form */}
                 {isAuthenticated && showReplyFormFor === comment.id && (
-                  <div className="ml-8 pl-6">
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="ml-8 pl-6"
+                  >
                     <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6">
                       <CommentForm 
                         onSubmit={(text) => handleSubmitComment(text, comment)}
@@ -953,7 +979,7 @@ export default function AnimeComments({ animeId }: AnimeCommentsProps) {
                         disabled={isSubmitting}
                       />
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
                 {/* Replies */}
@@ -1085,11 +1111,19 @@ export default function AnimeComments({ animeId }: AnimeCommentsProps) {
                     ))}
                   </div>
                 )}
-              </div>
+              </motion.div>
             ))
           ) : (
-            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 text-center text-white/40">
-              Пока нет комментариев. Будьте первым!
+            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-8 text-center">
+              <div className="inline-flex flex-col items-center gap-3">
+                <div className="p-3 rounded-full bg-white/[0.03]">
+                  <MessageCircle className="w-6 h-6 text-white/40" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-white/40">Пока нет комментариев</p>
+                  <p className="text-sm text-white/30">Будьте первым, кто оставит комментарий!</p>
+                </div>
+              </div>
             </div>
           )}
         </div>
