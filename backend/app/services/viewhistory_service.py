@@ -31,8 +31,14 @@ class ViewHistoryService:
         if not check:
             raise HTTPException(status_code=404, detail="User not found")
         
-        result = await self.viewhistory_repository.get_view_history_of_user(user_id)
-        return result
+        viewhistory = await self.viewhistory_repository.get_view_history_of_user(user_id)
+        animes = []
+        for history in viewhistory:
+            viewhistory_anime_ids = history.__dict__.get("anime_id_list")
+            for x in viewhistory_anime_ids:
+                anime = await self.anime_repository.get_anime_by_id_uuid(x)
+                animes.append(anime)
+        return {"user_view_history": viewhistory, "animes": animes}
     
     async def add_anime_to_view_history_of_user(self, anime_id, user_id):
         check = await self.user_repository.get_user_by_id(user_id)
