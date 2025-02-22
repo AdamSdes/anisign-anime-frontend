@@ -142,8 +142,8 @@ async def upload_avatar(file: UploadFile, db : AsyncSession = Depends(get_sessio
     result = await service.update_banner(current_user.id, file)
     return result
 
-@user_router.get("/get-my-banner")
-async def get_my_banner(db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
+@user_router.get("/get-user-banner")
+async def get_my_banner(user_id: UUID, db: AsyncSession = Depends(get_session)):
     """
     Get the current user's banner.
 
@@ -155,7 +155,7 @@ async def get_my_banner(db: AsyncSession = Depends(get_session), current_user: U
     Returns the banner file.
     """
     service = UserService(db)
-    banner = await service.get_banner(current_user.id)
+    banner = await service.get_banner(user_id)
     return banner
 
 @user_router.get("/update-status")
@@ -169,8 +169,8 @@ async def update_status(user_id: UUID,db: AsyncSession = Depends(get_session)):
     result = await service.update_status(user_id)
     return result
 
-@user_router.get("/get-my-avatar")
-async def get_my_avatar(db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
+@user_router.get("/get-user-avatar")
+async def get_my_avatar(user_id: UUID,db: AsyncSession = Depends(get_session)):
     """
     Get the current user's avatar.
 
@@ -182,7 +182,7 @@ async def get_my_avatar(db: AsyncSession = Depends(get_session), current_user: U
     Returns the avatar file.
     """
     service = UserService(db)
-    avatar = await service.get_avatar(current_user.id)
+    avatar = await service.get_avatar(user_id)
     return avatar
 
 @user_router.post("/change-my-password")
