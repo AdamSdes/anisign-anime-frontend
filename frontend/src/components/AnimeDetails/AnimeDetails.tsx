@@ -80,7 +80,7 @@ export default function AnimeDetails({ anime, genres, isLoading }: AnimeDetailsP
                         <div className="w-[315px] overflow-hidden rounded-[14px] relative group">
                             <Image
                                 alt={anime.russian || anime.name}
-                                className="w-full h-[454px] object-cover transition-transform duration-500 group-hover:scale-105"
+                                className="w-full h-[454px] object-cover transition-transform duration-500 scale-105 group-hover:scale-110"
                                 src={anime.poster_url}
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

@@ -50,7 +50,7 @@ const AnimeList = () => {
                 className="space-y-8"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
+                transition={{ duration: 1.0 }}
             >
                 <Search />
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
@@ -83,7 +83,7 @@ const AnimeList = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
+            transition={{ duration: 0.3 }}
         >
             <Search />
             
@@ -109,13 +109,7 @@ const AnimeList = () => {
                     </p>
                 </motion.div>
             ) : (
-                <motion.div 
-                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"
-                    key={searchParams.toString()} // This forces re-render on page change
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
-                >
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
                     {animeList?.map((anime, index) => (
                         <div key={anime.anime_id}>
                             <AnimeCard
@@ -125,7 +119,7 @@ const AnimeList = () => {
                             />
                         </div>
                     ))}
-                </motion.div>
+                </div>
             )}
 
             {pagination && pagination.pages > 1 && (

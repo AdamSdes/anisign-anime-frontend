@@ -60,23 +60,9 @@ const Header = ({ className = '' }) => {
     }, [isAuthenticated, user, hydrated]);
 
     useEffect(() => {
-        const navbar = navbarRef.current;
-        let lastScroll = 0;
-
         const handleScroll = () => {
             const currentScroll = window.scrollY;
-            // Add some threshold to prevent micro-movements triggering state changes
-            const threshold = 5;
-            
-            if (Math.abs(currentScroll - lastScroll) < threshold) return;
-
-            if (currentScroll > lastScroll && currentScroll > 50) {
-                setIsScrolled(true);
-            } else if (currentScroll < lastScroll || currentScroll < 50) {
-                setIsScrolled(false);
-            }
-            
-            lastScroll = currentScroll;
+            setIsScrolled(currentScroll > 50);
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
@@ -108,28 +94,30 @@ const Header = ({ className = '' }) => {
 
     return (
         <>
-            <div ref={navbarRef} />
+            <div className="h-24" /> {/* Увеличенная высота компенсационного div */}
             <motion.header
                 initial={false}
                 animate={{
-                    height: isScrolled ? '72px' : '89px',
-                    paddingTop: isScrolled ? '16px' : '0px',
-                    paddingBottom: isScrolled ? '16px' : '0px',
                     backgroundColor: isScrolled ? 'rgba(6, 6, 6, 0.95)' : 'rgba(6, 6, 6, 0.6)',
                 }}
                 transition={{
                     duration: 0.3,
-                    ease: [0.4, 0, 0.2, 1], // Ease out cubic
+                    ease: "easeInOut"
                 }}
                 className={`
-                    border-b-[1px] flex items-center border-white/5 
-                    sticky top-0 left-0 w-full 
-                    backdrop-blur-xl z-50
+                    fixed top-0 left-0 right-0 z-50
+                    border-b border-white/5
+                    backdrop-blur-xl
+                    h-24
                     ${isScrolled ? 'shadow-lg' : ''}
                     ${className}
                 `}
             >
-                <nav className="container mx-auto px-4 flex justify-between items-center">
+                <nav className={`
+                    container mx-auto px-4 h-full flex justify-between items-center
+                    transition-[padding] duration-300 ease-in-out
+                    ${isScrolled ? 'py-10' : 'py-10'}
+                `}>
                     <div className="navbar-left flex gap-4 sm:gap-6 items-center">
                         <Link href='/' className="flex gap-3 sm:gap-5 items-center opacity-100 hover:opacity-80 transition-all">
                             <img src="/logo_header.png" alt="Logo" className="w-7 h-7 sm:w-8 sm:h-8" />
@@ -223,23 +211,16 @@ const Header = ({ className = '' }) => {
                                 <span className="text-[14px] font-medium text-white/90">
                                     PRO
                                 </span>
-                                <span className="text-[14px] text-white/40">
-                                    от 99₽
-                                </span>
                             </div>
                         </Button>
                         <Button 
                             variant="ghost" 
-                            className="h-[50px] pl-4 pr-3 rounded-[12px] border border-white/5 hover:border-white/10 transition-all duration-200 flex items-center gap-4"
+                            className="h-[50px] pl-4 pr-10 rounded-[12px] border border-white/5 hover:border-white/10 transition-all duration-200 flex items-center gap-4"
                             onClick={() => setIsSearchOpen(true)}
                         >
                             <div className="flex items-center gap-3">
                                 <HiSearch className="h-[18px] w-[18px] text-white/30" />
                                 <span className="text-[14px] font-normal text-white/40">Поиск аниме</span>
-                            </div>
-                            <div className="flex items-center gap-1 px-2 py-1">
-                                <kbd className="text-[10px] font-medium text-white/30">⌘</kbd>
-                                <kbd className="text-[10px] font-medium text-white/30">K</kbd>
                             </div>
                         </Button>
                         <div className="hidden md:block w-[1px] h-[20px] bg-white/5" />
