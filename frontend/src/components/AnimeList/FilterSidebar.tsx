@@ -182,24 +182,23 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ className = "" }) => {
                             key={option.id}
                             onClick={() => updateSort(option.id)}
                             className={cn(
-                                "px-4 h-[35px] rounded-full text-[13px] font-medium transition-all duration-300",
+                                "px-4 h-[35px] flex items-center gap-[10px] rounded-full text-[13px] font-medium transition-all duration-300",
                                 isActive('sort', option.id)
                                     ? "bg-white/20 text-white"
                                     : "bg-white/5 text-white/60 hover:bg-white/10"
                             )}
                         >
-                            {option.label}
                             {isActive('sort', option.id) && (
-                                <span className="ml-1">
-                                    {searchParams.get('order') === 'desc' ? '↓' : '↑'}
-                                </span>
+                                <div className="w-2 h-2 rounded-full bg-[#CCBAE4]">
+                                </div>
                             )}
+                            {option.label}
                         </button>
                     ))}
                 </div>
             </FilterSection>
 
-            <FilterSection icon={<Calendar className="w-4 h-4 text-white/60" />} title="Рік виходу">
+            <FilterSection icon={<Calendar className="w-4 h-4 text-white/60" />} title="Год выхода">
                 <div className="flex items-center gap-2">
                     <YearFilterInput
                         years={selectingYears}

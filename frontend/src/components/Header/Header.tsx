@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { HiMenu, HiX, HiSearch, HiChevronDown } from 'react-icons/hi';
 import { Calendar, Users2, Flame, PlayCircle, Sparkles } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { SearchModal } from '@/components/SearchModal';
 import { UserLoggedNavBar } from './UserLoggedNavBar';
 import { useAuthStore } from '@/hooks/useAuth';
@@ -94,24 +93,7 @@ const Header = ({ className = '' }) => {
 
     return (
         <>
-            <div className="h-24" /> {/* Увеличенная высота компенсационного div */}
-            <motion.header
-                initial={false}
-                animate={{
-                    backgroundColor: isScrolled ? 'rgba(6, 6, 6, 0.95)' : 'rgba(6, 6, 6, 0.6)',
-                }}
-                transition={{
-                    duration: 0.3,
-                    ease: "easeInOut"
-                }}
-                className={`
-                    fixed top-0 left-0 right-0 z-50
-                    border-b border-white/5
-                    backdrop-blur-xl
-                    h-24
-                    ${isScrolled ? 'shadow-lg' : ''}
-                    ${className}
-                `}
+            <header className={`border-b-[1px] flex items-center border-white/5 sticky top-0 left-0 w-full h-[100px] bg-[#060606]/60 backdrop-blur-lg z-50 transition-all duration-300 ${isScrolled ? 'bg-[#060606]/80 shadow-lg py-3 backdrop-blur-lg' : 'bg-transparent h-[89px] flex items-center'}`}
             >
                 <nav className={`
                     container mx-auto px-4 h-full flex justify-between items-center
@@ -208,19 +190,19 @@ const Header = ({ className = '' }) => {
                                     <Sparkles className="w-4 h-4 text-[#CCBAE4] animate-pulse" />
                                     <div className="absolute -inset-1 bg-[#CCBAE4]/20 blur-xl animate-pulse" />
                                 </div>
-                                <span className="text-[14px] font-medium text-white/90">
+                                <span className="text-[12px] font-bold text-[#CCBAE4]/60">
                                     PRO
                                 </span>
                             </div>
                         </Button>
                         <Button 
                             variant="ghost" 
-                            className="h-[50px] pl-4 pr-10 rounded-[12px] border border-white/5 hover:border-white/10 transition-all duration-200 flex items-center gap-4"
+                            className="h-[50px] pl-4 pr-[50px] hover:pr-20 rounded-[12px] border border-white/5 hover:border-white/10 transition-all duration-500 flex items-center gap-4"
                             onClick={() => setIsSearchOpen(true)}
                         >
                             <div className="flex items-center gap-3">
                                 <HiSearch className="h-[18px] w-[18px] text-white/30" />
-                                <span className="text-[14px] font-normal text-white/40">Поиск аниме</span>
+                                <span className="text-[14px] font-normal text-white/40">Поиск...</span>
                             </div>
                         </Button>
                         <div className="hidden md:block w-[1px] h-[20px] bg-white/5" />
@@ -268,7 +250,7 @@ const Header = ({ className = '' }) => {
                         </button>
                     </div>
                 </nav>
-            </motion.header>
+            </header>
 
             {/* Мобильное меню */}
             {isMobileMenuOpen && (
