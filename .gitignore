@@ -64,3 +64,34 @@ backend/uploads/avatars/59d0c777-b6c5-406b-98ca-58e8b43ba217.png
 backend/uploads/avatars/5a3b0aa0-96fc-4b4c-a3cc-3f2e3b139700.png
 backend/uploads/avatars/59d0c777-b6c5-406b-98ca-58e8b43ba217.png
 backend/uploads/avatars/5a3b0aa0-96fc-4b4c-a3cc-3f2e3b139700.png
+
+# new-front
+new-front/node_modules/
+new-front/.next/
+new-front/out/
+new-front/dist/
+new-front/build/
+new-front/.cache/
+
+# Логи
+new-front/logs/
+new-front/*.log
+new-front/npm-debug.log*
+new-front/pnpm-debug.log*
+new-front/lerna-debug.log*
+
+# Файлы окружения
+new-front/.env*
+!new-front/.env.example
+new-front/package.json
+
+# Файлы IDE/редакторов
+new-front/.vscode/
+new-front/.idea/
+
+# Временные файлы TypeScript
+new-front/*.tsbuildinfo
+
+# Конфигурационные файлы сборки
+new-front/postcss.config.mjs
+new-front/tailwind.config.js
