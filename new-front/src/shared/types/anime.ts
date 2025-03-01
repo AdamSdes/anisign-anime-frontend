@@ -34,3 +34,26 @@ export interface Genre {
     total_count: number;
     anime_list: Anime[];
   }
+
+  export interface ReleaseEntry {
+    anime_id: number;
+    name: string;
+    episode_number: number;
+    release_date: string;
+  }
+
+  export interface ReleaseCalendar {
+    [day: string]: ReleaseEntry[];
+  }
+
+  export interface Episode {
+    number: number;
+    duration: string;
+    release_date: string;
+  }
+
+  export interface ViewHistory {
+    anime_id: number;
+    episode_number: number;
+    watched_at: string;
+  }

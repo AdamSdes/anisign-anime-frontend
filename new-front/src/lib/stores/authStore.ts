@@ -1,40 +1,83 @@
-import { atom, useAtom } from 'jotai'
+import { atom, useAtom } from 'jotai';
+import { login, register, socialLogin } from '../api';
 
-interface AuthState {
-    token: string | null;
-    refreshToken: string | null;
-    userId: number | null;
+interface User {
+  id: string;
+  username: string;
+  email: string | undefined;
 }
 
-// Атом состояния
-export const authAtom = atom<AuthState>({
-    token: null,
-    refreshToken: null,
-    userId: null,
+interface AuthState {
+  isAuthenticated: boolean;
+  user: User | null;
+  token: string | null;
+}
+
+const authAtom = atom<AuthState>({
+  isAuthenticated: false,
+  user: null,
+  token: null,
 });
 
-//Хук для роботы с состоянием авторизации
-export const useAuth = () => {
-    const [auth, setAuth] = useAtom(authAtom);
-    const login = (token: string, refreshToken: string) => {
-        setAuth({ token, refreshToken, userId: 1 });
+export function useAuthState() {
+  const [auth, setAuth] = useAtom(authAtom);
+
+  const setAuthLogin = (token: string, user: User) => {
+    const safeUser: User = {
+      ...user,
+      email: user.email || '',
     };
-    const logout = () => {
-        setAuth({ token: null, refreshToken: null, userId: null });
+    setAuth({
+      isAuthenticated: true,
+      user: safeUser,
+      token,
+    });
+    localStorage.setItem('token', token);
+  };
+
+  const setAuthRegister = (token: string, user: User) => {
+    const safeUser: User = {
+      ...user,
+      email: user.email || '',
     };
-    const register = (userId: number, email: string, password: string) => {
-        fetch('/api/user/create-user', {
-            method: 'POST',
-            headers: { 'Content-Type': 'aplication/json' },
-            body: JSON.stringify({ name: email.split('@')[0], username: email.split('@')[0], email, password }),
-        })
-        .then((response) => response.json())
-        .then((data) => {
-            if (data.user) {
-                login('mock-token-' + userId, 'mock-refresh-' + userId);
-            }
-        })
-        .catch((error) => console.error('Регистрация не успешна:', error));
-    };
-    return { auth, login, logout, register };
+    setAuth({
+      isAuthenticated: true,
+      user: safeUser,
+      token,
+    });
+    localStorage.setItem('token', token);
+  };
+
+  const handleSocialLogin = async (provider: 'google' | 'discord', code?: string) => {
+    try {
+      if (!code) {
+        throw new Error('Authorization code is required for social login');
+      }
+      const response = await socialLogin(provider, code); 
+      const { token, user } = response.data;
+      const safeUser: User = {
+        ...user,
+        email: user.email || '',
+      };
+      setAuth({
+        isAuthenticated: true,
+        user: safeUser,
+        token,
+      });
+      localStorage.setItem('token', token);
+    } catch (error) {
+      throw new Error('Social login failed');
+    }
+  };
+
+  const logout = () => {
+    setAuth({
+      isAuthenticated: false,
+      user: null,
+      token: null,
+    });
+    localStorage.removeItem('token');
+  };
+
+  return { ...auth, setAuthLogin, setAuthRegister, socialLogin: handleSocialLogin, logout };
 }
