@@ -1,7 +1,7 @@
 import { Anime, AnimeListResponse } from '@/shared/types/anime';
 import { apiRequest, getAnimeList } from '@/lib/api';
 
-export const animeServices = {
+export const animeService = {
     /**
      * Получает список аниме
      * @param params - параметры запроса

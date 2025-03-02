@@ -1,7 +1,6 @@
 import { Anime } from '@/shared/types/anime';
 import { transformValue } from '@/lib/utils/transforms';
 import { useTranslations } from 'next-intl';
-import { Star } from '@/shared/icons';
 
 interface AnimeHeaderProps {
     anime: Anime;
@@ -18,7 +17,6 @@ export function AnimeHeader({ anime, className }: AnimeHeaderProps) {
                 </h1>
                 {anime.score && (
                     <div className="flex items-center gap-1 bg-white/[0.08] px-2.5 py-1 rounded-lg">
-                        <Star className="w-4 h-4 text-[#E$DBBA]" />
                         <span className="text-sm font-medium text-[#E4DBBA]">
                             {Number(anime.score).toFixed(1)}
                         </span>

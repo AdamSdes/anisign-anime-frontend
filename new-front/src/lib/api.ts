@@ -4,8 +4,10 @@ import { useAuthState } from './stores/authStore';
 import { Anime, AnimeListResponse, Episode, ReleaseCalendar, ViewHistory } from '@/shared/types/anime';
 import { User } from '@/shared/types/user';
 import { CommentResponse } from '@/shared/types/comment';
+import { Character } from '@/shared/types/character';
+import { Notification } from '@/shared/types/notification';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/docs';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 
 const axiosInstance: AxiosInstance = axios.create({
@@ -224,16 +226,39 @@ export const forgotPassword = (email: string) => {
   });
 };
 
-/**
- * Выполняет вход через социальные сети (Google, Discord) с использованием OAuth-кода. *
- * @param provider - Провайдер социального входа ('google' | 'discord').
- * @param code - Код авторизации, полученный от провайдера.
- * @returns Promise с ответом API.
- */
+// Вход через соцсети
 export const socialLogin = (provider: 'google' | 'discord', code: string) => {
     return apiRequest({
       url: `/auth/${provider}/callback?code=${encodeURIComponent(code)}`,
       method: 'get',
       useAuth: false, 
     });
-  };
+};
+
+// Получение деталей персонажа по его ID
+export const getCharacterDetails = (characterId: string) => {
+    return apiRequest<Character>({
+        url: `/characters/${characterId}`,
+        method: 'GET',
+        useAuth: false,
+    });
+};
+
+// Получаение списка персонажей
+export const getCharactersForAnime = (animeId: string) => {
+    return apiRequest<Character[]>({
+        url: `/anime/${animeId}/characters`,
+        method: 'GET',
+        useAuth: false,
+    });
+};
+
+// Получение уведомлений
+export async function fetchNotifications(): Promise<Notification[]> {
+    const response = await apiRequest<Notification[]>({
+        url: '/notifications',
+        method: 'GET',
+        useAuth: true,
+    });
+    return response.data;
+} 

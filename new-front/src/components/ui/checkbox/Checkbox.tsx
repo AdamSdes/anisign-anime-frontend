@@ -3,7 +3,6 @@
 import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
-import { Check } from '@/shared/icons';
 
 interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
   className?: string;
@@ -43,7 +42,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             'hover:border-white/20'
           )}
         >
-          {checked && <Check className="w-4 h-4 text-black" />}
+          {checked && ''}
         </span>
         {props.id && (
           <span className="text-sm font-medium">{props['aria-label'] || t('select')}</span>
