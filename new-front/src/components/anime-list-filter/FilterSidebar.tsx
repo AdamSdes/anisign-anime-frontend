@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 interface FilterSidebarProps {
     genres: Genre[];
 }
-const FilterSidebar = ({ genres }: FilterSidebarProps) => {
+export const FilterSidebar = ({ genres }: FilterSidebarProps) => {
     const t = useTranslations('common');
     const [isOpen, setIsOpen] = useState(false);
 

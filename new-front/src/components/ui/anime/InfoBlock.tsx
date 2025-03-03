@@ -1,7 +1,7 @@
 import { Anime } from '@/shared/types/anime';
 import { transformValue } from '@/lib/utils/transforms';
 import { useTranslations } from 'next-intl';
-import { Star, Calendar, Play, Clock } from '@/shared/icons';
+import { Star, Calendar } from '@/shared/icons';
 
 interface InfoBlocProps {
     anime: Anime;
@@ -27,13 +27,11 @@ export function InfoBlock({ anime, className }: InfoBlocProps) {
             )}
             {anime.kind && (
                 <div className="flex items-center gap-2 text-sm text-white/60">
-                    <Play className="w-4 h-4" />
                     <span>{transformValue('kind', anime.kind)}</span>
                 </div>
             )}
             {anime.episodes && (
                 <div className="flex items-center gap-2 text-sm text-white/60">
-                    <Clock className="w-4 h-4" />
                     <span>{anime.episodes} {t('episodes')}</span>
                 </div>
             )}

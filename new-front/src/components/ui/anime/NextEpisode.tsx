@@ -1,6 +1,5 @@
 import { Anime } from '@/shared/types/anime';
 import { useTranslations } from 'next-intl';
-import { Clock } from '@/shared/icons';
 
 interface NextEpisodeProps {
     anime: Anime;
@@ -24,7 +23,6 @@ export function NextEpisode({ anime, className }: NextEpisodeProps) {
     });
     return (
         <div className={className || 'flex items-center gap-2 text-sm text-white/60'}>
-            <Clock className="w-4 h-4" />
             <span>
                 {t('nextEpisode')} {formattedDate}
             </span>

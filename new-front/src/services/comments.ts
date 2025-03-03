@@ -1,5 +1,5 @@
-import { Comment } from '@/shared/types/comment';
-import { apiRequest } from '@/lib/api';
+import { Comment, CommentResponse } from '@/shared/types/comment';
+import { apiRequest, getAnimeComments, postAnimeComment } from '@/lib/api';
 
 export const commentsService = {
     /**
@@ -8,18 +8,10 @@ export const commentsService = {
      * @param params Параметры запросов
      * @returns
      */
-    getComments: async (
-        animeId: string,
-        params: Record<string, any> = {}
-    ): Promise<{ comments: Comment[]; totalCount: number; page: number; pages: number }> => {
-        const response = await apiRequest({
-            url: `/anime/${animeId}/comments`,
-            method: 'GET',
-            params: {...params, page: params.page|| 1, limit: params.limit || 10 },
-            useAuth: false,
-        });
-        return response.data;
-    },
+    getComments: async (animeId: string, params: { page?: number; limit?: number } = {}): Promise<CommentResponse> => {
+        const response = await getAnimeComments(animeId, params.page || 1, params.limit || 10);
+        return response.data; 
+      },
 
     /**
      * Создаёт новый кометарий
@@ -27,18 +19,10 @@ export const commentsService = {
      * @param data Данные коментария
      * @returns
      */
-    createComment: async (
-        animeId: string,
-        data: { text: string; rating?: number }
-    ): Promise<Comment> => {
-        const response = await apiRequest({
-            url: `/anime/${animeId}/comments`,
-            method: 'POST',
-            data,
-            useAuth: true,
-        });
+    postComment: async (animeId: string, text: string): Promise<Comment> => { 
+        const response = await postAnimeComment(animeId, text);
         return response.data;
-    },
+      },
 
     /**
      * Обновляет существующий комментарий
@@ -47,19 +31,18 @@ export const commentsService = {
      * @param data Данные коментария
      * @returns
      */
-    updateComment: async (
-        animeId: string,
-        commentId: string,
-        data: Partial<{ text: string; rating?: number }>
-    ): Promise<Comment> => {
-        const response = await apiRequest({
-            url: `/anime/${animeId}/comments/${commentId}`,
-            method: 'PATCH',
-            data,
-            useAuth: true,
+    updateComment: async (animeId: string, commentId: string, data: Partial<Comment>): Promise<Comment> => {
+        const response = await fetch(`/api/anime/${animeId}/comments/${commentId}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
         });
-        return response.data;
-    },
+        if (!response.ok) throw new Error('Ошибка обновления комментария');
+        return response.json();
+      },
 
     /**
      * Удаляет комментарий

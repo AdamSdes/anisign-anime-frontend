@@ -6,3 +6,10 @@ export interface Character {
     image_url?: string;
     roles?: string[];
 }
+
+export interface CharacterResponse {
+    characters: Character[];
+    total: number;
+    page: number;
+    limit: number;
+}

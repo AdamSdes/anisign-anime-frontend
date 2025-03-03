@@ -31,6 +31,8 @@ export interface Genre {
   }
   
   export interface AnimeListResponse {
+    pages: number;
+    page: number;
     total_count: number;
     anime_list: Anime[];
   }

@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 import { useAuthState } from './stores/authStore';
 import { Anime, AnimeListResponse, Episode, ReleaseCalendar, ViewHistory } from '@/shared/types/anime';
 import { User } from '@/shared/types/user';
-import { CommentResponse } from '@/shared/types/comment';
+import { Comment, CommentResponse } from '@/shared/types/comment';
 import { Character } from '@/shared/types/character';
 import { Notification } from '@/shared/types/notification';
 
@@ -121,22 +121,22 @@ export const getAnimeEpisodes = (id: string) => {
 
 // Получение комментариев к аниме
 export const getAnimeComments = (id: string, page: number = 1, limit: number = 10) => {
-  return apiRequest<CommentResponse>({
-    url: `/anime/${id}/comments`,
-    method: 'GET',
-    params: { page, limit },
-    useAuth: false,
-  });
+    return apiRequest<CommentResponse>({
+      url: `/anime/${id}/comments`,
+      method: 'GET',
+      params: { page, limit },
+      useAuth: false,
+    });
 };
-
+  
 // Добавление комментария к аниме
 export const postAnimeComment = (id: string, text: string) => {
-  return apiRequest<Comment>({
-    url: `/anime/${id}/comments`,
-    method: 'POST',
-    data: { text },
-    useAuth: true,
-  });
+    return apiRequest<Comment>({
+      url: `/anime/${id}/comments`,
+      method: 'POST',
+      data: { text },
+      useAuth: true,
+    });
 };
 
 // Добавление аниме в список пользователя 

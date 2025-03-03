@@ -1,4 +1,3 @@
-// components/Header.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,7 +7,7 @@ import Image from 'next/image';
 import { useAuthState } from '@/lib/stores/authStore';
 import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
-import SearchBar from './SearchBar';
+import { SearchBar } from './SearchBar';
 import { fetchNotifications } from '@/lib/api';
 
 const BellIcon = () => (
@@ -69,7 +68,11 @@ interface Notification {
   read: boolean;
 }
 
-export default function Header() {
+interface HeaderProps {
+  className?: string;
+}
+
+export function Header({ className }: HeaderProps) {
   const t = useTranslations('header');
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuthState();
