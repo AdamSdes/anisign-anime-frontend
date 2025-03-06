@@ -1,58 +1,76 @@
-'use client';
+"use client";
 
-import * as AvatarPrimitive from '@radix-ui/react-avatar';
-import React, { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { getAvatarUrl } from "@/utils/avatar";
+import React, { useState } from "react";
+import * as AvatarPrimitive from "@radix-ui/react-avatar";
+import { mergeClass } from "@/lib/utils/mergeClass";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuthStore } from '@/hooks/useAuth';
+import { atom, useAtom } from "jotai";
+import { getAvatarUrl } from "@/lib/utils/avatar";
 
+// Атом для состояния аутентификации (из Header.tsx)
+export const authAtom = atom<{
+  isAuthenticated: boolean;
+  user: { username: string; nickname?: string; user_avatar?: string; isPro?: boolean } | null;
+}>({
+  isAuthenticated: false,
+  user: null,
+});
+
+/**
+ * Пропсы компонента HeaderAvatar
+ * @interface HeaderAvatarProps
+ */
 interface HeaderAvatarProps {
+    username?: string;
+    avatar?: string;
     className?: string;
 }
 
-export const HeaderAvatar: React.FC<HeaderAvatarProps> = ({ 
-    className = "h-[42px] w-[42px]",
-}) => {
-    const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-    const user = useAuthStore(state => state.user);
-    const [isLoading, setIsLoading] = useState(true);
-    const username = user?.username || '';
-    const avatarUrl = user?.user_avatar ? getAvatarUrl(user.user_avatar) : undefined;
+/**
+ * Компонент аватара пользователя
+ * @description Отображает аватар пользователя с поддержкой изображения или fallback
+ * @param {HeaderAvatarProps} props - Пропсы компонента
+ * @returns {JSX.Element}
+ */
+export const HeaderAvatar: React.FC<HeaderAvatarProps> = React.memo(
+  ({ className = "h-[42px] w-[42px]" }) => {
+    const [auth] = useAtom(authAtom);
+    const [isLoading, setIsLoading] = useState(!!auth?.user?.user_avatar);
+    const username = auth?.user?.username || "";
+    const avatarUrl = auth?.user?.user_avatar ? getAvatarUrl(auth.user.user_avatar) : undefined;
 
-    // Показываем скелетон только если идет загрузка И пользователь авторизован
-    if (!user && isAuthenticated) {
-        return (
-            <Skeleton className={cn("h-[42px] w-[42px] rounded-full", className)} />
-        );
+    if (!auth?.user && auth?.isAuthenticated) {
+      return <Skeleton className={mergeClass("h-[42px] w-[42px] rounded-full", className)} />;
     }
 
     return (
-        <AvatarPrimitive.Root
-            className={cn(
-                "relative flex h-[42px] w-[42px] shrink-0 overflow-hidden rounded-full",
-                className
-            )}
+      <AvatarPrimitive.Root
+        className={mergeClass(
+          "relative flex h-[42px] w-[42px] shrink-0 overflow-hidden rounded-full",
+          className
+        )}
+      >
+        {isLoading && avatarUrl && (
+          <Skeleton className="absolute inset-0 z-10 h-full w-full rounded-full" />
+        )}
+        {avatarUrl && (
+          <img
+            src={avatarUrl}
+            alt={username}
+            className="aspect-square object-cover h-full w-full"
+            onLoad={() => setIsLoading(false)}
+            onError={() => setIsLoading(false)}
+          />
+        )}
+        <AvatarPrimitive.Fallback
+          className="flex h-full text-[12px] w-full items-center justify-center border border-white/5 rounded-full bg-white/5 text-white/60 uppercase"
         >
-            {isLoading && avatarUrl && (
-                <Skeleton className="absolute inset-0 z-10 h-full w-full rounded-full" />
-            )}
-            {avatarUrl && (
-                <img 
-                    src={avatarUrl}
-                    alt={username}
-                    className="aspect-square object-cover h-full w-full"
-                    onLoad={() => setIsLoading(false)}
-                    onError={() => setIsLoading(false)}
-                />
-            )}
-            <AvatarPrimitive.Fallback
-                className="flex h-full text-[12px] w-full items-center justify-center border border-white/5 rounded-full bg-white/5 text-white/60 uppercase"
-            >
-                {username.slice(0, 2)}
-            </AvatarPrimitive.Fallback>
-        </AvatarPrimitive.Root>
+          {username.slice(0, 2)}
+        </AvatarPrimitive.Fallback>
+      </AvatarPrimitive.Root>
     );
-};
+  }
+);
 
+HeaderAvatar.displayName = "HeaderAvatar";
 export default HeaderAvatar;

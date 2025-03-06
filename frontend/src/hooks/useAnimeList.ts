@@ -1,128 +1,122 @@
-'use client'
+'use client';
 
-import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react';
-import { useSearchParams } from 'next/navigation'
-import { getAnimeList, getAnimeByName, type Anime, type AnimeFilters } from '@/services/api/anime';
+import { useState, useCallback, useRef } from 'react';
+import { axiosInstance } from '@/lib/axios/axiosConfig';
+import { useToast } from '@/lib/toast/logicToast';
 
-export interface AnimeFilters {
-    page?: number
-    limit?: number
-    search?: string
-    genre?: string
-    year?: string
-    status?: string
-    sort_by?: string
-    sort_order?: string
-    rating?: string
-    kind?: string
-    start_year?: number
-    end_year?: number
-    genre_ids?: string[]
-}
+export type AnimeListName = 'Watching' | 'Completed' | 'On Hold' | 'Dropped' | 'Plan to Watch';
 
-const ITEMS_PER_PAGE = 30
-
-export const useAnimeList = () => {
-    const searchParams = useSearchParams()
-    const page = Number(searchParams.get('page')) || 1
-    const search = searchParams.get('search') || ''
-    const sort = searchParams.get('sort') as AnimeFilters['sort_by']
-    const order = searchParams.get('order') as AnimeFilters['sort_order']
-    const status = searchParams.get('status') as AnimeFilters['status']
-    const rating = searchParams.get('rating') as AnimeFilters['rating']
-    const kind = searchParams.get('kind') as AnimeFilters['kind']
-    const genreIds = searchParams.getAll('genre_id')
-    const years = searchParams.getAll('years')
-
-    const { data, isLoading, error } = useQuery({
-        queryKey: ['animeList', page, search, sort, order, status, rating, kind, ...genreIds, ...years],
-        queryFn: async () => {
-            if (search) {
-                const result = await getAnimeByName(search)
-                // Реализуем пагинацию на фронтенде для поиска
-                const startIndex = (page - 1) * ITEMS_PER_PAGE
-                const endIndex = startIndex + ITEMS_PER_PAGE
-                return {
-                    total_count: result.total_count,
-                    anime_list: result.anime_list.slice(startIndex, endIndex)
-                }
-            }
-            return getAnimeList({
-                page,
-                limit: ITEMS_PER_PAGE,
-                sort_by: sort,
-                sort_order: order,
-                status,
-                rating,
-                kind,
-                genre_ids: genreIds.length > 0 ? genreIds : undefined,
-                start_year: years[0] ? Number(years[0]) : undefined,
-                end_year: years[1] ? Number(years[1]) : undefined
-            })
-        }
-    })
-
-    console.log('Current data:', data)
-    console.log('Loading:', isLoading)
-    console.log('Error:', error)
-
-    return {
-        animeList: data?.anime_list || [],
-        pagination: data ? {
-            page,
-            pages: Math.ceil(data.total_count / ITEMS_PER_PAGE)
-        } : null,
-        isLoading,
-        error
-    }
+type ListCache = {
+  [key in AnimeListName]?: { data: { anime_ids: number[] }; timestamp: number };
 };
 
-export const useAnimeFilters = () => {
-    const { data: kinds = [] } = useQuery({
-        queryKey: ['anime-kinds'],
-        queryFn: async () => {
-            return [
-                'tv',
-                'movie',
-                'ova',
-                'ona',
-                'special',
-                'tv_13',
-                'tv_24',
-                'tv_48'
-            ]
-        }
-    })
+/**
+ * Хук для работы со списками аниме
+ */
+export const useAnimeListSave = () => {
+  const [isCheckingList, setIsCheckingList] = useState(false);
+  const [isUpdatingList, setIsUpdatingList] = useState(false);
+  const listCache = useRef<ListCache>({});
+  const { toast } = useToast();
+  const CACHE_DURATION = 30000;
 
-    const { data: statuses = [] } = useQuery({
-        queryKey: ['anime-statuses'],
-        queryFn: async () => {
-            return [
-                'ongoing',
-                'finished',
-                'upcoming'
-            ]
-        }
-    });
+  const isCacheValid = (listName: AnimeListName) => {
+    const cache = listCache.current[listName];
+    return cache && Date.now() - cache.timestamp < CACHE_DURATION;
+  };
 
-    const { data: ratings = [] } = useQuery({
-        queryKey: ['anime-ratings'],
-        queryFn: async () => {
-            return [
-                'g',
-                'pg',
-                'pg_13',
-                'r',
-                'r_plus',
-                'rx'
-            ]
-        }
-    });
+  const updateCache = (listName: AnimeListName, data: { anime_ids: number[] }) => {
+    listCache.current[listName] = { data, timestamp: Date.now() };
+  };
 
-    return {
-        kinds,
-        statuses,
-        ratings
-    };
+  const invalidateCache = (listName: AnimeListName) => {
+    delete listCache.current[listName];
+  };
+
+  const createList = async (listName: AnimeListName) => {
+    try {
+      await axiosInstance.post(`/anime_save_list/create-anime-save-list/${encodeURIComponent(listName)}`);
+      updateCache(listName, { anime_ids: [] });
+      return true;
+    } catch (error) {
+      console.error('Ошибка создания списка:', error);
+      return false;
+    }
+  };
+
+  const getAnimeList = useCallback(async (listName: AnimeListName) => {
+    if (isCacheValid(listName)) return listCache.current[listName]?.data;
+
+    setIsCheckingList(true);
+    try {
+      const response = await axiosInstance.get(`/anime_save_list/get-anime-list-by-name/${encodeURIComponent(listName)}`);
+      updateCache(listName, response.data);
+      return response.data;
+    } catch (error: any) {
+      if (error?.response?.status === 404) {
+        await createList(listName);
+        return { anime_ids: [] };
+      }
+      console.error('Ошибка получения списка аниме:', error);
+      return null;
+    } finally {
+      setIsCheckingList(false);
+    }
+  }, []);
+
+  const addAnimeToList = async (listName: AnimeListName, animeId: number) => {
+    setIsUpdatingList(true);
+    try {
+      const list = await getAnimeList(listName);
+      if (!list) await createList(listName);
+
+      await axiosInstance.put(`/anime_save_list/put_anime_id_in_list/${encodeURIComponent(listName)}`, null, {
+        params: { anime_id: animeId.toString() },
+      });
+
+      invalidateCache(listName);
+      toast({ title: 'Успех', description: `Аниме добавлено в список "${listName}"` });
+      return true;
+    } catch (error) {
+      console.error('Ошибка добавления аниме в список:', error);
+      toast({ title: 'Ошибка', description: 'Не удалось добавить аниме в список' });
+      return false;
+    } finally {
+      setIsUpdatingList(false);
+    }
+  };
+
+  const removeAnimeFromList = async (animeId: number) => {
+    setIsUpdatingList(true);
+    try {
+      await axiosInstance.delete('/anime_save_list/delete-anime-id-from-list', {
+        params: { anime_id: animeId.toString() },
+      });
+
+      Object.keys(listCache.current).forEach((key) => invalidateCache(key as AnimeListName));
+      toast({ title: 'Успех', description: 'Аниме удалено из списка' });
+      return true;
+    } catch (error) {
+      console.error('Ошибка удаления аниме из списка:', error);
+      toast({ title: 'Ошибка', description: 'Не удалось удалить аниме из списка' });
+      return false;
+    } finally {
+      setIsUpdatingList(false);
+    }
+  };
+
+  const deleteAllLists = async () => {
+    try {
+      await axiosInstance.delete('/anime_save_list/delete-anime-list-all');
+      listCache.current = {};
+      toast({ title: 'Успех', description: 'Все списки удалены' });
+      return true;
+    } catch (error) {
+      console.error('Ошибка удаления всех списков:', error);
+      toast({ title: 'Ошибка', description: 'Не удалось удалить списки' });
+      return false;
+    }
+  };
+
+  return { isCheckingList, isUpdatingList, getAnimeList, addAnimeToList, removeAnimeFromList, deleteAllLists };
 };

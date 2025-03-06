@@ -1,11 +1,39 @@
-"use client"
+'use client';
 
-import * as CollapsiblePrimitive from "@radix-ui/react-collapsible"
+import * as React from 'react';
+import * as CollapsiblePrimitive from '@radix-ui/react-collapsible';
+import { mergeClass } from '@/lib/utils/mergeClass';
 
-const Collapsible = CollapsiblePrimitive.Root
+/**
+ * Компонент сворачиваемого контейнера
+ * @param props Пропсы контейнера
+ */
+export const Collapsible = React.forwardRef<
+  React.ElementRef<typeof CollapsiblePrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <CollapsiblePrimitive.Root
+    ref={ref}
+    className={mergeClass('w-full', className)}
+    {...props}
+  />
+));
+Collapsible.displayName = CollapsiblePrimitive.Root.displayName;
 
-const CollapsibleTrigger = CollapsiblePrimitive.CollapsibleTrigger
+export const CollapsibleTrigger = CollapsiblePrimitive.Trigger;
 
-const CollapsibleContent = CollapsiblePrimitive.CollapsibleContent
-
-export { Collapsible, CollapsibleTrigger, CollapsibleContent }
+// Контент сворачиваемого контейнера
+export const CollapsibleContent = React.forwardRef<
+  React.ElementRef<typeof CollapsiblePrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.Content>
+>(({ className, ...props }, ref) => (
+  <CollapsiblePrimitive.Content
+    ref={ref}
+    className={mergeClass(
+      'overflow-hidden transition-all data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down',
+      className
+    )}
+    {...props}
+  />
+));
+CollapsibleContent.displayName = CollapsiblePrimitive.Content.displayName;

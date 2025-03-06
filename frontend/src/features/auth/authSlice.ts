@@ -1,33 +1,31 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { User } from '@/shared/types/auth';
 
 interface AuthState {
-    user: string | null;
-    accessToken: string | null;
+    user: User | null;
+    isAuthenticated: boolean;
 }
 
 const initialState: AuthState = {
     user: null,
-    accessToken: null,
+    isAuthenticated: false,
 };
 
 const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        setCredentials: (state, action: PayloadAction<{ access_token: string; token_type: string }>) => {
-            const { access_token } = action.payload;
-            state.accessToken = access_token;
-            // refresh_token хранится в HttpOnly cookie, поэтому нам не нужно его сохранять
-        },
-        setUser: (state, action: PayloadAction<string>) => {
+        /**
+         * Установка текущего пользователя
+         * @param state Текущее состояние
+         * @param action Данные пользователя или null
+         */
+        setUser(state: AuthState, action: PayloadAction<User | null>) {
             state.user = action.payload;
-        },
-        logout: (state) => {
-            state.user = null;
-            state.accessToken = null;
+            state.isAuthenticated = action.payload !== null;
         },
     },
 });
 
-export const { setCredentials, setUser, logout } = authSlice.actions;
+export const { setUser } = authSlice.actions;
 export default authSlice.reducer;

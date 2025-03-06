@@ -1,27 +1,32 @@
-'use client';
+"use client";
 
-import { cn } from "@/lib/utils";
+import * as React from "react";
 import { Loader2 } from "lucide-react";
+import { mergeClass } from "@/lib/utils/mergeClass";
 
-interface SpinnerProps {
-    size?: 'sm' | 'md' | 'lg';
-    className?: string;
+// Пропсы компонента спиннера
+interface SpinnerProps extends React.HTMLAttributes<SVGSVGElement> {
+  size: "sm" | "md" | "lg";
 }
 
-const sizeClasses = {
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8'
+//  Размеры спиннера
+const sizeClasses: Record<SpinnerProps["size"], string> = {
+  sm: "w-4 h-4",
+  md: "w-6 h-6",
+  lg: "w-8 h-8",
 };
 
-export const Spinner = ({ size = 'md', className }: SpinnerProps) => {
-    return (
-        <Loader2 
-            className={cn(
-                "animate-spin text-white/60",
-                sizeClasses[size],
-                className
-            )}
-        />
-    );
-}; 
+/**
+ * Компонент спиннера
+ * @param props Пропсы спиннера
+ */
+export const Spinner = React.forwardRef<SVGSVGElement, SpinnerProps>(
+  ({ size = "md", className, ...props }, ref) => (
+    <Loader2
+      ref={ref}
+      className={mergeClass("animate-spin text-white/60", sizeClasses[size], className)}
+      {...props}
+    />
+  )
+);
+Spinner.displayName = "Spinner";

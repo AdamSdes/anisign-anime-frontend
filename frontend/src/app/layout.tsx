@@ -1,11 +1,14 @@
-import { Montserrat } from 'next/font/google'
-import './globals.css'
-import type { Metadata } from 'next'
-import { Toaster } from "@/components/ui/toaster"
-import { AuthProvider } from '@/providers/AuthProvider'
-import { StoreProvider } from '@/providers/StoreProvider'
-import QueryProvider from "@/providers/query-provider"
+import React from "react";
+import { Montserrat } from "next/font/google";
+import type { Metadata } from "next";
+import { useAtom } from "jotai";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/providers/auth";
+import { StoreProvider } from "@/providers/store";
+import { QueryProvider } from "@/providers/queryClient";
+import '@/app/globals.css';
 
+// Загрузка шрифта на уровне модуля
 const montserrat = Montserrat({ 
   subsets: ['latin', 'cyrillic'],
   variable: '--font-montserrat',
@@ -30,6 +33,7 @@ export default function RootLayout({
         <QueryProvider>
           <StoreProvider>
             <AuthProvider>
+               {/* @ts-ignore  */}
                 <Toaster richColors position="top-center" />
                 {children}
             </AuthProvider>

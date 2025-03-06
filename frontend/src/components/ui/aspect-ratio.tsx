@@ -1,7 +1,8 @@
-"use client"
+'use client'
 
-import * as AspectRatioPrimitive from "@radix-ui/react-aspect-ratio"
+import * as AspectRatioPrimitive from '@radix-ui/react-aspect-ratio';
 
-const AspectRatio = AspectRatioPrimitive.Root
+// Компонент для установки соотношения сторон
+export const AspectRatio = AspectRatioPrimitive.Root;
 
-export { AspectRatio }
+export type AspectRatioProps = React.ComponentProps<typeof AspectRatioPrimitive.Root>;

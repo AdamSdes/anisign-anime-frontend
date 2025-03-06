@@ -1,103 +1,97 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { FileUploadDialog } from '@/components/ui/file-upload-dialog';
-import { toast } from 'sonner';
-import { useUploadBannerMutation } from '@/features/auth/authApiSlice';
-import { getBannerUrl } from '@/utils/banner';
-import { Camera, Upload } from 'lucide-react'; // Добавляем новые иконки
-import { motion } from 'framer-motion';
+import React, { useCallback } from "react";
+import { toast } from "sonner";
+import { axiosInstance } from "@/lib/axios/axiosConfig";
+import { getBunnerUrl } from "@/lib/utils/banner";
+import { Camera } from "lucide-react";
+import { motion } from "framer-motion";
+import { FileUploadDialog } from "@/components/ui/file-upload-dialog";
+import { mutate } from "swr";
 
+/**
+ * Пропсы компонента ProfileBanner
+ * @interface ProfileBannerProps
+ */
 interface ProfileBannerProps {
-    banner?: string;
-    isOwnProfile: boolean;
-    isLoading?: boolean;
-    onUploadClick: () => void;
+  banner?: string;
+  isOwnProfile: boolean;
+  isLoading?: boolean;
+  onUploadClick: () => void;
 }
 
-const ProfileBanner: React.FC<ProfileBannerProps> = ({
-    banner,
-    isOwnProfile,
-    isLoading = false,
-    onUploadClick,
-}) => {
-    const [uploadBanner] = useUploadBannerMutation();
-    const [currentBanner, setCurrentBanner] = useState(banner);
-    const bannerUrl = getBannerUrl(currentBanner);
+/**
+ * Компонент баннера профиля
+ * @description Отображает баннер пользователя с возможностью загрузки нового изображения для владельца профиля
+ * @param {ProfileBannerProps} props - Пропсы компонента
+ * @returns {JSX.Element}
+ */
+export const ProfileBanner: React.FC<ProfileBannerProps> = React.memo(
+  ({ banner, isOwnProfile, isLoading = false, onUploadClick }) => {
+    const bannerUrl = getBunnerUrl(banner);
 
-    // Обновляем CSS-переменную при изменении URL баннера
-    useEffect(() => {
-        if (bannerUrl) {
-            document.documentElement.style.setProperty('--profile-banner', `url(${bannerUrl})`);
-        }
-    }, [bannerUrl]);
-
-    // Синхронизируем локальное состояние с пропсами
-    useEffect(() => {
-        console.log('[ProfileBanner] Banner prop changed:', banner);
-        setCurrentBanner(banner);
-    }, [banner]);
-
-    const handleBannerUpload = async (files: File[]) => {
+    // Обработчик загрузки баннера
+    const handleBannerUpload = useCallback(
+      async (files: File[]) => {
         if (files.length === 0) return;
 
         try {
-            console.log('[ProfileBanner] Uploading file:', files[0].name);
-            const result = await uploadBanner(files[0]).unwrap();
-            console.log('[ProfileBanner] Upload success:', result);
-            
-            if (result.banner) {
-                // Обновляем локальное состояние
-                setCurrentBanner(result.banner);
-                // Немедленно обновляем CSS-переменную
-                const newBannerUrl = getBannerUrl(result.banner);
-                document.documentElement.style.setProperty('--profile-banner', `url(${newBannerUrl})`);
-            }
-            
-            toast.success('Баннер успешно обновлен');
-            onUploadClick(); // Закрываем диалог
+          const formData = new FormData();
+          formData.append("banner", files[0]);
+          const response = await axiosInstance.post("/api/profile/update-banner", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+          // Инвалидация кэша SWR после успешной загрузки
+          await mutate(`/api/profile/${response.data.username}`);
+          toast.success("Баннер успешно обновлен");
         } catch (error: any) {
-            console.error('[ProfileBanner] Banner upload error:', error);
-            toast.error(error.message || 'Ошибка при загрузке баннера');
+          toast.error(error.response?.data?.detail || "Ошибка при загрузке баннера");
+        } finally {
+          onUploadClick(); 
         }
-    };
+      },
+      [onUploadClick]
+    );
 
     return (
-        <div className="relative  w-full h-full">
-            <div className="relative w-full h-full banner-background">
-                {!bannerUrl && (
-                    <div className="w-full h-full bg-gradient-to-b from-white/[0.02] to-transparent" />
-                )}
+      <div className="relative w-full h-full">
+        <div className="relative w-full h-full banner-background">
+          {!bannerUrl && (
+            <div className="w-full h-full bg-gradient-to-b from-white/[0.02] to-transparent" />
+          )}
 
-                {/* Обновленная кнопка загрузки */}
-                {isOwnProfile && !isLoading && (
-                    <div className="absolute z-1 top-5 right-6 flex items-center gap-3">
-                        <motion.button
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            onClick={onUploadClick}
-                            className="group z-10 flex items-center gap-3 px-5 py-3 bg-[#060606]/90 hover:bg-[#060606] border border-white/10 hover:border-white/20 rounded-xl backdrop-blur-xl transition-all duration-300"
-                        >
-                            <div className="p-2 rounded-lg transition-colors">
-                                <Camera className="w-4 h-4 text-white/60 group-hover:text-white/90 transition-colors" />
-                            </div>
+          {/* Кнопка загрузки баннера */}
+          {isOwnProfile && !isLoading && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute z-10 top-5 right-6"
+            >
+              <motion.button
+                onClick={onUploadClick}
+                className="group flex items-center gap-3 px-5 py-3 bg-[#060606]/90 hover:bg-[#060606] border border-white/10 hover:border-white/20 rounded-xl backdrop-blur-xl transition-all duration-300"
+              >
+                <div className="p-2 rounded-lg transition-colors">
+                  <Camera className="w-4 h-4 text-white/60 group-hover:text-white/90 transition-colors" />
+                </div>
+              </motion.button>
+            </motion.div>
+          )}
 
-                        </motion.button>
-
-                    </div>
-                )}
-
-                <FileUploadDialog
-                    isOpen={false}
-                    onClose={() => {}}
-                    onUpload={handleBannerUpload}
-                    acceptedFileTypes={['image/jpeg', 'image/png', 'image/webp']}
-                    maxFiles={1}
-                    maxSize={5 * 1024 * 1024} // 5MB
-                />
-            </div>
+          <FileUploadDialog
+                isOpen={false}
+                onClose={() => { } }
+                onUpload={handleBannerUpload}
+                acceptedFileTypes={["image/jpeg", "image/png", "image/webp"]}
+                maxFiles={1}
+                maxSize={5 * 1024 * 1024} // 5MB
+                title={""}          
+            />
         </div>
+      </div>
     );
-};
+  }
+);
 
+ProfileBanner.displayName = "ProfileBanner";
 export default ProfileBanner;
