@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/providers/auth";
 import { StoreProvider } from "@/providers/store";
 import { QueryProvider } from "@/providers/queryClient";
-import '@/app/globals.css';
 
 // Загрузка шрифта на уровне модуля
 const montserrat = Montserrat({ 
