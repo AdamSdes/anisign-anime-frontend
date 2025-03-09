@@ -18,7 +18,20 @@ import { Star } from "lucide-react";
 import { genresMap } from "@/shared/data/genres";
 import { DotButton, useDotButton } from "./embla-carousel-dot-button";
 import { PrevButton, NextButton, usePrevNextButtons } from "./embla-carousel-arrow-buttons";
-import { Anime } from "@/shared/types/anime";
+
+interface Anime {
+  anime_id: number
+  russian: string
+  name: string
+  poster_url: string
+  score?: number
+  aired_on: string
+  kind: string
+  episodes?: number
+  description?: string
+  genre_ids?: string[]
+  rating?: string
+}
 
 //Пропсы компонента карусели Embla
 interface EmblaCarouselProps {

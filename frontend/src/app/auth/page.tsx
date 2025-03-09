@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import Link from "next/link";
-import { Mail, Lock, ArrowLeft, User, Check, Volume2, VolumeX } from "lucide-react";
+import { Mail, Lock, ArrowLeft, User, Check, Volume2, VolumeX, Plus } from "lucide-react";
 import { GoogleIcon, DiscordIcon } from "@/components/icons/icons";
 import { useLogin, useRegister } from "@/hooks/hookUser";
 import { toast } from "sonner";
@@ -133,7 +133,7 @@ const Auth: React.FC<AuthProps> = React.memo(() => {
   // SWR для загрузки OAuth URL
   const { data: oauthUrls, error: oauthError } = useSWR<OAuthUrls>(
     "/api/auth/oauth-urls",
-    (url) => axiosInstance.get(url).then((res: { data: any; }) => res.data),
+    (url) => axiosInstance.get(url).then((res: { data: any }) => res.data),
     { revalidateOnFocus: false }
   );
 
@@ -337,7 +337,7 @@ const Auth: React.FC<AuthProps> = React.memo(() => {
           <div className="absolute inset-0 bg-black/50 z-10" />
           <iframe
             ref={iframeRef}
-            src="https://youtu.be/CMF3qeu7fHY?si=q3zdudkyd1u9O301=http://localhost:3000"
+            src="https://www.youtube.com/embed/W4B7C7bntr0?autoplay=1&controls=0&mute=1&loop=1&playlist=W4B7C7bntr0&playsinline=1&start=0&vq=hd1080&modestbranding=1&rel=0&enablejsapi=1&origin=http://localhost:3000"
             className="absolute w-[130%] h-[130%] -top-[20%] -left-[20%] pointer-events-none opacity-80"
             allow="autoplay; encrypted-media"
             frameBorder="0"
@@ -348,6 +348,13 @@ const Auth: React.FC<AuthProps> = React.memo(() => {
           >
             {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
           </button>
+        </div>
+
+        {/* Логотип в верхнем правом углу */}
+        <div className="absolute top-4 left-4 z-30">
+          <Link href="/">
+            <img src="/icon/LogoAuth.png" alt="Anisign Logo" />
+          </Link>
         </div>
 
         <div className="relative flex items-center justify-center md:justify-end w-full min-h-screen p-4 z-20">
@@ -366,7 +373,7 @@ const Auth: React.FC<AuthProps> = React.memo(() => {
               {/* Заголовок */}
               <motion.div variants={itemVariants} className="flex justify-between items-center w-full">
                 <motion.p className="text-white/90 font-semibold">
-                  {isRecovery ? "Восстановление пароля" : isLogin ? "Добро пожаловать ✌️" : "Регистрация"}
+                  {isRecovery ? "Восстановление пароля" : isLogin ? "Добро пожаловать ✌️" : ""}
                 </motion.p>
                 <Link
                   href="/"
@@ -574,9 +581,7 @@ const Auth: React.FC<AuthProps> = React.memo(() => {
                                     className="w-5 h-5 border-2 border-white/20 rounded-md data-[state=checked]:bg-[#CCBAE4] data-[state=checked]:border-[#CCBAE4] transition-colors"
                                   >
                                     <Check
-                                      className={`h-3.5 w-3.5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black pointer-events-none transition-opacity duration-200 ${
-                                        rememberMe ? "opacity-100" : "opacity-0"
-                                      }`}
+                                      className={`h-3.5 w-3.5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black pointer-events-none transition-opacity duration-200 ${rememberMe ? "opacity-100" : "opacity-0"}`}
                                     />
                                   </Checkbox>
                                   <Label
@@ -629,9 +634,15 @@ const Auth: React.FC<AuthProps> = React.memo(() => {
                             type="button"
                             variant="ghost"
                             onClick={() => setIsLogin(!isLogin)}
-                            className="h-[58px] px-6 bg-white/[0.02] hover:bg-white/[0.04] text-white/90 hover:text-white/70 border border-white/5 rounded-xl"
+                            className="h-[58px] px-6 bg-white/[0.02] hover:bg-white/[0.04] text-white/90 hover:text-white/70 border border-white/5 rounded-xl flex items-center justify-center"
                           >
-                            {isLogin ? "Регистрация" : "Войти"}
+                            {!isLogin && (
+                              <div className="flex items-center gap-2">
+                                <User className="w-5 h-5" />
+                                <Plus className="w-5 h-5" />
+                              </div>
+                            )}
+                            {isLogin && "Регистрация"}
                           </Button>
                         </div>
                       </motion.form>

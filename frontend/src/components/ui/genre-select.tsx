@@ -59,7 +59,7 @@ export function GenreSelect({ className, value = [], onChange }: GenreSelectProp
   }, [onChange]);
 
   const getSelectedLabel = (genreId: string): string => {
-    const genre = genres.find((g) => g.genreId === genreId);
+    const genre = genres.find((g) => g.genre_id === genreId); // Исправлено на genre_id
     return genre ? genre.russian || genre.name : genreId;
   };
 
@@ -100,7 +100,7 @@ export function GenreSelect({ className, value = [], onChange }: GenreSelectProp
             {selectedGenres.map((genreId) => (
               <Badge
                 variant="secondary"
-                key={genreId}
+                key={genreId} // Уникальный ключ на основе genreId
                 className="bg-[#CCBAE4] text-black hover:bg-[#CCBAE4]/90"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -162,19 +162,19 @@ export function GenreSelect({ className, value = [], onChange }: GenreSelectProp
             <CommandGroup className="text-white/40 px-2">
               {filteredGenres.map((genre) => (
                 <CommandItem
-                  key={genre.genreId}
-                  onSelect={() => handleSelect(genre.genreId)}
+                  key={genre.genre_id} // Исправлено на genre_id
+                  onSelect={() => handleSelect(genre.genre_id)} // Исправлено на genre_id
                   className="flex items-center gap-2 px-2 py-1.5 text-white/60 hover:text-[#DEDEDF] hover:bg-white/[0.03] rounded-lg cursor-pointer aria-selected:bg-white/5"
                 >
                   <div
                     className={mergeClass(
                       "flex h-4 w-4 items-center justify-center rounded border transition-colors duration-200",
-                      selectedGenres.includes(genre.genreId)
+                      selectedGenres.includes(genre.genre_id)
                         ? "bg-[#DEDEDF] border-[#DEDEDF]"
                         : "border-white/10 hover:border-[#DEDEDF]/50"
                     )}
                   >
-                    {selectedGenres.includes(genre.genreId) && (
+                    {selectedGenres.includes(genre.genre_id) && (
                       <Check className="h-3 w-3 text-black" />
                     )}
                   </div>

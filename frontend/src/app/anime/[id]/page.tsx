@@ -35,12 +35,12 @@ const Screenshots = dynamic(
 );
 
 /**
- * Интерфейс данных из AnimeDetails компонента (соответствие с ожидаемым типом)
+ * Интерфейс данных из бэкенда
  * @interface Anime
  */
 interface Anime {
   id: string;
-  anime_id: number;
+  anime_id: string;
   russian: string;
   name: string;
   poster_url: string;
@@ -50,10 +50,10 @@ interface Anime {
   season: string;
   english: string;
   status: string;
-  episodes_aired: number; 
-  released_on: string; 
-  franchise: string; 
-  genre_ids: number[]; 
+  episodes_aired: number;
+  released_on: string;
+  franchise: string;
+  genre_ids: number[];
   screenshots?: string[];
   related_anime_ids?: string[];
   related_anime_texts?: string[];
@@ -62,6 +62,7 @@ interface Anime {
   description?: string;
   rating?: string;
   studios?: string[];
+  date_of_broadcast?: string;
 }
 
 /**
@@ -76,11 +77,11 @@ interface Genre {
 }
 
 /**
- * Интерфейс связанного аниме для RelatedAnime компонента (соответствует типу RelatedAnime)
+ * Интерфейс связанного аниме для RelatedAnime компонента
  * @interface RelatedAnimeExtended
  */
 interface RelatedAnimeExtended {
-  anime_id: string; 
+  anime_id: string;
   name: string;
   russian: string;
   poster_url: string;
@@ -106,37 +107,68 @@ const PageAnime: React.FC<PageAnimeProps> = React.memo(() => {
   const { id } = useParams();
   const [auth] = useAtom(authAtom);
   const animeId = typeof id === "string" ? id.split("-")[0] : Array.isArray(id) ? id[0]?.split("-")[0] : undefined;
+
+  // Логирование для диагностики
+  console.log("ID from useParams:", id);
+  console.log("Extracted animeId:", animeId);
+
   const [loadingRelated, setLoadingRelated] = useState(false);
   const [relatedAnime, setRelatedAnime] = useState<RelatedAnimeExtended[]>([]);
 
   // SWR для данных аниме
   const { data: animeData, error: animeError, isLoading: animeLoading } = useSWR<Anime>(
-    animeId ? `/api/anime/id/${animeId}` : null,
-    (url) => axiosInstance.get(url).then((res) => {
-      const data = res.data;
-      return {
-        ...data,
-        anime_id: parseInt(data.anime_id, 10), 
-        duration: data.duration || 0,
-        season: data.season || "",
-        english: data.english || "",
-        status: data.status || "",
-        episodes_aired: data.episodes_aired || 0,
-        released_on: data.released_on || "",
-        franchise: data.franchise || "",
-        genre_ids: data.genre_ids || [],
-        description: data.description || "",
-        rating: data.rating || "",
-        studios: data.studios || [],
-      };
-    }),
+    animeId ? `/anime/id/${animeId}` : null,
+    async (url) => {
+      console.log("Fetching anime from:", url);
+      try {
+        const res = await axiosInstance.get(url);
+        const data = res.data;
+        console.log("Fetched anime data:", data);
+        return {
+          id: data.id || data.anime_id || "",
+          anime_id: data.anime_id || "",
+          russian: data.russian || "",
+          name: data.name || "",
+          poster_url: data.poster_url || "",
+          aired_on: data.aired_on || "",
+          kind: data.kind || "",
+          duration: data.duration || 0,
+          season: data.season || "",
+          english: data.english || "",
+          status: data.status || "",
+          episodes_aired: data.episodes_aired || 0,
+          released_on: data.released_on || "",
+          franchise: data.franchise || "",
+          genre_ids: data.genre_ids || [],
+          screenshots: data.screenshots || [],
+          related_anime_ids: data.related_anime_ids || [],
+          related_anime_texts: data.related_anime_texts || [],
+          episodes: data.episodes || 0,
+          score: data.score || 0,
+          description: data.description || "",
+          rating: data.rating || "",
+          studios: data.studios || [],
+          date_of_broadcast: data.date_of_broadcast || data.aired_on || "",
+        };
+      } catch (error) {
+        throw error;
+      }
+    },
     { revalidateOnFocus: false }
   );
 
   // SWR для жанров
   const { data: genres, error: genresError, isLoading: genresLoading } = useSWR<Genre[]>(
-    "/api/genre/get-list-genres",
-    (url) => axiosInstance.get(url).then((res) => res.data),
+    "/genre/get-list-genres",
+    async (url) => {
+      console.log("Fetching genres from:", url);
+      try {
+        const res = await axiosInstance.get(url);
+        return res.data;
+      } catch (error) {
+        throw error;
+      }
+    },
     { revalidateOnFocus: false }
   );
 
@@ -153,13 +185,13 @@ const PageAnime: React.FC<PageAnimeProps> = React.memo(() => {
       const updateViewHistory = async () => {
         try {
           await axiosInstance.post(
-            `/api/viewhistory/add-anime-to-view-history-of-user/${auth.user!.id}?anime_id=${animeData.id}`,
+            `/viewhistory/add-anime-to-view-history-of-user/${auth.user!.id}?anime_id=${animeData.id}`,
             null,
             {
               headers: { Authorization: `Bearer ${auth.user!.token}` },
             }
           );
-          mutate(`/api/viewhistory/get-view-history-of-user/${auth.user!.id}`);
+          mutate(`/viewhistory/get-view-history-of-user/${auth.user!.id}`);
         } catch (error: any) {
           console.error("Error updating view history:", error.message);
           if (error.response) {
@@ -186,7 +218,7 @@ const PageAnime: React.FC<PageAnimeProps> = React.memo(() => {
       try {
         const relatedPromises = animeData.related_anime_ids.map(async (id: string, index: number) => {
           try {
-            const response = await axiosInstance.get(`/api/anime/id/${id}`);
+            const response = await axiosInstance.get(`/anime/id/${id}`);
             const relatedAnimeData = response.data;
             
             if (!relatedAnimeData || !relatedAnimeData.anime_id || !relatedAnimeData.name || !relatedAnimeData.poster_url) {
@@ -194,9 +226,9 @@ const PageAnime: React.FC<PageAnimeProps> = React.memo(() => {
             }
             
             return {
-              anime_id: relatedAnimeData.anime_id.toString(), 
+              anime_id: relatedAnimeData.anime_id,
               name: relatedAnimeData.name,
-              russian: relatedAnimeData.russian || relatedAnimeData.name, 
+              russian: relatedAnimeData.russian || relatedAnimeData.name,
               poster_url: relatedAnimeData.poster_url,
               relation_type: animeData.related_anime_texts?.[index] || "Связанное аниме",
               kind: relatedAnimeData.kind || "Unknown",
@@ -245,6 +277,7 @@ const PageAnime: React.FC<PageAnimeProps> = React.memo(() => {
   }
 
   if (animeError || genresError || !animeData) {
+    console.log("Anime error or data not found:", { animeError, genresError, animeData });
     return (
       <>
         <Header />
@@ -260,25 +293,34 @@ const PageAnime: React.FC<PageAnimeProps> = React.memo(() => {
     );
   }
 
-  const mapToAnimeDetailsFormat = (apiData: typeof animeData) => {
+  const mapToAnimeDetailsFormat = (apiData: Anime): SharedAnime => {
+    const validStatuses = ["ongoing", "released", "announced"] as const;
+    type ValidStatus = typeof validStatuses[number];
+    const status: ValidStatus = validStatuses.includes(apiData.status as ValidStatus)
+      ? (apiData.status as ValidStatus)
+      : "released"; 
+
     return {
-      anime_id: apiData.anime_id,
+      anime_id: parseInt(apiData.anime_id),
       russian: apiData.russian,
-      name: apiData.name,
-      poster_url: apiData.poster_url,
-      aired_on: apiData.aired_on,
+      name: apiData.name || apiData.english,
+      poster_url: apiData.poster_url || "",
+      aired_on: apiData.aired_on || "",
       kind: apiData.kind,
       duration: apiData.duration,
       season: apiData.season,
       english: apiData.english,
       episodes_aired: apiData.episodes_aired,
-      released_on: apiData.released_on,
+      released_on: apiData.released_on || "",
       franchise: apiData.franchise,
       genre_ids: apiData.genre_ids.map(id => id.toString()),
       episodes: apiData.episodes || 0,
       score: apiData.score || 0,
       description: apiData.description || "",
-      rating: apiData.rating || ""
+      rating: apiData.rating || "",
+      date_of_broadcast: apiData.date_of_broadcast || apiData.aired_on || "",
+      id: apiData.id || apiData.anime_id || "",
+      status,
     };
   };
 
@@ -289,14 +331,14 @@ const PageAnime: React.FC<PageAnimeProps> = React.memo(() => {
       <section className="container mx-auto px-4 py-8">
         <div className="flex flex-col gap-16">
           <AnimeDetails
-            animeId={animeData.anime_id}
+            animeId={parseInt(animeData.anime_id)}
             anime={mapToAnimeDetailsFormat(animeData) as SharedAnime}
             genres={genres?.map(genre => ({
-                id: genre.id.toString(),
-                name: genre.name,
-                genre_id: genre.genre_id.toString(),
-                russian: genre.russian
-              } as SharedGenre)) || []}
+              id: genre.id,
+              name: genre.name,
+              genre_id: genre.genre_id.toString(),
+              russian: genre.russian,
+            } as SharedGenre)) || []}
           />
           {animeData && (
             <div className="space-y-8">
@@ -306,10 +348,10 @@ const PageAnime: React.FC<PageAnimeProps> = React.memo(() => {
                 )}
               </Suspense>
               <VideoPlayer
-                shikimoriId={animeData.anime_id.toString()}
-                animeId={animeData.id}
+                shikimoriId={animeData.anime_id}
+                animeId={animeData.anime_id}
                 totalEpisodes={animeData.episodes || 12}
-                animeName={animeData.russian || animeData.name}
+                animeName={animeData.russian || animeData.name} 
               />
               {relatedAnime.length > 0 && (
                 <RelatedAnime relatedAnimeList={relatedAnime} animeId={0} />
@@ -320,7 +362,7 @@ const PageAnime: React.FC<PageAnimeProps> = React.memo(() => {
       </section>
       <div className="container mx-auto px-4 py-8">
         <div className="mt-8">
-          <AnimeComments animeId={animeData.id} />
+          <AnimeComments animeId={animeData.anime_id} />
         </div>
       </div>
       <Footer />

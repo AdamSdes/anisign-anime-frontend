@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import { Github, Twitter, Youtube, MessageCircle, Calendar } from "lucide-react";
 
 /**
  * Компонент футера
@@ -10,106 +9,105 @@ import { Github, Twitter, Youtube, MessageCircle, Calendar } from "lucide-react"
  */
 export const Footer: React.FC = () => {
   return (
-    <footer className="border-t border-white/5 bg-black">
-      <div className="container mx-auto px-4">
-        {/* Основная часть футера */}
-        <div className="py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-          {/* Логотип и описание */}
-          <div className="flex flex-col gap-6">
-            <Link href="/" className="flex items-center gap-3 w-fit">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 to-blue-500" />
-              <span className="text-white/90 font-medium text-lg">Anisign</span>
-            </Link>
-            <p className="text-sm text-white/50 leading-relaxed max-w-[280px]">
-              Аниме портал для фанатов, новичков и обученных лиц
-            </p>
+    <footer className="bg-black text-white">
+      <div className="container mx-auto px-4 py-12">
+        {/* Верхняя часть футера */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-10 text-center md:text-left">
+          <div className="mb-6 md:mb-0">
+            <h2 className="text-2xl font-semibold text-[#A8A8A8]">
+              <span className="text-[#A57AFF]">Anisign</span> — Аниме портал для фанатов, новичков и обученных лиц!
+            </h2>
           </div>
+          <Link
+            href="/anime"
+            className="bg-[#2A2A2A] text-white px-6 py-2 rounded-full hover:bg-[#3A3A3A] transition-colors text-sm"
+          >
+            Список аниме →
+          </Link>
+        </div>
 
+        {/* Линия между верхней частью и колонками */}
+        <div className="border-t border-white/5 mb-10"></div>
+
+        {/* Основная часть футера */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10 text-center md:text-left">
           {/* Навигация */}
           <div className="flex flex-col gap-4">
-            <h3 className="text-sm font-semibold text-white/80">Навигация</h3>
-            <div className="flex flex-col gap-3">
-              <Link href="/anime" className="text-sm text-white/50 hover:text-white/80 transition-colors w-fit">
+            <h3 className="text-sm font-semibold text-[#636363]">Навигация</h3>
+            <div className="flex flex-col gap-2">
+              <Link href="/anime" className="text-sm text-[#DADADA] hover:text-[#FFFFFF] transition-colors">
                 Список аниме
               </Link>
-              <Link href="/collections" className="text-sm text-white/50 hover:text-white/80 transition-colors w-fit">
+              <Link href="/collections" className="text-sm text-[#DADADA] hover:text-[#FFFFFF] transition-colors">
                 Коллекции
               </Link>
-              <Link href="/characters" className="text-sm text-white/50 hover:text-white/80 transition-colors w-fit">
+              <Link href="/characters" className="text-sm text-[#DADADA] hover:text-[#FFFFFF] transition-colors">
                 Персонажи
               </Link>
-              <Link href="/calendar" className="text-sm text-white/50 hover:text-white/80 transition-colors w-fit">
+              <Link href="/calendar" className="text-sm text-[#DADADA] hover:text-[#FFFFFF] transition-colors">
                 Календарь
-              </Link>
+              </Link>              
             </div>
           </div>
 
           {/* Остальное */}
           <div className="flex flex-col gap-4">
-            <h3 className="text-sm font-semibold text-white/80">Остальное</h3>
-            <div className="flex flex-col gap-3">
-              <Link href="/comments" className="text-sm text-white/50 hover:text-white/80 transition-colors w-fit">
+            <h3 className="text-sm font-semibold text-[#636363]">Остальное</h3>
+            <div className="flex flex-col gap-2">
+              <Link href="/comments" className="text-sm text-[#DADADA] hover:text-[#FFFFFF] transition-colors">
                 Комментарии
               </Link>
-              <Link href="/retro" className="text-sm text-white/50 hover:text-white/80 transition-colors w-fit">
-                Ретроги
+              <Link href="/report" className="text-sm text-[#DADADA] hover:text-[#FFFFFF] transition-colors">
+                Репорт
               </Link>
             </div>
           </div>
 
-          {/* Социальные сети и контакты */}
+          {/* Связаться с нами */}
           <div className="flex flex-col gap-4">
-            <h3 className="text-sm font-semibold text-white/80">Связаться с нами</h3>
-            <div className="flex gap-4">
+            <h3 className="text-sm font-semibold text-[#636363]">Связаться с нами</h3>
+            <div className="flex justify-center md:justify-start gap-4">
               <a
-                href="https://github.com"
+                href="#"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"
               >
-                <Github className="w-5 h-5 text-white/80" />
+                <img src="/icon/VK.png" alt="VK" className="w-5 h-5" />
               </a>
               <a
-                href="https://twitter.com"
+                href="#"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"
               >
-                <Twitter className="w-5 h-5 text-white/80" />
+                <img src="/icon/Telegram.png" alt="Telegram" className="w-5 h-5" />
               </a>
               <a
-                href="https://discord.com"
+                href="#"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"
               >
-                <MessageCircle className="w-5 h-5 text-white/80" />
+                <img src="/icon/Discord.png" alt="Discord" className="w-5 h-5" />
               </a>
               <a
-                href="https://telegram.org"
+                href="#"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"
               >
-                <MessageCircle className="w-5 h-5 text-white/80" /> 
-              </a>
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"
-              >
-                <Youtube className="w-5 h-5 text-white/80" />
+                <img src="/icon/YouTube.png" alt="YouTube" className="w-5 h-5" />
               </a>
             </div>
           </div>
         </div>
 
         {/* Нижняя часть футера */}
-        <div className="py-6 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <Link href="/" className="flex items-center gap-3 w-fit">
-            <div className="w-5 h-5 rounded-full bg-gradient-to-r from-pink-500 to-blue-500" />
-            <span className="text-white/40 text-sm">Anisign.com</span>
+        <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/logo_header.png" alt="Anisign Logo" className="w-5 h-5" />
+            <span className="text-sm text-white/40">Anisign.com</span>
           </Link>
           <div className="flex items-center gap-6">
             <a href="mailto:support@anisign.com" className="text-sm text-white/40">

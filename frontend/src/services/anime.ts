@@ -2,6 +2,9 @@ import { axiosInstance as animeAxios } from "@/lib/axios/axiosConfig";
 import { Anime } from "@/shared/types/anime";
 
 export interface AnimeListResponse {
+  page: number;
+  total_pages: number;
+  total: number;
   total_count: number;
   anime_list: Anime[];
 }
@@ -35,7 +38,6 @@ export const getAnimeList = async (filters: AnimeFilters = {}): Promise<AnimeLis
 
   const searchParams = new URLSearchParams({
     page: String(page),
-    limit: String(limit),
     ...(sort_order && { sort_order }),
     ...(status && { status }),
     ...(rating && { rating }),

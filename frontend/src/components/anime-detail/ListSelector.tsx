@@ -1,4 +1,3 @@
-// anime-detail/ListSelector.tsx
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
@@ -71,7 +70,7 @@ export const ListSelector: React.FC<ListSelectorProps> = React.memo(({ animeId, 
 
   // Кэширование данных списков с помощью SWR
   const { data: listsData, error: listsError } = useSWR<AnimeListsData, Error>(
-    isAuthenticated ? "/api/user/anime-lists" : null,
+    isAuthenticated ? `/anime_save_list/get-anime-list-by-name` : null,
     fetcher,
     { dedupingInterval: 60000, revalidateOnFocus: false }
   );

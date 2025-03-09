@@ -6,6 +6,8 @@ export interface Genre {
 }
 
 export interface Anime {
+  date_of_broadcast: any;
+  id: any;
   duration: any;
   season: any;
   anime_id: number;

@@ -19,13 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }, [hydrated, initAuth]);
 
-    if (!hydrated) {
-        return (
-            <div className="fixed inset-0 flex items-center justify-center bg-background">
-                <div className="h-5 w-5 animate-spin border-2 border-[#CCBAE4] border-t-transparent rounded-full" />
-            </div>
-        );
-    }
+    
 
     return <>{children}</>;
 }

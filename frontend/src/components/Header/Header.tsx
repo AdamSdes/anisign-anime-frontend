@@ -61,7 +61,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({ className = "" }) => 
           {/* Левая часть: Логотип и навигация */}
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-all">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-r from-pink-500 to-blue-500" />
+              <img src="/logo_header.png" alt="logo" className="w-7 h-7"/>
               <span className="text-white/90 font-medium text-[15px]">Anisign</span>
             </Link>
             <Link href="/anime-list" className="text-white/60 font-medium text-[14px] hover:text-white transition-colors hidden md:block">

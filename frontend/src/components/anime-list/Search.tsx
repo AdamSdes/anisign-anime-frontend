@@ -71,7 +71,7 @@ export const Search: React.FC = React.memo(() => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         const query = createQueryString("search", value);
-        router.replace(`${pathname}?${query}`);
+        router.replace(`/anime/name?${query}`);
       }, 500);
     };
   }, [pathname, router, createQueryString])();
@@ -93,7 +93,7 @@ export const Search: React.FC = React.memo(() => {
     const params = new URLSearchParams(searchParams);
     params.delete("search");
     params.set("page", "1");
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`/anime/name?${params.toString()}`);
   }, [pathname, router, searchParams, setSearchQuery]);
 
   return (

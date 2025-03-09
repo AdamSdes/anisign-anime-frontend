@@ -89,7 +89,7 @@ const RelatedAnime: React.FC<RelatedAnimeProps> = React.memo(({ animeId, initial
     data: relatedAnime,
     error,
     isLoading,
-  } = useSWR<RelatedAnime[]>(`/api/anime/${animeId}/related`, fetcher, {
+  } = useSWR<RelatedAnime[]>(`#`, fetcher, {
     fallbackData: initialRelatedAnime,
     dedupingInterval: 60000,
     revalidateOnFocus: false,

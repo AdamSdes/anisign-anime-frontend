@@ -84,14 +84,15 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = React.memo(({ classNa
 
   // Синхронизация состояния с URL при монтировании
   React.useEffect(() => {
-    const years = searchParams.getAll("years");
+    const startYear = searchParams.get("start_year") || DEFAULT_YEAR_START;
+    const endYear = searchParams.get("end_year") || DEFAULT_YEAR_END;
     setFilterState((prev) => ({
       ...prev,
-      selectingYears: years.length > 0 ? years : [DEFAULT_YEAR_START, DEFAULT_YEAR_END],
+      selectingYears: [startYear, endYear],
     }));
   }, [searchParams, setFilterState]);
 
-   const updateSort = useCallback(
+  const updateSort = useCallback(
     (value: string) => {
       const params = new URLSearchParams(searchParams);
       const currentSort = params.get("sort");
@@ -113,7 +114,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = React.memo(({ classNa
     [pathname, router, searchParams]
   );
 
-   const updateFilter = useCallback(
+  const updateFilter = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(searchParams);
       if (params.get(key) === value) {
@@ -126,6 +127,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = React.memo(({ classNa
     },
     [pathname, router, searchParams]
   );
+
   const updateGenres = useCallback(
     (genreIds: string[]) => {
       const params = new URLSearchParams(searchParams);
@@ -141,9 +143,18 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = React.memo(({ classNa
     (value: string[]) => {
       setFilterState((prev) => ({ ...prev, selectingYears: value }));
       const params = new URLSearchParams(searchParams);
-      params.delete("years");
-      value.forEach((year) => params.append("years", year));
+      params.delete("years"); 
+      params.delete("start_year");
+      params.delete("end_year");
+      if (value.length === 2) {
+        const startYear = value[0];
+        const endYear = value[1];
+        params.set("start_year", startYear);
+        params.set("end_year", endYear);
+        console.log("Updating years with params:", { start_year: startYear, end_year: endYear });
+      }
       params.set("page", "1");
+      console.log("Updated years params:", Object.fromEntries(params));
       router.replace(`${pathname}?${params.toString()}`);
     },
     [pathname, router, searchParams, setFilterState]
@@ -163,6 +174,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = React.memo(({ classNa
     params.delete("kind");
     params.delete("genre_id");
     params.delete("years");
+    params.delete("start_year");
+    params.delete("end_year");
     params.set("page", "1");
     setFilterState({ selectingYears: [DEFAULT_YEAR_START, DEFAULT_YEAR_END] });
     router.replace(`${pathname}?${params.toString()}`);

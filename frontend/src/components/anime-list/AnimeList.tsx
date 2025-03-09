@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import useSWR from "swr";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -10,41 +10,78 @@ import { AnimeCardSkeleton } from "./AnimeCardSkeleton";
 import { Pagination } from "./Pagination";
 import { Search } from "./Search";
 import { Anime, Genre } from "@/shared/types/anime";
-import { animeListContainerVariants, animeListItemVariants } from "./animations";
 
-// Define the missing paginationVariants
 const paginationVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
+  visible: {
+    opacity: 1,
+    y: 0,
     transition: {
       delay: 0.3,
-      duration: 0.5
-    }
-  }
+      duration: 0.5,
+    },
+  },
 };
 
-// Интерфейс пагинации
-interface PaginationData {
-  page: number;
-  pages: number;
-  total: number;
-  per_page: number;
-}
-
-// Интерфейс ответа API
-interface AnimeListResponse {
-  animeList: Anime[];
-  pagination: PaginationData;
-}
-
 /**
- * Функция загрузки данных через SWR
+ * Функция загрузки данных с учётом фильтров
  * @param url - URL эндпоинта API
- * @returns Данные списка аниме
+ * @returns Все аниме
  */
-const fetcher = (url: string) => axiosInstance.get<AnimeListResponse>(url).then((res) => res.data);
+const fetchAllAnime = async (url: string) => {
+  const params = new URLSearchParams(url.split("?")[1]);
+  const limit = 1000000; 
+  let page = 1;
+  let allAnime: Anime[] = [];
+  let totalPages = 1;
+
+  console.log("=== Fetch Process Started ===");
+  console.log("Initial Fetching with full URL:", url);
+  console.log("Initial Fetching with params:", Object.fromEntries(params));
+
+  try {
+    while (page <= totalPages) {
+      params.set("page", page.toString());
+      params.set("limit", limit.toString());
+
+      const fullUrl = `/anime/get-anime-list-filtered?${params.toString()}`;
+      console.log("Constructed URL before request:", fullUrl);
+      console.log("Params before request:", Object.fromEntries(params));
+
+      const response = await axiosInstance.get<{
+        anime_list: Anime[];
+        pagination?: { page: number; pages: number; total: number; per_page: number };
+      }>(fullUrl, {
+        timeout: 10000, 
+      });
+
+      const data = response.data;
+      console.log(`Page ${page} API Response:`, {
+        anime_list_length: data.anime_list.length,
+        pagination: data.pagination,
+        first_anime: data.anime_list[0]?.aired_on || "No first anime",
+        last_anime: data.anime_list[data.anime_list.length - 1]?.aired_on || "No last anime",
+      });
+
+      allAnime = [...allAnime, ...data.anime_list];
+      totalPages = data.pagination?.pages || 1;
+      page++;
+    }
+
+    console.log("All Anime Fetched:", allAnime.length);
+    console.log("=== Fetch Process Completed ===");
+    return { animeList: allAnime };
+  } catch (error) {
+    console.error("=== Fetch Error Occurred ===");
+    console.error("Fetch Error Details:", {
+      config: (error as any).config ? (error as any).config.url : "No config",
+      response: (error as any).response ? (error as any).response.data : "No response",
+      status: (error as any).response ? (error as any).response.status : "No status",
+      request: (error as any).request ? "Request sent but no response" : "Request failed to send",
+    });
+    throw error;
+  }
+};
 
 /**
  * Функция загрузки жанров через SWR
@@ -55,24 +92,24 @@ const genreFetcher = (url: string) => axiosInstance.get<Genre[]>(url).then((res)
 
 /**
  * Компонент списка аниме
- * @description Отображает список аниме с поиском, фильтрацией и пагинацией
  */
 export const AnimeList: React.FC = React.memo(() => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const { data: animeData, error: animeError, isLoading: isAnimeLoading } = useSWR(
-    `${pathname}?${searchParams.toString()}`,
-    fetcher,
+  const { data: animeData, error: animeError, isLoading: isAnimeLoading, isValidating } = useSWR(
+    `/anime/get-anime-list-filtered?${searchParams.toString()}`,
+    fetchAllAnime,
     {
-      dedupingInterval: 60000,
-      revalidateOnFocus: false,
+      dedupingInterval: 0, 
+      revalidateOnFocus: true,
+      keepPreviousData: false,
     }
   );
 
   const { data: genres, error: genresError, isLoading: isGenresLoading } = useSWR(
-    "/api/genres",
+    "/genre/get-list-genres",
     genreFetcher,
     {
       dedupingInterval: 60000,
@@ -80,71 +117,82 @@ export const AnimeList: React.FC = React.memo(() => {
     }
   );
 
-  const isLoading = isAnimeLoading || isGenresLoading;
+  const isLoading = isAnimeLoading || isGenresLoading || isValidating;
   const hasError = animeError || genresError;
-  const animeList = animeData?.animeList;
-  const pagination = animeData?.pagination;
+  let allAnime = animeData?.animeList || [];
 
-  /**
-   * Обработчик смены страницы
-   * @param page - Номер страницы
-   */
+  const startYear = searchParams.get("start_year");
+  const endYear = searchParams.get("end_year");
+  if (startYear && endYear) {
+    const start = parseInt(startYear);
+    const end = parseInt(endYear);
+    allAnime = allAnime.filter((anime) => {
+      const year = new Date(anime.aired_on).getFullYear();
+      return year >= start && year <= end;
+    });
+    console.log("Applied client-side year filter:", { startYear, endYear, filteredCount: allAnime.length });
+  }
+
+  // Клиентская пагинация
+  const itemsPerPage = 30; // 30 аниме на страницу
+  const totalItems = allAnime.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Вычисляем аниме для текущей страницы
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentAnime = allAnime.slice(startIndex, endIndex);
+
+  console.log("AnimeList state:", {
+    isLoading,
+    hasError,
+    totalItems,
+    totalPages,
+    currentPage,
+    currentAnime: currentAnime.map((a) => ({
+      id: a.anime_id,
+      russian: a.russian,
+      poster_url: a.poster_url,
+      score: a.score,
+      aired_on: a.aired_on,
+    })),
+    searchParams: searchParams.toString(),
+  });
+
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("page", page.toString());
-    router.replace(`${pathname}?${params.toString()}`);
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   if (isLoading) {
     return (
-      <motion.div
-        className="space-y-8"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div className="space-y-8">
         <Search />
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-          {Array(15)
+          {Array(30)
             .fill(0)
             .map((_, index) => (
               <AnimeCardSkeleton key={index} />
             ))}
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   if (hasError) {
     return (
-      <motion.div
-        className="text-center text-red-500"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        Произошла ошибка при загрузке аниме
-      </motion.div>
+      <div className="text-center text-red-500">
+        Произошла ошибка при загрузке аниме: {hasError.message}
+      </div>
     );
   }
 
   return (
-    <motion.div
-      variants={animeListContainerVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      className="space-y-8"
-    >
+    <div className="space-y-8">
       <Search />
-
-      {!animeList?.length ? (
-        <motion.div
-          className="flex flex-col items-center justify-center py-16 px-4"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "spring", stiffness: 100, damping: 15 }}
-        >
+      {!currentAnime.length ? (
+        <div className="flex flex-col items-center justify-center py-16 px-4">
           <div className="w-16 h-16 mb-6 rounded-full bg-white/[0.02] border border-white/5 flex items-center justify-center">
             <svg width="24" height="24" viewBox="0 0 24 24" className="text-white/40">
               <path
@@ -157,18 +205,16 @@ export const AnimeList: React.FC = React.memo(() => {
           <p className="text-sm text-white/40 text-center max-w-md">
             По вашему запросу ничего не найдено. Попробуйте изменить параметры фильтрации или поиска
           </p>
-        </motion.div>
+        </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-          {animeList?.map((anime, index) => (
-            <motion.div key={anime.anime_id} variants={animeListItemVariants}>
-              <AnimeCard anime={anime} genres={genres} priority={index < 4} />
-            </motion.div>
+          {currentAnime.map((anime, index) => (
+            <AnimeCard key={anime.anime_id || index} anime={anime} genres={genres} priority={index < 4} />
           ))}
         </div>
       )}
 
-      {pagination && pagination.pages > 1 && (
+      {totalPages > 1 && (
         <motion.div
           variants={paginationVariants}
           initial="hidden"
@@ -177,14 +223,14 @@ export const AnimeList: React.FC = React.memo(() => {
         >
           <div className="w-fit rounded-xl border border-white/10 bg-[#060606]/95 backdrop-blur-sm p-2 shadow-lg">
             <Pagination
-              currentPage={pagination.page}
-              totalPages={pagination.pages}
+              currentPage={currentPage}
+              totalPages={totalPages}
               onPageChange={handlePageChange}
             />
           </div>
         </motion.div>
       )}
-    </motion.div>
+    </div>
   );
 });
 

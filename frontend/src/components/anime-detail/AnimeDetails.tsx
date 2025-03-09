@@ -2,8 +2,6 @@
 
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
-import useSWR from "swr";
-import { axiosInstance } from "@/lib/axios/axiosConfig";
 import { Image } from "@/components/ui/image";
 import { ListSelector } from "./ListSelector";
 import { ScrollToPlayerButton } from "./ScrollToPlayerButton";
@@ -16,18 +14,9 @@ import { Anime, Genre } from "@/shared/types/anime";
 // Интерфейс пропсов компонента AnimeDetails
 interface AnimeDetailsProps {
   animeId: number;
-  anime: Anime; 
-  initialAnime?: Anime; 
-  initialGenres?: Genre[]; 
-  genres: Genre[];
+  anime: Anime;
+  genres: Genre[]; 
 }
-
-/**
- * Функция загрузки данных через SWR
- * @param url - URL эндпоинта API
- * @returns Данные с сервера
- */
-const fetcher = (url: string) => axiosInstance.get(url).then((res) => res.data);
 
 /**
  * Вспомогательная функция для описания рейтинга
@@ -92,31 +81,14 @@ const getStatusColor = (status: string): string => {
  * @description Отображает подробности аниме с анимацией и интерактивными элементами
  * @param {AnimeDetailsProps} props - Пропсы компонента
  */
-const AnimeDetails: React.FC<AnimeDetailsProps> = React.memo(({ animeId, initialAnime, initialGenres }) => {
-  // Загрузка данных аниме через SWR
-  const {
-    data: anime,
-    error: animeError,
-    isLoading: animeLoading,
-  } = useSWR<Anime>(`/api/anime/${animeId}`, fetcher, {
-    fallbackData: initialAnime,
-    dedupingInterval: 60000,
-    revalidateOnFocus: false,
-  });
+const AnimeDetails: React.FC<AnimeDetailsProps> = React.memo(({ animeId, anime, genres }) => {
+  if (!anime) {
+    return <AnimeDetailsSkeleton />;
+  }
 
-  // Загрузка жанров через SWR
-  const {
-    data: genres,
-    error: genresError,
-    isLoading: genresLoading,
-  } = useSWR<Genre[]>("/api/genres", fetcher, {
-    fallbackData: initialGenres,
-    dedupingInterval: 60000,
-    revalidateOnFocus: false,
-  });
-
-  const isLoading = animeLoading || genresLoading;
-  const hasError = animeError || genresError;
+  if (!anime.anime_id) {
+    return <div>Ошибка загрузки данных: данные об аниме отсутствуют</div>;
+  }
 
   const getGenreName = useMemo(
     () => (genreId: string) => {
@@ -126,9 +98,6 @@ const AnimeDetails: React.FC<AnimeDetailsProps> = React.memo(({ animeId, initial
     },
     [genres]
   );
-
-  if (isLoading) return <AnimeDetailsSkeleton />;
-  if (hasError || !anime) return <div>Ошибка загрузки данных</div>;
 
   return (
     <motion.section
@@ -162,7 +131,7 @@ const AnimeDetails: React.FC<AnimeDetailsProps> = React.memo(({ animeId, initial
 
         {/* Center Column */}
         <motion.article variants={itemVariants} className="flex w-full flex-col gap-8">
-          {anime.episodes_aired && (
+          {anime.date_of_broadcast && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -180,8 +149,11 @@ const AnimeDetails: React.FC<AnimeDetailsProps> = React.memo(({ animeId, initial
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-[14px] font-medium text-white/90">Следующий эпизод</span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#DEDEDF]/10 text-[#DEDEDF]">
-                      Онгоинг
+                    <span
+                      className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium text-white"
+                      style={{ backgroundColor: getStatusColor(anime.status) }}
+                    >
+                      {transformValue("status", anime.status)}
                     </span>
                   </div>
                   <p className="text-[12px] text-white/40">До выхода нового эпизода</p>
@@ -190,7 +162,7 @@ const AnimeDetails: React.FC<AnimeDetailsProps> = React.memo(({ animeId, initial
               <div className="flex items-center gap-2">
                 <div className="px-3 py-2 rounded-lg bg-white/[0.02] border border-white/5">
                   <p className="text-[14px] font-medium text-white/90">
-                    {new Date(anime.episodes_aired).toLocaleString("ru-RU", {
+                    {new Date(anime.date_of_broadcast).toLocaleString("ru-RU", {
                       month: "long",
                       day: "numeric",
                       hour: "2-digit",

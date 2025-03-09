@@ -1,5 +1,6 @@
 export interface Genre {
-    genreId: string;
+    id:  null | undefined;
+    genre_id: string;
     name: string;
     russian: string;
 }
