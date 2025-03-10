@@ -1,8 +1,8 @@
+// Search.tsx
 "use client";
 
 import React, { useCallback, useEffect } from "react";
 import { atom, useAtom } from "jotai";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search as SearchIcon, X, Filter } from "lucide-react";
@@ -16,85 +16,19 @@ import {
 import { FilterSidebar } from "./FilterSidebar";
 import { mergeClass } from "@/lib/utils/mergeClass";
 
-/**
- * Атом для состояния поиска
- * @description Хранит текущий запрос поиска
- */
 export const searchQueryAtom = atom<string>("");
 
-/**
- * Компонент поиска аниме
- * @description Отображает поле ввода для поиска аниме с дебансированным обновлением URL
- */
 export const Search: React.FC = React.memo(() => {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
   const [isFocused, setIsFocused] = React.useState(false);
 
-  // Синхронизация с URL при монтировании или изменении параметров
-  useEffect(() => {
-    const searchParam = searchParams.get("search") ?? "";
-    if (searchParam !== searchQuery) {
-      setSearchQuery(searchParam);
-    }
-  }, [searchParams, setSearchQuery]);
-
-  /**
-   * Создание строки запроса
-   * @param name - Название параметра
-   * @param value - Значение параметра
-   * @returns Строка запроса
-   */
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams);
-      if (value) {
-        params.set(name, value);
-      } else {
-        params.delete(name);
-      }
-      params.set("page", "1");
-      return params.toString();
-    },
-    [searchParams]
-  );
-
-  /**
-   * Дебансированный обработчик поиска
-   * @description Обновляет URL с задержкой 500мс
-   */
-  const debouncedSearch = useCallback(() => {
-    let timeoutId: NodeJS.Timeout;
-    return (value: string) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        const query = createQueryString("search", value);
-        router.replace(`/anime/name?${query}`);
-      }, 500);
-    };
-  }, [pathname, router, createQueryString])();
-
-  /**
-   * Обработчик изменения ввода
-   * @param value - Введённое значение
-   */
-  const handleSearch = useCallback(
-    (value: string) => {
-      setSearchQuery(value);
-      debouncedSearch(value);
-    },
-    [setSearchQuery, debouncedSearch]
-  );
+  const handleSearch = useCallback((value: string) => {
+    setSearchQuery(value);
+  }, [setSearchQuery]);
 
   const clearSearch = useCallback(() => {
     setSearchQuery("");
-    const params = new URLSearchParams(searchParams);
-    params.delete("search");
-    params.set("page", "1");
-    router.replace(`/anime/name?${params.toString()}`);
-  }, [pathname, router, searchParams, setSearchQuery]);
+  }, [setSearchQuery]);
 
   return (
     <div className="relative w-full">
@@ -136,7 +70,6 @@ export const Search: React.FC = React.memo(() => {
           </AnimatePresence>
         </div>
 
-        {/* Кнопка фильтра для мобильной версии */}
         <div className="lg:hidden pr-2">
           <Sheet>
             <SheetTrigger asChild>
@@ -167,5 +100,4 @@ export const Search: React.FC = React.memo(() => {
 });
 
 Search.displayName = "Search";
-
 export default Search;

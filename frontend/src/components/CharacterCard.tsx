@@ -49,7 +49,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = React.memo(
 
     // Опциональная загрузка данных через SWR (если требуется динамическая проверка)
     const { data: characterData } = useSWR<Character>(
-      auth.isAuthenticated ? `/api/characters/${character_id}` : null,
+      auth.isAuthenticated ? `/character/${character_id}` : null,
       (url) => axiosInstance.get(url).then((res) => res.data),
       { revalidateOnFocus: false }
     );
@@ -68,7 +68,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = React.memo(
     const imageUrl = poster_url || fallbackImage;
 
     return (
-      <Link href={`/characters/${character_id}`}>
+      <Link href={`/character/${character_id}`}>
         <div className="group relative">
           {/* Контейнер изображения */}
           <div className="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-white/5">

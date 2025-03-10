@@ -67,7 +67,7 @@ const CharactersPage: React.FC<CharactersPageProps> = React.memo(() => {
     error: searchError,
   } = useQuery<Character[]>({
     queryKey: ["character-search", debouncedSearch],
-    queryFn: () => axiosInstance.get(`/api/character/search?q=${debouncedSearch}`).then((res) => res.data),
+    queryFn: () => axiosInstance.get(`/character/search?q=${debouncedSearch}`).then((res) => res.data),
     enabled: debouncedSearch.length > 0,
   });
 
@@ -83,7 +83,7 @@ const CharactersPage: React.FC<CharactersPageProps> = React.memo(() => {
     queryKey: ["characters-infinite", auth.isAuthenticated],
     queryFn: ({ pageParam }) =>
       axiosInstance
-        .get(`/api/character/list?page=${pageParam}&limit=50`)
+        .get(`/character/get-character-list?page=${pageParam}&limit=50`)
         .then((res) => ({
           items: res.data as Character[],
           nextPage: res.data.length === 50 ? (pageParam as number) + 1 : undefined,

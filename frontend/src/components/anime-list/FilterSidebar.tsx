@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import { atom, useAtom } from "jotai";
 import { motion } from "framer-motion";
 import { SortAsc, Play, Star, Film, Tags, Calendar } from "lucide-react";
@@ -10,12 +10,13 @@ import { GenreSelect } from "@/components/ui/genre-select";
 import { Slider } from "@/components/ui/slider";
 import { YearFilterInput } from "@/components/ui/year-filter-input";
 import { filterSectionVariants } from "./animations";
+import { filterStateAtom, searchQueryAtom } from "@/lib/atom/filterAtom"
 
 // Опции сортировки
 const sortOptions = [
   { id: "score", label: "По рейтингу" },
-  { id: "date", label: "По дате" },
-  { id: "name", label: "По названию" },
+  { id: "aired_on", label: "По дате" },
+  { id: "russian", label: "По названию" },
 ] as const;
 
 // Опции статуса
@@ -60,36 +61,26 @@ interface FilterState {
 }
 
 /**
- * Атом для хранения состояния фильтров
- * @description Управляет глобальным состоянием фильтров боковой панели
- */
-export const filterStateAtom = atom<FilterState>({
-  selectingYears: [DEFAULT_YEAR_START, DEFAULT_YEAR_END],
-});
-
-interface FilterSidebarProps {
-  className?: string;
-}
-
-/**
  * Компонент боковой панели фильтров для списка аниме
  * @description Отображает фильтры для сортировки и поиска аниме с анимацией
  * @param {FilterSidebarProps} props - Пропсы компонента
  */
-export const FilterSidebar: React.FC<FilterSidebarProps> = React.memo(({ className = "" }) => {
+export const FilterSidebar: React.FC<{ className?: string }> = React.memo(({ className = "" }) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [filterState, setFilterState] = useAtom(filterStateAtom);
+  const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
 
   // Синхронизация состояния с URL при монтировании
-  React.useEffect(() => {
+  useEffect(() => {
     const startYear = searchParams.get("start_year") || DEFAULT_YEAR_START;
     const endYear = searchParams.get("end_year") || DEFAULT_YEAR_END;
     setFilterState((prev) => ({
       ...prev,
       selectingYears: [startYear, endYear],
     }));
+    console.log("FilterSidebar initialized with years:", { startYear, endYear });
   }, [searchParams, setFilterState]);
 
   const updateSort = useCallback(
@@ -109,6 +100,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = React.memo(({ classNa
       }
 
       params.set("page", "1");
+      console.log("Updated sort params:", Object.fromEntries(params));
       router.replace(`${pathname}?${params.toString()}`);
     },
     [pathname, router, searchParams]
@@ -143,7 +135,6 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = React.memo(({ classNa
     (value: string[]) => {
       setFilterState((prev) => ({ ...prev, selectingYears: value }));
       const params = new URLSearchParams(searchParams);
-      params.delete("years"); 
       params.delete("start_year");
       params.delete("end_year");
       if (value.length === 2) {
@@ -151,7 +142,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = React.memo(({ classNa
         const endYear = value[1];
         params.set("start_year", startYear);
         params.set("end_year", endYear);
-        console.log("Updating years with params:", { start_year: startYear, end_year: endYear });
+        console.log("Updating years with params:", { startYear, endYear });
       }
       params.set("page", "1");
       console.log("Updated years params:", Object.fromEntries(params));
@@ -166,20 +157,13 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = React.memo(({ classNa
   );
 
   const clearAllFilters = useCallback(() => {
-    const params = new URLSearchParams(searchParams);
-    params.delete("sort");
-    params.delete("order");
-    params.delete("status");
-    params.delete("rating");
-    params.delete("kind");
-    params.delete("genre_id");
-    params.delete("years");
-    params.delete("start_year");
-    params.delete("end_year");
+    const params = new URLSearchParams();
     params.set("page", "1");
     setFilterState({ selectingYears: [DEFAULT_YEAR_START, DEFAULT_YEAR_END] });
+    setSearchQuery(""); // Сбрасываем поиск
     router.replace(`${pathname}?${params.toString()}`);
-  }, [pathname, router, searchParams, setFilterState]);
+    console.log("Cleared all filters, new params:", Object.fromEntries(params));
+  }, [pathname, router, setFilterState, setSearchQuery]);
 
   return (
     <motion.aside

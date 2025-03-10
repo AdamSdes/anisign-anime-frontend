@@ -19,7 +19,7 @@ export const Footer: React.FC = () => {
             </h2>
           </div>
           <Link
-            href="/anime"
+            href="/anime-list"
             className="bg-[#2A2A2A] text-white px-6 py-2 rounded-full hover:bg-[#3A3A3A] transition-colors text-sm"
           >
             Список аниме →

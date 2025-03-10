@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -13,6 +13,8 @@ interface AnimeCardProps {
 }
 
 export const AnimeCard: React.FC<AnimeCardProps> = ({ anime, genres, priority }) => {
+  const [imageError, setImageError] = useState(false);
+  
   console.log("AnimeCard data:", anime);
   console.log("Genres:", genres);
 
@@ -40,14 +42,17 @@ export const AnimeCard: React.FC<AnimeCardProps> = ({ anime, genres, priority })
               className="relative block w-[200px] h-[280px] rounded-[16px] overflow-hidden border border-white/10 shadow-lg hover:shadow-xl transition-shadow duration-300"
             >
               <Image
-                src={anime.poster_url || "/placeholder-image.jpg"}
+                src={imageError ? "/placeholder-image.jpg" : (anime.poster_url || "/placeholder-image.jpg")}
                 alt={anime.russian || anime.name || "Anime Poster"}
                 width={200}
                 height={280}
                 style={{ width: "100%", height: "100%" }}
                 className="object-cover transition-transform duration-300 scale-105 group-hover:scale-110"
                 priority={priority}
-                onError={(e) => console.error("Image load error:", anime.poster_url)}
+                onError={(e) => {
+                  console.warn("Image load error:", anime.poster_url);
+                  setImageError(true);
+                }}
               />
             </Link>
             {/* Подпись под карточкой */}

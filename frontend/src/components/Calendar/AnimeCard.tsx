@@ -59,7 +59,7 @@ export const AnimeCard: React.FC<AnimeCardProps> = React.memo(
   ({ id, image, rating, title, episodeInfo, timeInfo }) => {
     // Загрузка изображения через SWR (если ID предоставлен)
     const { data: imageUrl, error: imageError } = useSWR(
-      id ? `/api/anime/${id}/image` : null,
+      id ? `/anime/${id}/image` : null,
       fetcher,
       {
         fallbackData: image, 

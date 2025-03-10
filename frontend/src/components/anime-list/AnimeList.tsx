@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import useSWR from "swr";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -8,7 +8,8 @@ import { axiosInstance } from "@/lib/axios/axiosConfig";
 import { AnimeCard } from "./AnimeCard";
 import { AnimeCardSkeleton } from "./AnimeCardSkeleton";
 import { Pagination } from "./Pagination";
-import { Search } from "./Search";
+import { Search, searchQueryAtom } from "./Search";
+import { useAtom } from "jotai";
 import { Anime, Genre } from "@/shared/types/anime";
 
 const paginationVariants = {
@@ -29,8 +30,8 @@ const paginationVariants = {
  * @returns Все аниме
  */
 const fetchAllAnime = async (url: string) => {
-  const params = new URLSearchParams(url.split("?")[1]);
-  const limit = 1000000; 
+  const params = new URLSearchParams(url.split("?")[1] || "");
+  const limit = 1000000;
   let page = 1;
   let allAnime: Anime[] = [];
   let totalPages = 1;
@@ -44,6 +45,10 @@ const fetchAllAnime = async (url: string) => {
       params.set("page", page.toString());
       params.set("limit", limit.toString());
 
+      // Исправляем параметры
+      if (params.get("status") === "all") params.delete("status");
+      if (params.get("genre") === "all") params.delete("genre");
+
       const fullUrl = `/anime/get-anime-list-filtered?${params.toString()}`;
       console.log("Constructed URL before request:", fullUrl);
       console.log("Params before request:", Object.fromEntries(params));
@@ -52,7 +57,7 @@ const fetchAllAnime = async (url: string) => {
         anime_list: Anime[];
         pagination?: { page: number; pages: number; total: number; per_page: number };
       }>(fullUrl, {
-        timeout: 10000, 
+        timeout: 10000,
       });
 
       const data = response.data;
@@ -97,12 +102,17 @@ export const AnimeList: React.FC = React.memo(() => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
+  const [hasResetFilters, setHasResetFilters] = useState(false);
 
-  const { data: animeData, error: animeError, isLoading: isAnimeLoading, isValidating } = useSWR(
-    `/anime/get-anime-list-filtered?${searchParams.toString()}`,
+  const isDetailPage = pathname.match(/^\/anime\/[0-9]+$/);
+  const swrKey = !isDetailPage ? `/anime/get-anime-list-filtered?${searchParams.toString()}` : null;
+
+  const { data: animeData, error: animeError, isLoading: isAnimeLoading, isValidating, mutate } = useSWR(
+    swrKey,
     fetchAllAnime,
     {
-      dedupingInterval: 0, 
+      dedupingInterval: 0,
       revalidateOnFocus: true,
       keepPreviousData: false,
     }
@@ -121,28 +131,96 @@ export const AnimeList: React.FC = React.memo(() => {
   const hasError = animeError || genresError;
   let allAnime = animeData?.animeList || [];
 
+  // Сброс фильтров 
+  useEffect(() => {
+    if (pathname === "/anime" && !hasResetFilters && allAnime.length === 0 && !isLoading) {
+      console.log("No anime fetched with current params, resetting filters...");
+      router.replace("/anime?page=1");
+      setHasResetFilters(true);
+      setSearchQuery(""); 
+      mutate();
+      console.log("Reset filters to default, new URL:", "/anime?page=1", "Triggering mutate");
+    }
+  }, [pathname, router, searchParams, hasResetFilters, allAnime, isLoading, mutate, setSearchQuery]);
+
+  // Клиентский поиск по имени
+  if (searchQuery) {
+    const searchTerm = searchQuery.toLowerCase().trim();
+    allAnime = allAnime.filter((anime) =>
+      (anime.russian?.toLowerCase() || "").includes(searchTerm) ||
+      (anime.name?.toLowerCase() || "").includes(searchTerm)
+    );
+    console.log("After client-side search, filtered count:", allAnime.length);
+  }
+
+  // Фильтрация по годам
   const startYear = searchParams.get("start_year");
   const endYear = searchParams.get("end_year");
   if (startYear && endYear) {
     const start = parseInt(startYear);
     const end = parseInt(endYear);
-    allAnime = allAnime.filter((anime) => {
-      const year = new Date(anime.aired_on).getFullYear();
-      return year >= start && year <= end;
-    });
-    console.log("Applied client-side year filter:", { startYear, endYear, filteredCount: allAnime.length });
+    if (!isNaN(start) && !isNaN(end) && start <= end) {
+      allAnime = allAnime.filter((anime) => {
+        if (!anime.aired_on) {
+          console.log("Skipping anime due to missing aired_on:", anime.russian);
+          return true; 
+        }
+        try {
+          const year = new Date(anime.aired_on).getFullYear();
+          return year >= start && year <= end;
+        } catch (e) {
+          console.error("Error parsing aired_on date:", e, anime.aired_on);
+          return false;
+        }
+      });
+      console.log("After client-side year filter, filtered count:", allAnime.length);
+    }
   }
 
-  // Клиентская пагинация
-  const itemsPerPage = 30; // 30 аниме на страницу
-  const totalItems = allAnime.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const [currentPage, setCurrentPage] = useState(1);
+  // Клиентская сортировка
+  const sortBy = searchParams.get("sort") || "score";
+  const order = searchParams.get("order") || "desc";
+  const sortedAnime = [...allAnime].sort((a, b) => {
+    let valueA, valueB;
+    switch (sortBy) {
+      case "aired_on":
+        valueA = a.aired_on ? new Date(a.aired_on).getTime() : 0;
+        valueB = b.aired_on ? new Date(b.aired_on).getTime() : 0;
+        return order === "desc" ? valueB - valueA : valueA - valueB;
+      case "score":
+        valueA = a.score || 0;
+        valueB = b.score || 0;
+        return order === "desc" ? valueB - valueA : valueA - valueB;
+      case "russian":
+        valueA = a.russian || "";
+        valueB = b.russian || "";
+        return order === "desc" ? valueB.localeCompare(valueA) : valueA.localeCompare(valueB);
+      default:
+        return 0;
+    }
+  });
+  console.log("After sorting, sortedAnime count:", sortedAnime.length);
 
-  // Вычисляем аниме для текущей страницы
+  // Клиентская пагинация
+  const itemsPerPage = 30;
+  const totalItems = sortedAnime.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const [currentPage, setCurrentPage] = useState(
+    parseInt(searchParams.get("page") || "1", 10) || 1
+  );
+
+  // Корректировка текущей страницы, если она больше totalPages
+  useEffect(() => {
+    const pageFromParams = parseInt(searchParams.get("page") || "1", 10);
+    const validPage = Math.min(Math.max(1, pageFromParams), totalPages || 1);
+    if (validPage !== currentPage) {
+      setCurrentPage(validPage);
+    }
+  }, [searchParams, totalPages, currentPage]);
+
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentAnime = allAnime.slice(startIndex, endIndex);
+  const currentAnime = sortedAnime.slice(startIndex, endIndex);
 
   console.log("AnimeList state:", {
     isLoading,
@@ -150,6 +228,7 @@ export const AnimeList: React.FC = React.memo(() => {
     totalItems,
     totalPages,
     currentPage,
+    currentAnimeLength: currentAnime.length,
     currentAnime: currentAnime.map((a) => ({
       id: a.anime_id,
       russian: a.russian,
@@ -162,8 +241,13 @@ export const AnimeList: React.FC = React.memo(() => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    const params = new URLSearchParams(searchParams);
+    params.set("page", page.toString());
+    router.replace(`${pathname}?${params.toString()}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  if (isDetailPage) return null;
 
   if (isLoading) {
     return (
