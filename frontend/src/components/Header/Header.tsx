@@ -1,3 +1,4 @@
+// Header.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -7,36 +8,22 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/compon
 import { HiSearch, HiMenu } from "react-icons/hi";
 import { Bell } from "lucide-react";
 import { motion } from "framer-motion";
-import { atom, useAtom } from "jotai";
+import { useAtom } from "jotai";
 import { Badge } from "@/components/ui/badge";
 import HeaderAvatar from "./HeaderAvatar";
 import SearchModal from "@/components/SearchModal";
+import { isAuthenticatedAtom, userAtom } from "@/lib/atom/authAtom";
 
-// Атом для состояния аутентификации
-export const authAtom = atom<{ isAuthenticated: boolean; user: { username: string; nickname?: string; user_avatar?: string; isPro?: boolean } | null }>({
-  isAuthenticated: false,
-  user: null,
-});
-
-/**
- * Интерфейс пропсов компонента Header
- * @interface HeaderProps
- */
 interface HeaderProps {
   className?: string;
 }
 
-/**
- * Компонент шапки сайта
- * @description Отображает навигационную панель с логотипом, поиском, уведомлениями и профилем
- * @param {HeaderProps} props - Пропсы компонента
- * @returns {JSX.Element}
- */
 export const Header: React.FC<HeaderProps> = React.memo(({ className = "" }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [auth] = useAtom(authAtom);
+  const [isAuthenticated] = useAtom(isAuthenticatedAtom); 
+  const [user] = useAtom(userAtom); 
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,7 +45,6 @@ export const Header: React.FC<HeaderProps> = React.memo(({ className = "" }) => 
         animate={{ y: isScrolled ? 0 : 0 }}
       >
         <nav className="container mx-auto px-4 h-full flex justify-between items-center">
-          {/* Левая часть: Логотип и навигация */}
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-all">
               <img src="/logo_header.png" alt="logo" className="w-7 h-7"/>
@@ -69,7 +55,6 @@ export const Header: React.FC<HeaderProps> = React.memo(({ className = "" }) => 
             </Link>
           </div>
 
-          {/* Правая часть: Поиск, уведомления, профиль, меню */}
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -79,7 +64,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({ className = "" }) => 
               <HiSearch className="h-[18px] w-[18px] text-white/30" />
               <span className="text-[14px] font-normal text-white/40">Поиск...</span>
             </Button>
-            {auth?.isAuthenticated && auth.user ? (
+            {isAuthenticated && user ? ( 
               <div className="flex items-center gap-2">
                 <HeaderAvatar />
               </div>
@@ -100,7 +85,6 @@ export const Header: React.FC<HeaderProps> = React.memo(({ className = "" }) => 
         </nav>
       </motion.header>
 
-      {/* Мобильное меню (упрощённое) */}
       {isMobileMenuOpen && (
         <div className="md:hidden fixed inset-0 bg-[#060606]/95 backdrop-blur-xl z-40 pt-[89px]">
           <div className="container mx-auto px-4 py-6 flex flex-col h-[calc(100vh-89px)]">
@@ -110,12 +94,12 @@ export const Header: React.FC<HeaderProps> = React.memo(({ className = "" }) => 
               </Link>
             </div>
             <div className="pt-6 border-t border-white/5">
-              {auth?.isAuthenticated && auth.user ? (
+              {isAuthenticated && user ? (
                 <div className="flex items-center gap-4">
                   <HeaderAvatar />
                   <div>
-                    <p className="text-white/90">{auth.user.nickname || auth.user.username}</p>
-                    <Link href={`/profile/${auth.user.username}`}>Мой профиль</Link>
+                    <p className="text-white/90">{user.nickname || user.username}</p>
+                    <Link href={`/profile/${user.username}`}>Мой профиль</Link>
                   </div>
                 </div>
               ) : (

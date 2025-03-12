@@ -12,18 +12,14 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/useDebounce";
 import { axiosInstance } from "@/lib/axios/axiosConfig";
 
-// Атом для состояния аутентификации
-export const authAtom = atom<{
-  isAuthenticated: boolean;
-  user: { username: string; nickname?: string; user_avatar?: string; banner?: string; isPro?: boolean } | null;
-}>({
+// Атом состояния аутентификации
+export const authAtom = atom({
   isAuthenticated: false,
   user: null,
 });
 
 /**
  * Интерфейс данных персонажа
- * @interface Character
  */
 interface Character {
   id: string;
@@ -43,35 +39,24 @@ interface PaginatedResult {
 }
 
 /**
- * Пропсы компонента CharactersPage
- * @interface CharactersPageProps
- */
-interface CharactersPageProps {}
-
-/**
  * Компонент страницы персонажей
- * @description Отображает список персонажей с поиском и бесконечной загрузкой
- * @returns {JSX.Element}
  */
-const CharactersPage: React.FC<CharactersPageProps> = React.memo(() => {
+const CharactersPage: React.FC = React.memo(() => {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [isIntersecting, setIsIntersecting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [auth] = useAtom(authAtom);
 
-  // Запрос для поиска
-  const {
-    data: searchResults,
-    isLoading: isSearching,
-    error: searchError,
-  } = useQuery<Character[]>({
+  // Запрос для поиска персонажей
+  const { data: searchResults, isLoading: isSearching } = useQuery<Character[]>({
     queryKey: ["character-search", debouncedSearch],
-    queryFn: () => axiosInstance.get(`/character/search?q=${debouncedSearch}`).then((res) => res.data),
-    enabled: debouncedSearch.length > 0,
+    queryFn: () =>
+      axiosInstance.get(`/character/name/${debouncedSearch}`).then((res) => res.data),
+    enabled: !!debouncedSearch,
   });
 
-  // Запрос для бесконечного списка
+  // Запрос для бесконечной прокрутки
   const {
     data,
     fetchNextPage,
@@ -81,27 +66,37 @@ const CharactersPage: React.FC<CharactersPageProps> = React.memo(() => {
     error: listError,
   } = useInfiniteQuery<PaginatedResult>({
     queryKey: ["characters-infinite", auth.isAuthenticated],
-    queryFn: ({ pageParam }) =>
-      axiosInstance
-        .get(`/character/get-character-list?page=${pageParam}&limit=50`)
-        .then((res) => ({
-          items: res.data as Character[],
-          nextPage: res.data.length === 50 ? (pageParam as number) + 1 : undefined,
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await axiosInstance.get(
+        `/character/get-character-list?page=${pageParam as number}&limit=50`
+      );
+      const items = response.data as Character[];
+      console.log(`Fetched page ${pageParam}:`, {
+        itemsCount: items.length,
+        items: items.map((item) => ({
+          id: item.id,
+          name: item.name,
+          russian: item.russian,
         })),
+      });
+      return {
+        items,
+        nextPage: items.length === 50 ? (pageParam as number) + 1 : undefined,
+      };
+    },
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 1,
-    enabled: debouncedSearch.length === 0 && auth.isAuthenticated,
+    enabled: debouncedSearch.length === 0,
   });
-
+  
+  // Автозагрузка при пересечении loadMoreRef
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => setIsIntersecting(entry.isIntersecting),
       { threshold: 0.1 }
     );
 
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
-    }
+    if (loadMoreRef.current) observer.observe(loadMoreRef.current);
 
     return () => observer.disconnect();
   }, []);
@@ -112,11 +107,7 @@ const CharactersPage: React.FC<CharactersPageProps> = React.memo(() => {
     }
   }, [isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage, debouncedSearch]);
 
-  const allCharacters = debouncedSearch
-    ? searchResults || []
-    : data?.pages.flatMap((page) => page.items) || [];
-
-  const error = searchError || listError;
+  const allCharacters = debouncedSearch ? searchResults || [] : data?.pages.flatMap((page) => page.items) || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -124,33 +115,22 @@ const CharactersPage: React.FC<CharactersPageProps> = React.memo(() => {
       <Report />
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col space-y-6 mb-8">
-          <div className="flex flex-col gap-6">
-            <h1 className="text-3xl font-bold text-white/90">Персонажи</h1>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-white/40" />
-              </div>
-              <input
-                type="text"
-                placeholder="Поиск персонажей..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-12 pl-12 pr-4 bg-white/[0.02] border border-white/5 rounded-xl text-white/80 placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/10 transition-all duration-200"
-              />
-              {isSearching && (
-                <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                  <div className="w-5 h-5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
-                </div>
-              )}
-            </div>
+          <h1 className="text-3xl font-bold text-white/90">Персонажи</h1>
+          <div className="relative">
+            <Search className="absolute inset-y-0 left-4 w-5 h-5 text-white/40" />
+            <input
+              type="text"
+              placeholder="Поиск персонажей..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-12 pl-12 pr-4 bg-white/[0.02] border border-white/5 rounded-xl text-white/80 placeholder:text-white/40 focus:ring-2 focus:ring-white/10 transition-all duration-200"
+            />
           </div>
         </div>
 
-        {error && (
+        {listError && (
           <div className="text-center py-8 text-red-400">
-            <div>
-              Ошибка загрузки данных: {error instanceof Error ? error.message : "Неизвестная ошибка"}
-            </div>
+            Ошибка загрузки данных: {listError.message}
           </div>
         )}
 
@@ -163,25 +143,21 @@ const CharactersPage: React.FC<CharactersPageProps> = React.memo(() => {
             transition={{ duration: 0.2 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-6"
           >
-            {allCharacters.map((character: Character, index: number) => (
-              <motion.div
-                key={character.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: Math.min(index * 0.1, 1) }}
-              >
-                <CharacterCard {...character} />
-              </motion.div>
-            ))}
-            {debouncedSearch && searchResults && searchResults.length === 20 && (
-              <div className="col-span-full text-center py-4 text-white/60">
-                Показаны первые 20 результатов. Уточните поиск для более точных результатов.
+            {allCharacters.length > 0 ? (
+              allCharacters.map((character) => (
+                <motion.div key={character.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                  <CharacterCard {...character} />
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8 text-white/60">
+                Персонажей не найдено. Попробуйте изменить запрос или обновить данные.
               </div>
             )}
           </motion.div>
         </AnimatePresence>
 
-        {((status === "pending" && !debouncedSearch) || (isFetchingNextPage && !debouncedSearch)) && (
+        {status === "pending" && !debouncedSearch && (
           <div className="text-center py-8 text-white/60">Загрузка...</div>
         )}
 

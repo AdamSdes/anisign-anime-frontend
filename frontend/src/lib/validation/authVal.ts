@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const loginSchema = z.object({
     username: z
         .string()
-        .min(8, { message: 'Имя пользователя должно содержать минимум 8 символов' })
+        .min(6, { message: 'Имя пользователя должно содержать минимум 6 символов' })
         .max(20, { message: 'Имя пользователя не должно превышать 20 символов' }),
     password: z
         .string()

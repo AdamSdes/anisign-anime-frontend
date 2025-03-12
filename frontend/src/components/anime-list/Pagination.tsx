@@ -73,7 +73,7 @@ export const Pagination: React.FC<PaginationProps> = React.memo(
      * @returns Массив страниц и многоточий
      */
     const getPageNumbers = useCallback(() => {
-      const delta = 2; // Количество страниц до и после текущей
+      const delta = 2;
       const range: (number | "...")[] = [];
       const rangeWithDots: (number | "...")[] = [];
 
@@ -117,7 +117,7 @@ export const Pagination: React.FC<PaginationProps> = React.memo(
           disabled={currentPage === 1}
           className={mergeClass(
             "inline-flex items-center justify-center",
-            "h-10 w-10",
+            "h-10 w-20",
             "rounded-xl text-sm font-medium",
             "transition-colors duration-200",
             "border border-white/10",
@@ -129,6 +129,7 @@ export const Pagination: React.FC<PaginationProps> = React.memo(
           aria-label="Previous page"
         >
           <ChevronLeft className="h-4 w-4" />
+          Назад
         </button>
 
         {getPageNumbers().map((pageNumber, index) =>
@@ -198,7 +199,7 @@ export const Pagination: React.FC<PaginationProps> = React.memo(
           disabled={currentPage === totalPages}
           className={mergeClass(
             "inline-flex items-center justify-center",
-            "h-10 w-10",
+            "h-10 w-20",
             "rounded-xl text-sm font-medium",
             "transition-colors duration-200",
             "border border-white/10",
@@ -209,6 +210,7 @@ export const Pagination: React.FC<PaginationProps> = React.memo(
           )}
           aria-label="Next page"
         >
+          Вперёд
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>

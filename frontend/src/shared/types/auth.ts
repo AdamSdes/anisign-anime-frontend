@@ -20,6 +20,7 @@ export interface User {
   user_avatar?: string;
   user_banner?: string;
   email?: string; 
+  isPro?: boolean;
 }
 
 export interface RegisterData {

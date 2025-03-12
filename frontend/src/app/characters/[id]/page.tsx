@@ -52,10 +52,35 @@ const CharacterPage: React.FC<CharacterPageProps> = React.memo(() => {
   const characterId = Array.isArray(id) ? id[0] : id;
   const [auth] = useAtom(authAtom);
 
+  // Логируем characterId для отладки
+  React.useEffect(() => {
+    console.log("Fetched characterId:", characterId);
+  }, [characterId]);
+
   // SWR для загрузки данных персонажа
-  const { data: character, error, isLoading } = useSWR<Character>(
-    characterId ? `/api/character/${characterId}` : null,
-    (url) => axiosInstance.get(url).then((res) => res.data),
+  const { data: character, error, isLoading, mutate } = useSWR<Character>(
+    characterId ? `/character/${characterId}` : null,
+    async (url) => {
+      try {
+        const response = await axiosInstance.get(url);
+        console.log("API Response:", response.data); 
+
+        if (response.data && Array.isArray(response.data.items)) {
+          const foundCharacter = response.data.items[0];
+          if (!foundCharacter) {
+            throw new Error("No character found in response");
+          }
+          return foundCharacter;
+        } else if (response.data && typeof response.data === "object") {
+          return response.data as Character;
+        } else {
+          throw new Error("Unexpected API response format");
+        }
+      } catch (err) {
+        console.error("Error fetching character:", err);
+        throw err;
+      }
+    },
     { revalidateOnFocus: false }
   );
 
@@ -77,7 +102,16 @@ const CharacterPage: React.FC<CharacterPageProps> = React.memo(() => {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] gap-4">
-          <p className="text-white/60">Персонаж не найден</p>
+          <p className="text-white/60">
+            Персонаж не найден. Попробуйте изменить запрос или обновить данные.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => mutate()} 
+            className="text-white/60 hover:text-white/90 transition-colors"
+          >
+            Повторить запрос
+          </Button>
           <Link
             href="/characters"
             className="flex items-center gap-2 text-white/60 hover:text-white/90 transition-colors"
@@ -114,6 +148,7 @@ const CharacterPage: React.FC<CharacterPageProps> = React.memo(() => {
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 300px"
+                onError={(e) => console.log("Image load error:", e)}
               />
             </div>
           </div>
