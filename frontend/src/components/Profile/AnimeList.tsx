@@ -21,7 +21,7 @@ export const authAtom = atom<{
   isAuthenticated: boolean;
   user: { username: string; nickname?: string; user_avatar?: string; banner?: string; isPro?: boolean } | null;
 }>({
-  isAuthenticated: false,
+  isAuthenticated: true,
   user: null,
 });
 
@@ -67,7 +67,7 @@ export const AnimeList: React.FC = React.memo(() => {
 
   // Загрузка списка аниме
   const { data: animeList, error: listError, isLoading } = useSWR<AnimeItem[]>(
-    auth.user && activeTag ? `/api/anime_save_list/get-anime-list-by-name/${encodeURIComponent(activeTag)}` : null,
+    auth.user && activeTag ? `http://localhost:8000/anime_save_list/get-anime-list-by-name/${encodeURIComponent(activeTag)}` : null,
     (url) =>
       axiosInstance
         .get(url)

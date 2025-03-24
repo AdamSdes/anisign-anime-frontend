@@ -1,4 +1,3 @@
-// comments/CommentsList.tsx
 "use client";
 
 import React, { useMemo } from "react";
@@ -53,7 +52,7 @@ export const CommentsList: React.FC<CommentsListProps> = React.memo(
   ({ sortBy, filterType, animeId }) => {
     // Загрузка комментариев через SWR
     const { data: comments, isLoading, error } = useSWR(
-      `/comment/get-all-comments-for-anime/${animeId}?sortBy=${sortBy}&filterType=${filterType}`,
+      `/comment/get-all-comments-for-anime/${animeId}`,
       fetcher,
       {
         revalidateOnFocus: false,

@@ -57,7 +57,7 @@ export const ProfileInfo: React.FC<ProfileInfoProps> = React.memo(
 
     // Загрузка дополнительных данных профиля через SWR
     const { data: profileData, error } = useSWR<ProfileInfoData>(
-      `/api/profile/${username}/info`,
+      `http://localhost:8000/user/get-user-by-username/${username}`,
       (url) => axiosInstance.get(url).then((res) => res.data),
       { revalidateOnFocus: false }
     );

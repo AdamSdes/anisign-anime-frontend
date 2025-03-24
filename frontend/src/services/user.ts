@@ -1,5 +1,4 @@
 import { axiosInstance } from '@/lib/axios/axiosConfig';
-import { User } from '@/shared/types/auth';
 
 export interface UserResponse {
   id: string;
@@ -8,23 +7,29 @@ export interface UserResponse {
   user_avatar?: string;
   user_banner?: string;
   nickname?: string;
+  isVerified: boolean;
+  joinedDate: string;
 }
 
 export const userApi = {
-  /**
-   * Получить данные пользователя по username
-   * @param username Имя пользователя
-   * @returns Данные пользователя
-   */
   getUserByUsername: async (username: string): Promise<UserResponse> => {
-    const { data } = await axiosInstance.get<UserResponse>(`/user/get-user-by-username/${username}`);
-    return data;
+    // Strict validation to prevent empty username API calls
+    if (!username || username.trim() === '') {
+      throw new Error('Valid username is required');
+    }
+    
+    try {
+      const { data } = await axiosInstance.get<UserResponse>(`/user/get-user-by-username/${username}`);
+      return data;
+    } catch (error: any) {
+      // Enhanced error handling with descriptive messages
+      if (error.response && error.response.status === 404) {
+        throw new Error(`User ${username} not found`);
+      }
+      throw error;
+    }
   },
 
-  /**
-   * Получить URL аватара текущего пользователя
-   * @returns URL аватара в формате blob
-   */
   getMyAvatar: async (): Promise<string> => {
     try {
       const response = await axiosInstance.get('/user/get-my-avatar', {
@@ -37,11 +42,6 @@ export const userApi = {
     }
   },
 
-  /**
-   * Обновить аватар пользователя
-   * @param formData Данные формы с файлом
-   * @returns Обновленные данные пользователя
-   */
   updateAvatar: async (formData: FormData): Promise<UserResponse> => {
     const { data } = await axiosInstance.post<UserResponse>('/user/update-my-avatar', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -49,20 +49,11 @@ export const userApi = {
     return data;
   },
 
-  /**
-   * Получить URL баннера текущего пользователя
-   * @returns URL баннера
-   */
   getMyBanner: async (): Promise<string> => {
     const { data } = await axiosInstance.get<string>('/user/get-my-banner');
     return data;
   },
 
-  /**
-   * Обновить баннер пользователя
-   * @param formData Данные формы с файлом
-   * @returns Обновленные данные пользователя
-   */
   updateBanner: async (formData: FormData): Promise<UserResponse> => {
     const { data } = await axiosInstance.put<UserResponse>('/user/update-my-banner', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -70,12 +61,12 @@ export const userApi = {
     return data;
   },
 
-  /**
-   * Поиск пользователей по имени
-   * @param username Имя пользователя для поиска
-   * @returns Список найденных пользователей
-   */
   searchUsers: async (username: string): Promise<UserResponse[]> => {
+    // Validate search query
+    if (!username || username.trim() === '') {
+      return [];
+    }
+    
     const { data } = await axiosInstance.get<UserResponse[]>(`/user/search?username=${username}`);
     return data;
   },

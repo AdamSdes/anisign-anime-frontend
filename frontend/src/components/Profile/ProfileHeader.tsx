@@ -61,14 +61,14 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
 
     // Загрузка данных профиля через SWR
     const { data: profileData, error, isLoading } = useSWR<ProfileData>(
-      `/api/profile/${username}`,
+      `http://localhost:8000/user/get-user-by-username/${username}`,
       (url) => axiosInstance.get(url).then((res) => res.data),
       { revalidateOnFocus: false }
     );
 
     // Функция обновления данных профиля
     const refetchUser = useCallback(async () => {
-      await mutate(`/api/profile/${username}`);
+      await mutate(`http://localhost:8000/user/get-user-by-username/${username}`);
     }, [username]);
 
     // Обработчик загрузки баннера
@@ -78,7 +78,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = React.memo(
       try {
         const formData = new FormData();
         formData.append("banner", files[0]);
-        const response = await axiosInstance.post("/api/profile/update-banner", formData, {
+        const response = await axiosInstance.post("http://localhost:8000/user/update-my-banner", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         await refetchUser();

@@ -48,7 +48,7 @@ export const Statistics: React.FC = React.memo(() => {
 
   // Загрузка данных статистики через SWR
   const { data: statsData, error, isLoading } = useSWR<StatisticsData>(
-    auth.user ? `/api/profile/${auth.user.username}/stats` : null,
+    auth.user ? `#` : null,
     (url) => axiosInstance.get(url).then((res) => res.data),
     { revalidateOnFocus: false }
   );

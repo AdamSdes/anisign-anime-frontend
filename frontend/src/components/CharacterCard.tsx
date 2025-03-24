@@ -18,7 +18,6 @@ export const authAtom = atom<{
 
 /**
  * Интерфейс данных персонажа
- * @interface Character
  */
 interface Character {
   character_id: string;
@@ -29,23 +28,26 @@ interface Character {
 }
 
 /**
- * Пропсы компонента CharacterCard
- * @interface CharacterCardProps
- * @extends Character
+ * Генерация URL для персонажа
  */
-interface CharacterCardProps extends Character {}
+const generateCharacterUrl = (character: Character) => {
+  const title = character.russian || character.name || "";
+  const slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+  return `/characters/${character.character_id}${slug ? "-" + slug : ""}`;
+};
 
 /**
  * Компонент карточки персонажа
- * @description Отображает информацию о персонаже с изображением и ссылкой на страницу
- * @param {CharacterCardProps} props - Пропсы компонента
- * @returns {JSX.Element}
  */
-export const CharacterCard: React.FC<CharacterCardProps> = React.memo(
+export const CharacterCard: React.FC<Character> = React.memo(
   ({ character_id, name, russian, japanese, poster_url }) => {
     const [imgError, setImgError] = useState(false);
     const [imgLoading, setImgLoading] = useState(true);
-    const [auth] = useAtom(authAtom); // Добавлено использование атома аутентификации
+    const [auth] = useAtom(authAtom);
 
     // Опциональная загрузка данных через SWR (если требуется динамическая проверка)
     const { data: characterData } = useSWR<Character>(
@@ -59,16 +61,13 @@ export const CharacterCard: React.FC<CharacterCardProps> = React.memo(
       return title.length <= maxLength ? title : title.slice(0, maxLength) + "...";
     };
 
-    const fallbackImage = "/placeholder-character.jpg"; // Предполагаемый путь к fallback-изображению
-    
-    // Гарантируем, что altText всегда будет строкой
+    const fallbackImage = "/placeholder-character.jpg";
     const altText = russian || name || "Character";
-    
-    // Гарантируем, что imageUrl всегда будет строкой
     const imageUrl = poster_url || fallbackImage;
+    const characterUrl = generateCharacterUrl({ character_id, name, russian, japanese, poster_url });
 
     return (
-      <Link href={`/character/${character_id}`}>
+      <Link href={characterUrl}>
         <div className="group relative">
           {/* Контейнер изображения */}
           <div className="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-white/5">
@@ -106,14 +105,10 @@ export const CharacterCard: React.FC<CharacterCardProps> = React.memo(
             </h3>
             <div className="space-y-1">
               {name && name !== (russian || "") && (
-                <p className="text-xs text-white/50 line-clamp-1">
-                  {truncateTitle(name)}
-                </p>
+                <p className="text-xs text-white/50 line-clamp-1">{truncateTitle(name)}</p>
               )}
               {japanese && (
-                <p className="text-xs text-white/30 line-clamp-1 font-japanese">
-                  {truncateTitle(japanese)}
-                </p>
+                <p className="text-xs text-white/30 line-clamp-1 font-japanese">{truncateTitle(japanese)}</p>
               )}
             </div>
           </div>

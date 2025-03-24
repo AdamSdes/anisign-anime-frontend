@@ -39,7 +39,7 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = React.memo(
         try {
           const formData = new FormData();
           formData.append("avatar", files[0]);
-          const response = await axiosInstance.post("/api/profile/update-avatar", formData, {
+          const response = await axiosInstance.post("http://localhost:8000/user/update-my-avatar", formData, {
             headers: { "Content-Type": "multipart/form-data" },
           });
           // Инвалидация кэша SWR после успешной загрузки

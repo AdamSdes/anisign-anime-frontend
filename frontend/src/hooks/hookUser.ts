@@ -22,9 +22,6 @@ export const userKeys = {
   },
 };
 
-/**
- * Хук для входа
- */
 export const useLogin = () => {
   const queryClient = useQueryClient();
   const { login: authLogin } = useAuth();
@@ -48,18 +45,12 @@ export const useLogin = () => {
   });
 };
 
-/**
- * Хук для регистрации
- */
 export const useRegister = () =>
   useMutation({
     mutationKey: userKeys.mutations.register(),
     mutationFn: (data: RegisterData) => register(data),
   });
 
-/**
- * Хук для выхода
- */
 export const useLogout = () => {
   const queryClient = useQueryClient();
   const { logout: authLogout } = useAuth();
@@ -82,9 +73,6 @@ export const useLogout = () => {
   });
 };
 
-/**
- * Хук для получения данных пользователя
- */
 export const useUser = (username: string) => {
   const { isAuthenticated } = useAuth();
   return useQuery({
@@ -94,9 +82,6 @@ export const useUser = (username: string) => {
   });
 };
 
-/**
- * Хук для обновления аватара
- */
 export const useUpdateAvatar = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -111,9 +96,6 @@ export const useUpdateAvatar = () => {
   });
 };
 
-/**
- * Хук для получения баннера
- */
 export const useMyBanner = () => {
   const { isAuthenticated, user } = useAuth();
   return useQuery({
@@ -124,9 +106,6 @@ export const useMyBanner = () => {
   });
 };
 
-/**
- * Хук для обновления баннера
- */
 export const useUpdateBanner = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -141,9 +120,6 @@ export const useUpdateBanner = () => {
   });
 };
 
-/**
- * Хук для поиска пользователей
- */
 export const useSearchUsers = (query: string) => {
   const { isAuthenticated } = useAuth();
   return useQuery({

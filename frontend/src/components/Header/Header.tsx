@@ -1,4 +1,3 @@
-// Header.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -66,7 +65,9 @@ export const Header: React.FC<HeaderProps> = React.memo(({ className = "" }) => 
             </Button>
             {isAuthenticated && user ? ( 
               <div className="flex items-center gap-2">
+                <Link href={`/profile/${user.username}`}>
                 <HeaderAvatar />
+                </Link>
               </div>
             ) : (
               <Link href="/auth">

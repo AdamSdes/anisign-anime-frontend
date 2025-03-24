@@ -8,18 +8,17 @@ import { useAuth } from "@/lib/stores/authStore";
  * @param children Дочерние компоненты
  */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const { initAuth, hydrated } = useAuth();
+    const auth = useAuth();
+    
     useEffect(() => {
-        if (!hydrated) {
-            initAuth().catch((error) => {
+        if (!auth.isHydrated) {
+            auth.checkSession().catch((error: unknown) => {
                 if (process.env.NODE_ENV === 'development') {
                     console.error('Ошибка инициализации авторизации', error);
                 }
             });
         }
-    }, [hydrated, initAuth]);
-
-    
+    }, [auth.isHydrated, auth.checkSession]);
 
     return <>{children}</>;
 }

@@ -60,7 +60,7 @@ const Home: React.FC<HomeProps> = React.memo(() => {
 
   // Пример SWR для комментариев (можно настроить под конкретный API)
   const { data: commentsData, error: commentsError, isLoading: commentsLoading } = useSWR<CommentsData>(
-    auth.isAuthenticated ? "/api/comments/recent" : null,
+    auth.isAuthenticated ? "/api/comments/" : null,
     (url) => axiosInstance.get(url).then((res) => res.data),
     { revalidateOnFocus: false }
   );

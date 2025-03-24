@@ -12,7 +12,7 @@ export const authAtom = atom<{
   isAuthenticated: boolean;
   user: { username: string; nickname?: string; user_avatar?: string; banner?: string; isPro?: boolean } | null;
 }>({
-  isAuthenticated: false,
+  isAuthenticated: true,
   user: null,
 });
 

@@ -24,7 +24,7 @@ export const authApi = createApi({
         }),
       }),
       getCurrentUser: builder.query<User, void>({
-        query: () => '/auth/me',
+        query: () => '/auth/get-cookies',
       }),
     }),
   });

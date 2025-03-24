@@ -1,84 +1,66 @@
-// lib/hooks/useAuth.ts
 'use client';
 
-import { useAtom } from 'jotai';
-import useSWR from 'swr';
+import { useAtom, useSetAtom, useAtomValue } from 'jotai';
+import { useEffect } from 'react';
 import {
   isAuthenticatedAtom,
-  userAtom,
   tokenAtom,
+  userAtom,
   hydratedAtom,
   loginAtom,
   logoutAtom,
-  checkSessionAtom,
-  initAuthAtom,
   refreshTokenAtom,
+  initAuthAtom,
+  checkSessionAtom,
 } from '@/lib/atom/authAtom';
-import { getCurrentUser, login as apiLogin, logout as apiLogout, updateAvatar, updateBanner } from '@/services/auth';
-import { User } from '@/shared/types/auth';
 
-/**
- * Хук для работы с авторизацией
- */
-export function useAuth() {
-  const [isAuthenticated] = useAtom(isAuthenticatedAtom);
+export const useAuth = () => {
+  const [isAuthenticated, setIsAuthenticated] = useAtom(isAuthenticatedAtom);
+  const [token, setToken] = useAtom(tokenAtom);
   const [user, setUser] = useAtom(userAtom);
-  const [token] = useAtom(tokenAtom);
-  const [hydrated] = useAtom(hydratedAtom);
-  const [, login] = useAtom(loginAtom);
-  const [, logout] = useAtom(logoutAtom);
-  const [, checkSession] = useAtom(checkSessionAtom);
-  const [, initAuth] = useAtom(initAuthAtom);
-  const [, refreshToken] = useAtom(refreshTokenAtom);
+  const isHydrated = useAtomValue(hydratedAtom);
+  const login = useSetAtom(loginAtom);
+  const logout = useSetAtom(logoutAtom);
+  const refreshToken = useSetAtom(refreshTokenAtom);
+  const initAuth = useSetAtom(initAuthAtom);
+  const checkSession = useSetAtom(checkSessionAtom);
 
-  const { data: fetchedUser, error: userError, mutate } = useSWR<User, Error>(
-    isAuthenticated ? '/auth/me' : null,
-    getCurrentUser,
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 60000,
-      onSuccess: (data) => setUser(data),
-      onError: () => setUser(null),
+  useEffect(() => {
+    if (!isHydrated) {
+      initAuth();
     }
-  );
+  }, [initAuth, isHydrated]);
 
-  const handleLogin = async (token: string) => {
-    await login(token); 
-    await mutate(); 
-  };
+  useEffect(() => {
+    if (!isAuthenticated || !token) return;
 
-  const handleLogout = async () => {
-    await apiLogout();
-    logout();
-    await mutate(); 
-  };
-
-  const handleUpdateAvatar = async (file: File) => {
-    const avatarUrl = await updateAvatar(file);
-    if (user) setUser({ ...user, user_avatar: avatarUrl });
-    await mutate();
-    return avatarUrl;
-  };
-
-  const handleUpdateBanner = async (file: File) => {
-    const bannerUrl = await updateBanner(file);
-    if (user) setUser({ ...user, user_banner: bannerUrl });
-    await mutate();
-    return bannerUrl;
-  };
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expiresIn = payload.exp * 1000 - Date.now();
+      
+      if (expiresIn < 5 * 60 * 1000) {
+        refreshToken();
+      }
+      
+      const refreshInterval = setInterval(() => {
+        refreshToken();
+      }, Math.max(expiresIn - 5 * 60 * 1000, 60 * 1000));
+      
+      return () => clearInterval(refreshInterval);
+    } catch (error) {
+      console.error('Error setting up token refresh:', error);
+      return undefined;
+    }
+  }, [isAuthenticated, token, refreshToken]);
 
   return {
     isAuthenticated,
-    user: fetchedUser || user,
+    isHydrated,
     token,
-    hydrated,
-    userError,
-    login: handleLogin,
-    logout: handleLogout,
-    checkSession,
-    initAuth,
+    user,
+    login,
+    logout,
     refreshToken,
-    updateAvatar: handleUpdateAvatar,
-    updateBanner: handleUpdateBanner,
+    checkSession,
   };
-}
+};

@@ -185,13 +185,13 @@ const PageAnime: React.FC<PageAnimeProps> = React.memo(() => {
       const updateViewHistory = async () => {
         try {
           await axiosInstance.post(
-            `/viewhistory/add-anime-to-view-history-of-user/${auth.user!.id}?anime_id=${animeData.id}`,
+            `http://localhost:8000/viewhistory/add-anime-to-view-history-of-user/${auth.user!.id}?anime_id=${animeData.id}`,
             null,
             {
               headers: { Authorization: `Bearer ${auth.user!.token}` },
             }
           );
-          mutate(`/viewhistory/get-view-history-of-user/${auth.user!.id}`);
+          mutate(`http://localhost:8000/viewhistory/get-view-history-of-user/${auth.user!.id}`);
         } catch (error: any) {
           console.error("Error updating view history:", error.message);
           if (error.response) {

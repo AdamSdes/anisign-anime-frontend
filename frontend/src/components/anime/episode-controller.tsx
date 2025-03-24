@@ -35,7 +35,7 @@ export const EpisodeController: React.FC<EpisodeControllerProps> = ({
   const fetchCurrentEpisode = React.useCallback(async () => {
     try {
       const response = await axiosInstance.get(
-        `/anime/current-episode/${animeId}/for-user/${userId}`
+        `http://localhost:8000/anime//current-episode/${animeId}/for-user/${userId}`
       );
       if (response.data && response.data.current_episode) {
         setCurrentEpisode(response.data.current_episode);

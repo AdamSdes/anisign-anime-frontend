@@ -26,6 +26,10 @@ export async function login(data: LoginData): Promise<LoginResponse> {
         }
       );
   
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('auth_token', response.data.access_token);
+      }
+  
       return response.data;
     } catch (error: any) {
       const errorMessage = extractErrorMessage(error, 'Ошибка входа');
@@ -135,6 +139,7 @@ export async function logout(): Promise<void> {
       console.error('Ошибка при выходе:', error);
     } finally {
       if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth_token');
         localStorage.removeItem('user_avatar');
         localStorage.removeItem('user_banner');
         sessionStorage.removeItem('avatarSessionKey');
@@ -142,10 +147,13 @@ export async function logout(): Promise<void> {
         document.documentElement.style.setProperty('--profile-banner', 'none');
   
         if ('caches' in window) {
-          const keys = await caches.keys();
-          await Promise.all(
-            keys.map((key) => (key.includes('avatar') || key.includes('banner') ? caches.delete(key) : Promise.resolve()))
-          );
+          caches.keys().then(keys => {
+            keys.forEach(key => {
+              if (key.includes('avatar') || key.includes('banner')) {
+                caches.delete(key);
+              }
+            });
+          });
         }
       }
     }
@@ -157,7 +165,7 @@ export async function logout(): Promise<void> {
  */
 export async function getCurrentUser(): Promise<User> {
     try {
-      const response = await axiosInstance.get<User>('/auth/me');
+      const response = await axiosInstance.get<User>('/auth/get-cookies');
       return response.data;
     } catch (error: any) {
       const errorMessage = extractErrorMessage(error, 'Ошибка получения данных пользователя');

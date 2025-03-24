@@ -15,7 +15,7 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-center mb-10 text-center md:text-left">
           <div className="mb-6 md:mb-0">
             <h2 className="text-2xl font-semibold text-[#A8A8A8]">
-              <span className="text-[#A57AFF]">Anisign</span> — Аниме портал для фанатов, новичков и обученных лиц!
+              <span className="text-[#A57AFF]">Anisign</span> —  Аниме портал для фанатов, новостей и обсуждений!
             </h2>
           </div>
           <Link

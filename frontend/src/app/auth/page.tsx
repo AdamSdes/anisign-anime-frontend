@@ -132,7 +132,7 @@ const Auth: React.FC<AuthProps> = React.memo(() => {
 
   // SWR для загрузки OAuth URL
   const { data: oauthUrls, error: oauthError } = useSWR<OAuthUrls>(
-    "/api/auth/oauth-urls",
+    "/auth/get-cookies",
     (url) => axiosInstance.get(url).then((res: { data: any }) => res.data),
     { revalidateOnFocus: false }
   );

@@ -510,7 +510,7 @@ const AnimeComments: React.FC<AnimeCommentsProps> = ({ animeId }) => {
 
   // Загрузка комментариев через SWR
   const { data: comments, mutate, isLoading } = useSWR(
-    `/comment/get-all-comments-for-anime/${animeId}`,
+    `http://localhost:8000/comment/get-all-comments-for-anime/${animeId}`,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -544,7 +544,7 @@ const AnimeComments: React.FC<AnimeCommentsProps> = ({ animeId }) => {
           comment_text: text.trim(),
         });
         const commentType = parentComment ? "reply" : "comment";
-        const endpoint = `/comment/create-comment-for-anime/${commentType}`;
+        const endpoint = `http://localhost:8000/comment/create-comment-for-anime/${commentType}`;
 
         if (parentComment) {
           params.append("reply_to_comment_id", parentComment.id);
@@ -582,7 +582,7 @@ const AnimeComments: React.FC<AnimeCommentsProps> = ({ animeId }) => {
 
       try {
         const response = await axiosInstance.put(
-          `/comment/${endpoint}/${comment.id}`,
+          `http://localhost:8000/comment/${endpoint}/${comment.id}`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -609,7 +609,7 @@ const AnimeComments: React.FC<AnimeCommentsProps> = ({ animeId }) => {
       setDeleteInProgress((prev) => ({ ...prev, [commentId]: true }));
       try {
         const response = await axiosInstance.delete(
-          `/comment/delete-comment/${commentId}`,
+          `http://localhost:8000/comment/delete-comment/${commentId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 

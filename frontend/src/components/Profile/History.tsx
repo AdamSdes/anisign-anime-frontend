@@ -84,9 +84,9 @@ export const History: React.FC<HistoryProps> = React.memo(({ userId }) => {
 
   // Загрузка данных истории через SWR
   const { data: historyData, error, isLoading } = useSWR<HistoryResponse>(
-    userId ? `/viewhistory/get-view-history-of-user/${userId}` : null,
+    userId ? `http://localhost:8000/viewhistory/get-view-history-of-user/${userId}` : null,
     (url) =>
-      axiosInstance.get(url, {
+      axiosInstance.post(url, {
         headers: {
           Authorization: `Bearer ${auth?.user?.token || localStorage.getItem("token")}`,
         },
