@@ -61,8 +61,8 @@ async def delete_anime_list(db: AsyncSession = Depends(get_session), current_use
     result = await service.delete_anime_list(current_user.id)
     return result
 
-@anime_save_list_router.get("/get-anime-list-by-name/{list_name}")
-async def get_anime_save_list_by_name(list_name: str = Path(..., description="Select list name", enum=ANIME_SAVE_LIST_ENUM), db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
+@anime_save_list_router.get("/get-anime-list-by-name/{list_name}/user/{user_id}")
+async def get_anime_save_list_by_name(user_id: UUID, list_name: str = Path(..., description="Select list name", enum=ANIME_SAVE_LIST_ENUM), db: AsyncSession = Depends(get_session)):
     """
     Get anime list by name.
 
@@ -73,7 +73,7 @@ async def get_anime_save_list_by_name(list_name: str = Path(..., description="Se
     Returns the anime list details.
     """
     service = AnimeSaveListService(db)
-    result = await service.get_anime_save_list_by_name(list_name, current_user.id)
+    result = await service.get_anime_save_list_by_name(list_name, user_id)
     return result
 
 @anime_save_list_router.put("/put_anime_id_in_list/{list_name}")

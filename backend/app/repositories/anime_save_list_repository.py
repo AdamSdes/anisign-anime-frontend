@@ -41,8 +41,8 @@ class AnimeSaveListRepository():
         await self.db.commit()
         return "list deleted successfully"
     
-    async def get_anime_save_list_by_name(self, list_name: str,current_user_id:UUID) -> AnimeSaveList:
-        anime_list = await self.db.execute(select(AnimeSaveList).where(AnimeSaveList.list_name == list_name,AnimeSaveList.user_id == current_user_id))
+    async def get_anime_save_list_by_name(self, list_name: str,user_id:UUID) -> AnimeSaveList:
+        anime_list = await self.db.execute(select(AnimeSaveList).where(AnimeSaveList.list_name == list_name,AnimeSaveList.user_id == user_id))
         anime_list = anime_list.scalars().first()
         if not anime_list:
             raise HTTPException(status_code=404, detail="List not found")

@@ -26,8 +26,8 @@ class AnimeSaveListService:
     async def delete_anime_list(self, current_user_id: UUID):
         return await self.anime_save_list_repository.delete_anime_list(current_user_id)
     
-    async def get_anime_save_list_by_name(self, list_name: str, current_user_id: UUID):
-        return await self.anime_save_list_repository.get_anime_save_list_by_name(list_name ,current_user_id)
+    async def get_anime_save_list_by_name(self, list_name: str, user_id: UUID):
+        return await self.anime_save_list_repository.get_anime_save_list_by_name(list_name ,user_id)
     
     async def put_anime_id_in_list(self, list_name: str, anime_id: str, current_user_id: UUID) -> AnimeSaveList:
         anime_list = await self.get_anime_save_list_by_name(list_name, current_user_id)

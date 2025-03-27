@@ -121,6 +121,7 @@ class UserService:
                 history = await self.viewhistory_repository.initialize_anime_history(user_id)
             except:
                 return HTTPException(status_code=400, detail="Error creating view history")
+            return user
         else:
             raise HTTPException(status_code=400, detail="User already exists")
         

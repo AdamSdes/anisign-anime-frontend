@@ -7,9 +7,11 @@ from uuid import UUID
 class UserBaseSchema(BaseModel):
     username: Optional[str] = Field(..., min_length=6,
                                     description="Username must be at least 6 characters long")
+    email: Optional[str] = Field(..., description="Email must be a valid email address")
 
 
 class UserSchema(UserBaseSchema):
+    email: Optional[str]
     user_avatar: Optional[str]
     user_banner: Optional[str]
     nickname: Optional[str]
