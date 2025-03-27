@@ -212,7 +212,7 @@ export default function Page() {
                 <Header />
                 <Report />
                 <main className="container mx-auto max-w-[1400px] px-4 py-10">
-                    <div className="text-center py-10">
+                    <div className="text-center py-10">D
                         <h2 className="text-2xl font-bold mb-2">Аниме не найдено</h2>
                         <p className="text-gray-600">Возможно, оно было удалено или перемещено</p>
                     </div>

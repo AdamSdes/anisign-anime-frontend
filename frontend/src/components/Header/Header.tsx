@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { HiMenu, HiX, HiSearch, HiChevronDown } from 'react-icons/hi';
 import { Calendar, Users2, Flame, PlayCircle, Sparkles } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { SearchModal } from '@/components/SearchModal';
 import { UserLoggedNavBar } from './UserLoggedNavBar';
 import { useAuthStore } from '@/hooks/useAuth';
@@ -60,23 +59,9 @@ const Header = ({ className = '' }) => {
     }, [isAuthenticated, user, hydrated]);
 
     useEffect(() => {
-        const navbar = navbarRef.current;
-        let lastScroll = 0;
-
         const handleScroll = () => {
             const currentScroll = window.scrollY;
-            // Add some threshold to prevent micro-movements triggering state changes
-            const threshold = 5;
-            
-            if (Math.abs(currentScroll - lastScroll) < threshold) return;
-
-            if (currentScroll > lastScroll && currentScroll > 50) {
-                setIsScrolled(true);
-            } else if (currentScroll < lastScroll || currentScroll < 50) {
-                setIsScrolled(false);
-            }
-            
-            lastScroll = currentScroll;
+            setIsScrolled(currentScroll > 50);
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
@@ -108,28 +93,13 @@ const Header = ({ className = '' }) => {
 
     return (
         <>
-            <div ref={navbarRef} />
-            <motion.header
-                initial={false}
-                animate={{
-                    height: isScrolled ? '72px' : '89px',
-                    paddingTop: isScrolled ? '16px' : '0px',
-                    paddingBottom: isScrolled ? '16px' : '0px',
-                    backgroundColor: isScrolled ? 'rgba(6, 6, 6, 0.95)' : 'rgba(6, 6, 6, 0.6)',
-                }}
-                transition={{
-                    duration: 0.3,
-                    ease: [0.4, 0, 0.2, 1], // Ease out cubic
-                }}
-                className={`
-                    border-b-[1px] flex items-center border-white/5 
-                    sticky top-0 left-0 w-full 
-                    backdrop-blur-xl z-50
-                    ${isScrolled ? 'shadow-lg' : ''}
-                    ${className}
-                `}
+            <header className={`border-b-[1px] flex items-center border-white/5 sticky top-0 left-0 w-full h-[100px] bg-[#060606]/60 backdrop-blur-lg z-50 transition-all duration-300 ${isScrolled ? 'bg-[#060606]/80 shadow-lg py-3 backdrop-blur-lg' : 'bg-transparent h-[89px] flex items-center'}`}
             >
-                <nav className="container mx-auto px-4 flex justify-between items-center">
+                <nav className={`
+                    container mx-auto px-4 h-full flex justify-between items-center
+                    transition-[padding] duration-300 ease-in-out
+                    ${isScrolled ? 'py-10' : 'py-10'}
+                `}>
                     <div className="navbar-left flex gap-4 sm:gap-6 items-center">
                         <Link href='/' className="flex gap-3 sm:gap-5 items-center opacity-100 hover:opacity-80 transition-all">
                             <img src="/logo_header.png" alt="Logo" className="w-7 h-7 sm:w-8 sm:h-8" />
@@ -220,26 +190,19 @@ const Header = ({ className = '' }) => {
                                     <Sparkles className="w-4 h-4 text-[#CCBAE4] animate-pulse" />
                                     <div className="absolute -inset-1 bg-[#CCBAE4]/20 blur-xl animate-pulse" />
                                 </div>
-                                <span className="text-[14px] font-medium text-white/90">
+                                <span className="text-[12px] font-bold text-[#CCBAE4]/60">
                                     PRO
-                                </span>
-                                <span className="text-[14px] text-white/40">
-                                    от 99₽
                                 </span>
                             </div>
                         </Button>
                         <Button 
                             variant="ghost" 
-                            className="h-[50px] pl-4 pr-3 rounded-[12px] border border-white/5 hover:border-white/10 transition-all duration-200 flex items-center gap-4"
+                            className="h-[50px] pl-4 pr-[50px] hover:pr-20 rounded-[12px] border border-white/5 hover:border-white/10 transition-all duration-500 flex items-center gap-4"
                             onClick={() => setIsSearchOpen(true)}
                         >
                             <div className="flex items-center gap-3">
                                 <HiSearch className="h-[18px] w-[18px] text-white/30" />
-                                <span className="text-[14px] font-normal text-white/40">Поиск аниме</span>
-                            </div>
-                            <div className="flex items-center gap-1 px-2 py-1">
-                                <kbd className="text-[10px] font-medium text-white/30">⌘</kbd>
-                                <kbd className="text-[10px] font-medium text-white/30">K</kbd>
+                                <span className="text-[14px] font-normal text-white/40">Поиск...</span>
                             </div>
                         </Button>
                         <div className="hidden md:block w-[1px] h-[20px] bg-white/5" />
@@ -287,7 +250,7 @@ const Header = ({ className = '' }) => {
                         </button>
                     </div>
                 </nav>
-            </motion.header>
+            </header>
 
             {/* Мобильное меню */}
             {isMobileMenuOpen && (
