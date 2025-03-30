@@ -8,6 +8,7 @@ from .routers.anime_save_list_router import anime_save_list_router
 from .routers.character_router import character_router
 from .routers.comment_router import comment_router
 from .routers.viewhistory_router import viewhistory_router
+from .routers.user_friends_router import user_friends_router
 import uvicorn
 from .core.config import Settings
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,6 +27,7 @@ app.include_router(character_router, prefix="/character", tags=["Character"])
 app.include_router(anime_save_list_router, prefix="/anime_save_list", tags=["AnimeSaveList"])
 app.include_router(comment_router, prefix="/comment", tags=["Comment"])
 app.include_router(viewhistory_router, prefix="/viewhistory", tags=["ViewHistory"])
+app.include_router(user_friends_router, prefix="/user_friendlist", tags=["FriendList"])
 
 app.add_middleware(
     CORSMiddleware,

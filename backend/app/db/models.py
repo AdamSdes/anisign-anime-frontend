@@ -36,6 +36,7 @@ class User(BaseTable):
     user_comments = relationship('Comment', back_populates='user', cascade='all, delete-orphan')
     
     user_view_history = relationship('ViewHistory', back_populates='user', cascade='all, delete-orphan')
+    friend_list = relationship('UserFriendList',back_populates='user',cascade='all, delete-orphan')
     current_episodes = relationship('AnimeCurrentEpisode', back_populates='user', cascade='all, delete-orphan')
 
 
@@ -129,6 +130,14 @@ class AnimeCurrentEpisode(BaseTable):
     
     anime = relationship('Anime', back_populates='current_episodes')
     user = relationship('User', back_populates='current_episodes')
+    
+class UserFriendList(BaseTable):
+    __tablename__ = 'user_friend_list'
+    user_id = Column(UUID, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    friends_list = Column(ARRAY(UUID))
+    
+    user = relationship('User', back_populates='friend_list')
+    
 
     
 

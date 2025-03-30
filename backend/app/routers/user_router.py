@@ -218,6 +218,8 @@ async def delete_user(user_id: int):
 
 
 
+
+
 auth_router = APIRouter()
 
 @auth_router.post("/token")
