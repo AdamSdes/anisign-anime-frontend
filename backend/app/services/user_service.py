@@ -79,9 +79,8 @@ class UserService:
         else:
             raise HTTPException(status_code=403, detail="You are not authorized to access this user")
         
-    async def get_user_by_id(self, user_id: int) -> UserSchema:
+    async def get_user_by_id(self, user_id: int) -> dict:
         user = await self.user_repository.get_user_by_id(user_id)
-        user = UserSchema(**user.__dict__)
         return user
     
     async def get_user_by_name(self, name: str) -> dict:
