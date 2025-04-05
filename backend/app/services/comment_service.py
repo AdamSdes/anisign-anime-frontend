@@ -145,3 +145,12 @@ class CommentService:
         except Exception as e:
             logger.error(f"Error in dislike_comment: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Internal Server Error {str(e)}")
+        
+    async def get_10_latest_comments(self):
+        try:
+            result = await self.comment_repository.get_10_latest_comments()
+            return result
+        except Exception as e:
+            logger.error(f"Error in get_10_latest_comments: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Internal Server Error {str(e)}")
+        

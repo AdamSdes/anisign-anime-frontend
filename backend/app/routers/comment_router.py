@@ -61,3 +61,9 @@ async def dislike_comment(comment_id: UUID, db: AsyncSession = Depends(get_sessi
     current_user_id = current_user.id
     result = await service.dislike_comment(comment_id, current_user_id)
     return result
+
+@comment_router.get("/get_10_latest_comments")
+async def get_10_latest_comments(db: AsyncSession = Depends(get_session)):
+    service = CommentService(db)
+    result = await service.get_10_latest_comments()
+    return result
