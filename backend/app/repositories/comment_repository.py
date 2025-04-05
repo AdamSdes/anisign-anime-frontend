@@ -99,6 +99,6 @@ class CommentRepository:
         await self.db.commit()
         return {"message": "Reply to comment deleted successfully"}
     
-    async def get_10_latest_comments(self):
-        comments = await self.db.execute(select(Comment).order_by(Comment.created_at.desc()).limit(10))
+    async def get_3_latest_comments(self):
+        comments = await self.db.execute(select(Comment).order_by(Comment.created_at.desc()).limit(3))
         return comments.scalars().all()
