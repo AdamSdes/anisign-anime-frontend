@@ -8,7 +8,7 @@ import logging
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 from dateutil import parser
-
+from sqlalchemy import func
 
 class CharacterRepository:
     def __init__(self, db : AsyncSession):
@@ -17,7 +17,18 @@ class CharacterRepository:
     async def get_characters_list(self, page: int, limit: int):
         query = select(Character).limit(limit).offset((page - 1) * limit)
         result = await self.db.execute(query)
-        return result.scalars().all()
+        characters = result.scalars().all()
+        
+        # Query to count the total number of characters
+        count_query = select(func.count(Character.id))
+        total_count_result = await self.db.execute(count_query)
+        total_count = total_count_result.scalar()
+        
+        # Return both the characters list and the total count
+        return {
+            "total_count": total_count,
+            "characters": characters
+        }
     
     async def get_character_by_name(self, name: str):
         query = select(Character).where(

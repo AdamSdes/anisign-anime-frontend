@@ -93,7 +93,9 @@ async def create_user(user_data: SignUpRequestSchema, db: AsyncSession = Depends
     """
     service = UserService(db)
     user = await service.create_user(user_data)
-    return user
+    auth = JWTAuth()
+    access_token = await auth.create_access_token({"sub": user.username})
+    return {"user": user, "access_token": access_token}
 
 @user_router.put("/update-my-nickname")
 async def update_nickname(nickname: str, db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
