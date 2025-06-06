@@ -10,8 +10,8 @@ class CommentRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
         
-    async def create_comment_for_anime(self, anime_id: UUID, text: str, user_id: str, comment_type: str, reply_to_comment_id: Optional[UUID] = None):
-        comment = Comment(anime_id=anime_id, text=text, user_id=user_id, comment_type=comment_type, likes=0, reply_to_comment_id=reply_to_comment_id)
+    async def create_comment_for_anime(self, anime_id: UUID, text: str, user_id: str, comment_type: str, id_of_anime: str, reply_to_comment_id: Optional[UUID] = None):
+        comment = Comment(anime_id=anime_id, text=text, user_id=user_id, comment_type=comment_type, likes=0, reply_to_comment_id=reply_to_comment_id, id_of_anime=id_of_anime)
         self.db.add(comment)
         await self.db.commit()
         await self.db.refresh(comment)

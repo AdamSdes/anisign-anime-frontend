@@ -107,6 +107,7 @@ class Comment(BaseTable):
     user_liked_list = Column(ARRAY(UUID), nullable=True)
     comment_type = Column(comment_type_enum, index=True, nullable=True)
     reply_to_comment_id = Column(UUID, nullable=True)
+    id_of_anime = Column(String, index=True, nullable=False)  # This is the original anime ID from the source
     
     anime = relationship('Anime', back_populates='comments')
     user = relationship('User', back_populates='user_comments')

@@ -34,6 +34,9 @@ class CommentService:
         check = await self.anime_repository.get_anime_by_id_uuid(anime_id)
         if not check:
             raise HTTPException(status_code=404, detail="Anime not found")
+        id_of_anime = check.anime_id
+        # raise HTTPException(status_code=404, detail="anime found")
+        
         
         # Validate UUID format
         try:
@@ -50,7 +53,7 @@ class CommentService:
         if not comment_text or len(comment_text.strip()) == 0:
             raise HTTPException(status_code=400, detail="Comment text cannot be empty")
         try:
-            result = await self.comment_repository.create_comment_for_anime(anime_id, comment_text, user_id, comment_type, reply_to_comment_id)
+            result = await self.comment_repository.create_comment_for_anime(anime_id, comment_text, user_id, comment_type, id_of_anime, reply_to_comment_id)
             return result
         except Exception as e:
             logger.error(f"Error in create_comment_for_anime: {str(e)}")
