@@ -140,6 +140,16 @@ class UserFriendList(BaseTable):
     user = relationship('User', back_populates='friend_list')
     
 
+class FriendRequest(BaseTable):
+    __tablename__ = 'friend_request'
+    sender_id = Column(UUID, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    receiver_id = Column(UUID, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    status = Column(String, index=True, nullable=False)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    
+    sender = relationship('User', foreign_keys=[sender_id])
+    receiver = relationship('User', foreign_keys=[receiver_id])
+
     
 
     

@@ -24,6 +24,7 @@ from app.schemas.auth_schemas import TokenData
 from jose import JWTError
 from app.repositories.anime_save_list_repository import AnimeSaveListRepository
 from app.repositories.viewhistory_repository import ViewHistoryRepository
+from app.repositories.user_friends_repository import UserFriendsRepository
 from datetime import datetime
 from fastapi import status
 import os
@@ -66,6 +67,7 @@ class UserService:
         self.user_repository = UserRepository(db)
         self.list_repository = AnimeSaveListRepository(db)
         self.viewhistory_repository = ViewHistoryRepository(db)
+        self.user_friends_repository = UserFriendsRepository(db)
         
     async def check_user_permission_by_name(self, current_username: str, username: str):
         if current_username == username:
@@ -91,7 +93,8 @@ class UserService:
         user = await self.user_repository.get_user_by_username(username)
         user = UserSchema(**user.__dict__)
         return user
-
+    
+    
     async def get_all_users(self, page: int, limit: int):
         return await self.user_repository.get_all_users(page, limit)
     
@@ -120,9 +123,20 @@ class UserService:
                 history = await self.viewhistory_repository.initialize_anime_history(user_id)
             except:
                 return HTTPException(status_code=400, detail="Error creating view history")
+            try:
+                friend_list = await self.user_friends_repository.create_friend_list_for_user(user_id)
+            except:
+                raise HTTPException(status_code=400, detail="Error creating friend list")
             return user
         else:
             raise HTTPException(status_code=400, detail="User already exists")
+        
+    async def delete_all_users(self):
+        result = await self.user_repository.delete_all_users()
+        if result:
+            return {"message": "All users deleted successfully"}
+        else:
+            raise HTTPException(status_code=404, detail="No users found to delete")
         
     async def authenticate_user(self, username: str, password: str) -> User:
         user = await self.user_repository.get_user_by_username(username)

@@ -200,13 +200,14 @@ async def change_password(password: str, new_password: str, confirm_password: st
     
 
 @user_router.delete("/delete-all")
-async def delete_all_users():
+async def delete_all_users(db: AsyncSession = Depends(get_session)):
     """
     Delete all users from the database.
 
     This endpoint is for administrative purposes and should be used with caution.
     """
-    pass
+    service = UserService(db)
+    result = await service.delete_all_users()
 
 @user_router.delete("/delete-user/{user_id}")
 async def delete_user(user_id: int):

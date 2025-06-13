@@ -43,6 +43,12 @@ class UserRepository():
         result = await self.db.execute(query)
         return result.scalars().all()
     
+    async def delete_all_users(self):
+        query = delete(User)
+        await self.db.execute(query)
+        await self.db.commit()
+        return {"message": "All users deleted successfully"}
+    
     async def get_user_by_username(self, username: str) -> User:
         user = await self.db.execute(select(User).where(User.username == username))
         user = user.scalars().first()
