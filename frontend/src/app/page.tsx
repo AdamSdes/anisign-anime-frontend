@@ -6,6 +6,7 @@ import Report from '@/features/report/Report';
 import Footer from '@/features/footer/Footer';
 import AnimeCarousel from '@/components/anime/AnimeCarousel';
 import LatestComments from '@/components/common/LatestComments';
+import LatestNews from '@/components/news/LatestNews';
 import { ProfileBanner } from '@/features/profile/ProfileBanner';
 import { useAuth } from '@/context/AuthContext';
 import { API_BASE_URL, API_ENDPOINTS } from '@/config/api';
@@ -153,6 +154,10 @@ export default function Home() {
             />
           </div>
         </main>
+      </div>
+
+      <div className='container pb-10'>
+        <LatestNews />
       </div>
 
       <div className='container pb-10'>

@@ -1,153 +1,75 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import NewsCard from '@/features/news/NewsCard';
 import { Skeleton } from '@/components/ui/skeleton';
-
-// Интерфейс для новостей
-export interface NewsItem {
-  id: number;
-  title: string;
-  content: string;
-  imageUrl: string;
-  date: string;
-  category: string;
-  source: string;
-}
-
-// Временные данные для новостей
-const MOCK_NEWS: NewsItem[] = [
-  {
-    id: 1,
-    title: 'Стартовал третий сезон «Магическая битва»',
-    content:
-      'Официально стартовал долгожданный третий сезон аниме «Магическая битва». Новые эпизоды будут выходить каждую неделю на Crunchyroll.',
-    imageUrl:
-      'https://cover.imglib.info/uploads/anime/23416/background/0a737da3-fee7-4708-a55b-601054fc7818.jpg',
-    date: '2025-03-25',
-    category: 'Анонсы',
-    source: 'Crunchyroll',
-  },
-  {
-    id: 2,
-    title: 'Юта Окоцу получит отдельное аниме по манге «Магическая битва»',
-    content:
-      'Студия MAPPA анонсировала спин-офф аниме, посвященный Юте Окоцу из вселенной «Магическая битва», основанный на дополнительных главах манги.',
-    imageUrl: 'https://i.imgur.com/UBx92t9.jpeg',
-    date: '2025-03-23',
-    category: 'Анонсы',
-    source: 'MAPPA',
-  },
-  {
-    id: 3,
-    title: 'Объявлена дата выхода нового сезона «Атака титанов: Финальная часть»',
-    content:
-      'Студия MAPPA официально анонсировала дату выхода завершающей части аниме «Атака титанов». Зрители увидят финал легендарной истории уже осенью 2025 года.',
-    imageUrl: 'https://i.imgur.com/HVPkWsh.jpeg',
-    date: '2025-03-20',
-    category: 'Даты выхода',
-    source: 'MAPPA',
-  },
-  {
-    id: 4,
-    title: 'Вышел трейлер второго сезона «Человек-бензопила»',
-    content:
-      'Опубликован первый трейлер второго сезона аниме «Человек-бензопила». Продолжение истории Дэнджи будет показано летом 2025 года.',
-    imageUrl: 'https://i.imgur.com/hGYsYaW.jpeg',
-    date: '2025-03-18',
-    category: 'Трейлеры',
-    source: 'MAPPA',
-  },
-  {
-    id: 5,
-    title: 'Аниме «Голубой период» получит полнометражный фильм',
-    content:
-      'По манге «Голубой период» будет снят полнометражный фильм, который продолжит историю после событий аниме-сериала. Премьера запланирована на 2026 год.',
-    imageUrl: 'https://i.imgur.com/2NF5u3q.jpeg',
-    date: '2025-03-15',
-    category: 'Анонсы',
-    source: 'Seven Arcs',
-  },
-  {
-    id: 6,
-    title: 'Анонсирована аниме-адаптация манги «Сакамото наносит ответный удар»',
-    content:
-      'Манга «Сакамото наносит ответный удар» получит аниме-адаптацию. Производством займется студия Bridge, премьера запланирована на зиму 2026 года.',
-    imageUrl: 'https://i.imgur.com/UBP8TBg.jpeg',
-    date: '2025-03-12',
-    category: 'Анонсы',
-    source: 'Bridge',
-  },
-  {
-    id: 7,
-    title: 'Новый трейлер аниме «Тёмный дворецкий: Публичная школа»',
-    content:
-      'Вышел новый трейлер и постер продолжения аниме «Тёмный дворецкий», посвященного арке «Публичная школа». Премьера новых серий состоится летом 2025 года.',
-    imageUrl: 'https://i.imgur.com/vSwn5GD.jpeg',
-    date: '2025-03-10',
-    category: 'Трейлеры',
-    source: 'CloverWorks',
-  },
-  {
-    id: 8,
-    title: 'Хаяо Миядзаки работает над новым полнометражным фильмом',
-    content:
-      'Легендарный режиссер Хаяо Миядзаки, несмотря на объявление о завершении карьеры, начал работу над новым полнометражным анимационным фильмом для студии Ghibli.',
-    imageUrl: 'https://i.imgur.com/iWYIXI4.jpeg',
-    date: '2025-03-05',
-    category: 'Индустрия',
-    source: 'Studio Ghibli',
-  },
-];
+import { newsService, NewsItem } from '@/services/newsService';
+import { Button } from '@/components/ui/button';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { Loader2 } from 'lucide-react';
 
 const NewsGrid = () => {
-  const [news, setNews] = useState<NewsItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState<string>('all');
+  const [allNews, setAllNews] = useState<NewsItem[]>([]);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Эмуляция загрузки данных с сервера
+  // Загрузка первой страницы новостей
+  const loadInitialNews = async () => {
+    setIsInitialLoading(true);
+    setError(null);
+
+    try {
+      const response = await newsService.getNews(1);
+      setAllNews(response.news);
+      setCurrentPage(1);
+      setHasNextPage(response.has_next_page);
+    } catch (error) {
+      console.error('Ошибка при загрузке новостей:', error);
+      setError('Не удалось загрузить новости. Попробуйте позже.');
+    } finally {
+      setIsInitialLoading(false);
+    }
+  };
+
+  // Загрузка следующей страницы
+  const fetchNextPage = useCallback(async () => {
+    if (isFetchingNextPage || !hasNextPage) return;
+
+    setIsFetchingNextPage(true);
+
+    try {
+      const nextPage = currentPage + 1;
+      const response = await newsService.getNews(nextPage);
+
+      setAllNews((prev) => [...prev, ...response.news]);
+      setCurrentPage(nextPage);
+      setHasNextPage(response.has_next_page);
+    } catch (error) {
+      console.error('Ошибка при загрузке следующей страницы:', error);
+    } finally {
+      setIsFetchingNextPage(false);
+    }
+  }, [currentPage, hasNextPage, isFetchingNextPage]);
+
+  // Хук для бесконечной прокрутки
+  const { lastElementRef } = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    threshold: 0.1,
+    rootMargin: '200px',
+  });
+
   useEffect(() => {
-    const loadNews = async () => {
-      // В реальном проекте здесь был бы запрос к API
-      // const response = await fetch('http://localhost:8000/news');
-      // const data = await response.json();
-
-      setTimeout(() => {
-        setNews(MOCK_NEWS);
-        setIsLoading(false);
-      }, 1000);
-    };
-
-    loadNews();
+    loadInitialNews();
   }, []);
 
-  // Получаем уникальные категории для фильтра
-  const categories = ['all', ...Array.from(new Set(MOCK_NEWS.map((item) => item.category)))];
-
-  // Фильтруем новости по категории
-  const filteredNews = filter === 'all' ? news : news.filter((item) => item.category === filter);
-
-  return (
-    <div className='space-y-6'>
-      {/* Фильтры по категориям */}
-      <div className='flex flex-wrap gap-2 mb-6'>
-        {categories.map((category) => (
-          <button
-            key={category}
-            onClick={() => setFilter(category)}
-            className={`px-4 py-2 text-sm rounded-lg transition-all ${
-              filter === category
-                ? 'bg-white text-[#060606] font-medium'
-                : 'bg-white/5 hover:bg-white/10'
-            }`}
-          >
-            {category === 'all' ? 'Все новости' : category}
-          </button>
-        ))}
-      </div>
-
-      {/* Сетка новостей */}
-      {isLoading ? (
+  if (isInitialLoading) {
+    return (
+      <div className='space-y-6'>
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
           {Array.from({ length: 6 }).map((_, index) => (
             <div
@@ -164,20 +86,71 @@ const NewsGrid = () => {
             </div>
           ))}
         </div>
-      ) : (
-        <>
-          {filteredNews.length > 0 ? (
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-              {filteredNews.map((item) => (
-                <NewsCard key={item.id} news={item} />
-              ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className='bg-white/[0.02] border border-red-500/20 rounded-xl p-8 text-center'>
+        <p className='text-red-400 mb-4'>{error}</p>
+        <Button
+          onClick={loadInitialNews}
+          variant='outline'
+          className='border-red-500/20 hover:bg-red-500/10'
+        >
+          Повторить попытку
+        </Button>
+      </div>
+    );
+  }
+
+  if (allNews.length === 0) {
+    return (
+      <div className='bg-white/[0.02] border border-white/5 rounded-xl p-8 text-center'>
+        <p className='text-white/60'>Новости пока не загружены</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className='space-y-6'>
+      {/* Сетка новостей */}
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+        {allNews.map((item, index) => {
+          // Добавляем ref к последнему элементу для триггера загрузки
+          const isLastElement = index === allNews.length - 1;
+
+          return (
+            <div
+              key={`news-${index}-${item.title.substring(0, 20)}`}
+              ref={isLastElement ? lastElementRef : null}
+            >
+              <NewsCard news={item} />
             </div>
-          ) : (
-            <div className='bg-white/[0.02] border border-white/5 rounded-xl p-8 text-center'>
-              <p className='text-white/60'>Новости в данной категории отсутствуют</p>
-            </div>
-          )}
-        </>
+          );
+        })}
+      </div>
+
+      {/* Индикатор загрузки следующей страницы */}
+      {isFetchingNextPage && (
+        <div className='flex justify-center items-center py-8'>
+          <div className='flex items-center gap-3 text-white/60'>
+            <Loader2 className='w-5 h-5 animate-spin' />
+            <span className='text-sm'>Загружаем новые новости...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Сообщение о том, что больше новостей нет */}
+      {!hasNextPage && allNews.length > 0 && (
+        <div className='flex justify-center items-center py-8'>
+          <div className='bg-white/[0.02] border border-white/5 rounded-xl px-6 py-3'>
+            <p className='text-white/60 text-sm text-center'>
+              Вы просмотрели все доступные новости
+            </p>
+          </div>
+        </div>
       )}
     </div>
   );

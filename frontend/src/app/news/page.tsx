@@ -91,8 +91,8 @@ export default function NewsPage() {
         {/* Контент новостей, накладывающийся на баннер */}
         <main className='flex-grow relative z-10 pt-[60px] pb-12'>
           <div className='container mx-auto px-4'>
-            <div className='pb-6 pt-4'>
-              <h1 className='text-2xl font-medium mb-2'>Новости аниме</h1>
+            <div className='pb-15 pt-4'>
+              <h1 className='text-3xl font-bold mb-2'>Новости аниме</h1>
               <p className='text-white/60 text-sm'>Последние новости из мира аниме</p>
             </div>
             <NewsGrid />

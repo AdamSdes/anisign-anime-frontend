@@ -37,21 +37,6 @@ services:
     ports:
       - "6379:6379"
 
-  frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    volumes:
-      - ../frontend:/app/frontend
-      - /app/frontend/node_modules
-      - /app/frontend/.next
-    environment:
-      - WATCHPACK_POLLING=true
-    depends_on:
-      - app
-
 volumes:
   postgres_data:
   avatar_storage:
