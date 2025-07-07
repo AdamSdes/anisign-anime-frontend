@@ -1,41 +1,52 @@
-import { Montserrat } from 'next/font/google'
-import './globals.css'
-import type { Metadata } from 'next'
-import { Toaster } from "@/components/ui/toaster"
-import { AuthProvider } from '@/providers/AuthProvider'
-import { StoreProvider } from '@/providers/StoreProvider'
-import QueryProvider from "@/providers/query-provider"
+import type { Metadata } from 'next';
+import { Montserrat } from 'next/font/google';
+import './globals.css';
+import ReactQueryProvider from '@/providers/ReactQueryProvider';
+import { AnimeFiltersProvider } from '@/context/AnimeFiltersContext';
+import { AuthProvider } from '@/context/AuthContext';
+import { Toaster } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
-const montserrat = Montserrat({ 
-  subsets: ['latin', 'cyrillic'],
+const montserrat = Montserrat({
   variable: '--font-montserrat',
-})
+  subsets: ['latin'],
+});
 
 export const metadata: Metadata = {
   title: 'Anisign - Аниме портал',
-  description: 'Удобный сайт для просмотра аниме',
-  icons: {
-    icon: '/logo_header.png'
-  },
-}
+  description: 'Аниме портал с удобным интерфейсом и большой базой данных',
+};
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html lang="en">
-      <body className={montserrat.className}>
-        <QueryProvider>
-          <StoreProvider>
-            <AuthProvider>
-                <Toaster richColors position="top-center" />
+    <html lang='ru' className='dark' suppressHydrationWarning>
+      <body className={`${montserrat.variable} bg-[#060606]`}>
+        <AuthProvider>
+          <AnimeFiltersProvider>
+            <TooltipProvider delayDuration={300}>
+              <ReactQueryProvider>
                 {children}
-            </AuthProvider>
-          </StoreProvider>
-        </QueryProvider>
+                <Toaster
+                  position='bottom-right'
+                  toastOptions={{
+                    style: {
+                      background: '#0A0A0A',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      color: '#fff',
+                      padding: '20px 25px',
+                      borderRadius: '16px',
+                    },
+                  }}
+                />
+              </ReactQueryProvider>
+            </TooltipProvider>
+          </AnimeFiltersProvider>
+        </AuthProvider>
       </body>
     </html>
-  )
+  );
 }

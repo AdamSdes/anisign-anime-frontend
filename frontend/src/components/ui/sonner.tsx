@@ -1,9 +1,7 @@
 "use client"
 
 import { useTheme } from "next-themes"
-import { Toaster as Sonner } from "sonner"
-
-type ToasterProps = React.ComponentProps<typeof Sonner>
+import { Toaster as Sonner, ToasterProps } from "sonner"
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
@@ -12,25 +10,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
-      expandByDefault
-      position="top-right"
-      toastOptions={{
-        unstyled: true,
-        classNames: {
-          toast: "group flex items-center gap-3 w-full p-4 mb-2 rounded-xl border border-white/5 bg-[#060606]/95 backdrop-blur-xl shadow-lg",
-          title: "text-[14px] font-medium text-white/90",
-          description: "text-[13px] text-white/60",
-          actionButton: "px-3 py-1.5 rounded-lg bg-[#CCBAE4] text-black text-[12px] font-medium hover:bg-[#CCBAE4]/90 transition-colors",
-          cancelButton: "px-3 py-1.5 rounded-lg bg-white/5 text-white/60 text-[12px] font-medium hover:bg-white/10 transition-colors",
-          closeButton: "rounded-full p-1 hover:bg-white/5 transition-colors text-white/40 hover:text-white/60",
-          success: "!bg-[#86EFAC]/10 !border-[#86EFAC]/20",
-          error: "!bg-[#FDA4AF]/10 !border-[#FDA4AF]/20",
-          warning: "!bg-[#FCD34D]/10 !border-[#FCD34D]/20",
-          info: "!bg-[#93C5FD]/10 !border-[#93C5FD]/20",
-          loader: "text-white/40"
-        },
-        duration: 4000,
-      }}
+      style={
+        {
+          "--normal-bg": "var(--popover)",
+          "--normal-text": "var(--popover-foreground)",
+          "--normal-border": "var(--border)",
+        } as React.CSSProperties
+      }
       {...props}
     />
   )

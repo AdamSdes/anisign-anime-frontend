@@ -2,135 +2,198 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import Header from '@/components/Header/Header';
-import Report from "@/components/Report/Report";
-import Footer from '@/components/Footer/Footer';
-import ProfileHeader from '@/components/Profile/ProfileHeader';
-import Statistics from '@/components/Profile/Statistics';
-import AnimeList from '@/components/Profile/AnimeList';
-import History from '@/components/Profile/History';
-import ProfileFriends from '@/components/Profile/ProfileFriends';
-import { useAuthStore } from '@/hooks/useAuth';
-import { axiosInstance } from '@/lib/api/axiosConfig';
-import { toast } from 'sonner';
+import { ProfileHeader } from '@/features/profile/ProfileHeader';
+import Header from '@/features/header/Header';
+import Report from '@/features/report/Report';
+import Footer from '@/features/footer/Footer';
+import Link from 'next/link'; // Добавляем импорт Link из Next.js
+import { useAuth } from '@/context/AuthContext';
+import AnimeSaveListSection from '@/features/profile/AnimeSaveListSection';
 
+/**
+ * Интерфейс данных профиля
+ * @interface ProfileData
+ */
 interface ProfileData {
-    id: string;
-    username: string;
-    email: string;
-    user_avatar?: string;
-    user_banner?: string;
-    nickname?: string;
-    isVerified: boolean;
-    joinedDate: string;
+  username: string;
+  nickname?: string;
+  avatar?: string;
+  user_banner?: string;
+  joinedDate?: string;
+  email?: string;
+  user_id: string;
 }
 
-interface ProfileError {
-    status: number;
-    message: string;
-}
+/**
+ * Страница профиля пользователя
+ * @description Отображает профиль пользователя с его данными и активностью
+ * @returns {JSX.Element}
+ */
+export default function ProfilePage() {
+  const params = useParams();
+  const { user, isAuthenticated } = useAuth();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isOwnProfile, setIsOwnProfile] = useState<boolean>(false);
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
 
-const ProfilePage = () => {
-    const params = useParams();
-    const username = params.username as string;
-    const [profileData, setProfileData] = useState<ProfileData | null>(null);
-    const [error, setError] = useState<ProfileError | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const { user } = useAuthStore();
-    const isOwnProfile = user?.username === username;
+  // Функция для обновления данных профиля
+  const fetchData = useCallback(async () => {
+    try {
+      // В Next.js 15 параметры маршрута стали асинхронными
+      const resolvedParams = await params;
+      const usernameParam = resolvedParams.username as string;
 
-    const fetchProfileData = useCallback(async () => {
+      // Проверка, является ли профиль собственным
+      const ownProfile = Boolean(isAuthenticated && user && user.username === usernameParam);
+      setIsOwnProfile(ownProfile);
+
+      // Логирование для отладки
+      console.log('Информация о пользователе из контекста:', user);
+
+      // Если это собственный профиль и у нас есть данные пользователя из контекста
+      if (ownProfile && user) {
+        console.log('Установка данных собственного профиля');
+
+        // Используем правильные имена полей из API
+        setProfileData({
+          username: user.username,
+          nickname: user.nickname || user.username,
+          avatar: user.user_avatar || '', // Используем user_avatar вместо avatar_url
+          user_banner: user.user_banner || '', // Используем user_banner вместо banner_url
+          joinedDate: user.created_at || '',
+          email: user.email || '',
+          user_id: user.id || '', // Добавляем ID пользователя
+        });
+
+        console.log('Установленные данные профиля:', {
+          username: user.username,
+          avatar: user.user_avatar,
+          user_banner: user.user_banner,
+          user_id: user.id,
+        });
+      } else {
+        // Если это чужой профиль, запрашиваем данные с сервера
+        console.log('Установка данных чужого профиля');
+
         try {
-            const token = localStorage.getItem('token');
-            const cleanUsername = username.replace('@', '');
-            const response = await axiosInstance.get(`/user/get-user-by-username/${cleanUsername}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
+          // Запрос данных пользователя по имени
+          const response = await fetch(`http://localhost:8000/user/name/${usernameParam}`, {
+            method: 'GET',
+            headers: {
+              accept: 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error('Не удалось получить данные пользователя');
+          }
+
+          const data = await response.json();
+
+          if (data.total_count > 0 && data.user_list && data.user_list.length > 0) {
+            const userData = data.user_list[0];
+            console.log('Получены данные пользователя:', userData);
+
+            setProfileData({
+              username: userData.username,
+              nickname: userData.nickname || userData.username,
+              avatar: userData.user_avatar || '', // Используем user_avatar из API
+              user_banner: userData.user_banner || '',
+              joinedDate: userData.created_at || '',
+              user_id: userData.id || '', // Добавляем ID пользователя
             });
-            console.log('[ProfilePage] Received profile data:', response.data);
-            setProfileData(response.data);
-            setError(null);
+          } else {
+            // Пользователь не найден
+            console.log('Пользователь не найден:', usernameParam);
+            setProfileData(null); // Устанавливаем null вместо создания фиктивного профиля
+          }
         } catch (error) {
-            if (error instanceof Error) {
-                setError({ status: 404, message: error.message });
-            } else {
-                setError({ status: 500, message: 'Неизвестная ошибка' });
-            }
-            setProfileData(null);
-        } finally {
-            setIsLoading(false);
+          console.error('Ошибка при получении данных пользователя:', error);
+          // В случае ошибки устанавливаем null
+          setProfileData(null);
         }
-    }, [username]);
-
-    useEffect(() => {
-        fetchProfileData();
-    }, [fetchProfileData]);
-
-    if (isLoading) {
-        return (
-            <div className="flex min-h-screen flex-col">
-                <Header />
-                <div className="container mx-auto px-4 py-8 flex-1 flex items-center justify-center">
-                    <div className="text-center">
-                        <p className="text-white/60">Загрузка...</p>
-                    </div>
-                </div>
-                <Footer />
-            </div>
-        );
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
+      setIsLoading(false);
     }
+  }, [params, user, isAuthenticated]);
 
-    if (!profileData) {
-        return (
-            <div className="flex min-h-screen flex-col">
-                <Header />
-                <div className="container mx-auto px-4 py-8 flex-1 flex items-center justify-center">
-                    <div className="text-center">
-                        <h1 className="text-2xl text-white/90 mb-4">Пользователь не найден</h1>
-                        <p className="text-white/60">
-                            Пользователь с именем @{username} не существует
-                        </p>
-                    </div>
-                </div>
-                <Footer />
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return (
+    <div className='min-h-screen flex flex-col bg-[#060606]'>
+      <Header />
+      <Report />
+      <main className='flex-grow'>
+        {isLoading ? (
+          <div className='container mx-auto px-4 py-8'>
+            <div className='h-[350px] w-full rounded-xl bg-[#060606]/80 relative overflow-hidden'>
+              {/* Градиентные переходы для анимации загрузки */}
+              <div className='absolute inset-0 bg-gradient-to-t from-[#060606] via-[#06060680] to-[#06060620]' />
+              <div className='absolute inset-0 bg-gradient-to-b from-[#06060640] via-transparent to-transparent' />
+              <div className='absolute inset-0 bg-gradient-to-r from-[#06060620] via-transparent to-[#06060620]' />
+
+              {/* Эффект пульсации */}
+              <div className='' style={{ animationDuration: '2s' }} />
             </div>
-        );
-    }
+          </div>
+        ) : profileData ? (
+          <>
+            <ProfileHeader
+              username={profileData.username}
+              avatar={profileData.avatar}
+              user_banner={profileData.user_banner}
+              nickname={profileData.nickname}
+              isOwnProfile={isOwnProfile}
+              isLoading={isLoading}
+              refetchUser={fetchData}
+            />
 
-    return (
-        <main className="flex min-h-screen flex-col">
-            <Header />
-            <Report />
-            {profileData && (
-                <ProfileHeader
-                    username={profileData.username}
-                    nickname={profileData.nickname}
-                    avatar={profileData.user_avatar}
-                    banner={profileData.user_banner}
-                    isOwnProfile={isOwnProfile}
-                    isLoading={isLoading}
-                    refetchUser={fetchProfileData}
-                />
-            )}
-            <div className="container mx-auto px-4 pb-10 flex-1">
-                <div className="mt-20">
-                    <div className="grid grid-cols-1 min-[1000px]:grid grid-cols-[1fr_1px_373px] gap-[43px]">
-                        <div className="space-y-16 min-w-0">
-                            <Statistics />
-                            <AnimeList />
-                        </div>
-                        <div className="hidden min-[1000px]:block w-[1px] bg-white/5" />
-                        <div className="w-full  min-[1020px]:w-[373px] space-y-16">
-                            <ProfileFriends />
-                            <History userId={profileData.id} />
-                        </div>
-                    </div>
-                </div>
+            {/* Секция со списками сохраненных аниме */}
+            <div className='container mx-auto px-4 sm:px-8 pb-8 max-w-[1450px] mt-6'>
+              <AnimeSaveListSection userId={profileData.user_id} isOwnProfile={isOwnProfile} />
             </div>
-            <Footer />
-        </main>
-    );
-};
+          </>
+        ) : (
+          <div className='container mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-[60vh]'>
+            <div className='p-6 max-w-lg w-full text-center'>
+              <div className='w-16 h-16 bg-red-500/10 rounded-full mx-auto flex items-center justify-center mb-4'>
+                <svg
+                  width='24'
+                  height='24'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  xmlns='http://www.w3.org/2000/svg'
+                >
+                  <path
+                    d='M12 8V12M12 16H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z'
+                    stroke='#EF4444'
+                    strokeWidth='2'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                  />
+                </svg>
+              </div>
+              <h2 className='text-xl font-medium text-white/90 mb-2'>Пользователь не найден</h2>
+              <p className='text-white/60 mb-6'>
+                Пользователя с именем &quot;{params.username}&quot; не существует
+              </p>
+              <Link
+                href='/'
+                className='text-white bg-white/5 hover:bg-white/15 transition-colors py-3 px-5 rounded-xl inline-block'
+              >
+                Вернуться на главную
+              </Link>
+            </div>
+          </div>
+        )}
+      </main>
 
-export default ProfilePage;
+      <Footer />
+    </div>
+  );
+}
