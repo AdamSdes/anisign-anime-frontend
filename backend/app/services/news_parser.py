@@ -24,10 +24,13 @@ async def parse_news() -> List[NewsBaseSchema]:
             full_link = f"https://www.goha.ru{link}" if link.startswith("/") else link
             text = article.select_one(".article-snippet__body-shortly-label").text.strip()
             date = article.select_one("span.article-snippet__body-date-label").text.strip()
+            img = article.select_one(".article-snippet__image-wrapper img")["src"]
+            
 
             results.append(NewsBaseSchema(
                 title=title,
                 link=full_link,
+                img=img,
                 text=text,
                 date=date
             ))
