@@ -12,8 +12,15 @@ from .routers.user_friends_router import user_friends_router
 from .routers.news_router import news_router
 import uvicorn
 from .core.config import Settings
+from app.db.postgresql_connection import async_session
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from app.repositories.anime_repository import AnimeRepository
+from app.repositories.genre_repository import GenreRepository
+from app.db.postgresql_connection import get_session
+from app.scheduler.scheduler import start_scheduler
+from fastapi import FastAPI
+from app.services.anime_service import AnimeService
 
 
 settings = Settings()
@@ -38,6 +45,14 @@ app.add_middleware(
     allow_methods=["*"],  
     allow_headers=["*"] 
 )
+
+@app.on_event("startup")
+async def startup_event():
+    async with async_session() as db:
+        anime_service = AnimeService(db)
+
+        # Стартуємо планувальник
+        start_scheduler(anime_service)
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host=settings.host, port=settings.port, reload=settings.debug)

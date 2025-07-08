@@ -11,6 +11,7 @@ import logging
 from fastapi import HTTPException
 from datetime import datetime
 from uuid import UUID
+from sqlalchemy.dialects.postgresql import insert
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -227,12 +228,8 @@ class AnimeService:
             return None
     
     async def save_anime_list_in_db(self):
-<<<<<<< HEAD
         logger.info("🔄 Scheduler: Почато оновлення аніме з Shikimori")
         for x in range(1, 1000):
-=======
-        for x in range(1, 500):
->>>>>>> parent of d5d3c6a (ашч)
             animes = await self.parse_page_animes(x)
             if animes:
                 for anime in animes:

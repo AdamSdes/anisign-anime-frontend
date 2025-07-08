@@ -15,6 +15,9 @@ from dateutil import parser
 from sqlalchemy import select, or_ , func ,case, extract
 from sqlalchemy.sql import text
 from uuid import UUID
+from sqlalchemy.dialects.postgresql import insert
+
+
 
 
 class AnimeRepository():
@@ -44,45 +47,79 @@ class AnimeRepository():
         return anime
         
     async def save_anime_list(self, animes: list):
+        saved_count = 0
         for anime in animes:
             try:
-                # Convert date strings to datetime.date objects
-                date_fields = ['createdAt', 'updatedAt', 'nextEpisodeAt']
-                for field in date_fields:
-                    if anime[field]:
+                if not anime.get("anime_id") or not anime.get("english"):
+                    logging.warning(f"⚠️ Пропущено аніме без ключових полів: {anime.get('anime_id')} {anime.get('english')}")
+                    continue
+
+                # Parse datetime fields with time
+                for field in ['createdAt', 'updatedAt', 'nextEpisodeAt']:
+                    if anime.get(field):
                         try:
                             anime[field] = datetime.fromisoformat(anime[field]).replace(tzinfo=None)
                         except Exception as e:
-                            logging.error(f"Error parsing date for field {field} in anime {anime}: {e}")
+                            logging.error(f"❌ Error parsing datetime field {field}: {e}")
                             anime[field] = None
-                            
-                date_fields_without_time = ['aired_on', 'released_on']
-                for field in date_fields_without_time:
-                    if anime[field]:
+
+                # Parse date fields without time
+                for field in ['aired_on', 'released_on']:
+                    if anime.get(field):
                         try:
                             anime[field] = parser.parse(anime[field]).date()
                         except Exception as e:
-                            logging.error(f"Error parsing date for field {field} in anime {anime}: {e}")
+                            logging.error(f"❌ Error parsing date field {field}: {e}")
                             anime[field] = None
-                
-                # related_anime_ids = [related['anime']['id'] for related in anime.get('related', []) if 'anime' in related]
-                # anime['related_anime_ids'] = related_anime_ids
-                
-                anime_instance = Anime(**anime)
-                self.db.add(anime_instance)
+
+                stmt = insert(Anime).values(**anime).on_conflict_do_update(
+                    index_elements=[Anime.anime_id],
+                    set_={
+                        "english": anime["english"],
+                        "russian": anime["russian"],
+                        "kind": anime["kind"],
+                        "rating": anime["rating"],
+                        "score": anime["score"],
+                        "status": anime["status"],
+                        "episodes": anime["episodes"],
+                        "episodesAired": anime["episodesAired"],
+                        "duration": anime["duration"],
+                        "aired_on": anime["aired_on"],
+                        "released_on": anime["released_on"],
+                        "season": anime["season"],
+                        "poster_url": anime["poster_url"],
+                        "updatedAt": anime["updatedAt"],
+                        "nextEpisodeAt": anime["nextEpisodeAt"],
+                        "isCensored": anime["isCensored"],
+                        "screenshots": anime["screenshots"],
+                        "description": anime["description"],
+                        "genre_ids": anime["genre_ids"],
+                        "related_anime_ids": anime["related_anime_ids"],
+                        "related_anime_texts": anime["related_anime_texts"],
+                        "character_ids": anime["character_ids"]
+                    }
+                )
+
+                await self.db.execute(stmt)
                 await self.db.commit()
-                await self.db.refresh(anime_instance)
-                
+                saved_count += 1
+
             except IntegrityError as e:
                 await self.db.rollback()
-                logging.error(f"Duplicate entry for anime: {anime.get('english', 'unknown')}, Error: {e}")
-                continue  # Skip the duplicate entry and continue with the next one
+                logging.warning(f"⚠️ Конфлікт запису: {anime.get('english')} — {e}")
+                continue
+
             except SQLAlchemyError as e:
                 await self.db.rollback()
-                logging.error(f"Error while saving anime: {anime}, Error: {e}")
-                return f"Error while saving anime list: {e}"
-        
-        return {'message': "Anime list saved successfully"}
+                logging.error(f"❌ БД помилка при збереженні аніме {anime.get('english', '')}: {e}")
+                continue
+
+            except Exception as e:
+                await self.db.rollback()
+                logging.error(f"🔥 Інша помилка при збереженні аніме: {e}")
+                continue
+
+        return {'message': f"✅ Збережено/оновлено {saved_count} аніме"}
     
     
     
