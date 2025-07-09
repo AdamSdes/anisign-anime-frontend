@@ -46,7 +46,7 @@ class AnimeService:
 
         query = f"""
         {{
-            animes(page: {page_num}, limit: 50) {{
+            animes(page: {page_num}, limit: 20) {{
                 id
                 malId
                 name
@@ -229,7 +229,7 @@ class AnimeService:
     
     async def save_anime_list_in_db(self):
         logger.info("🔄 Scheduler: Почато оновлення аніме з Shikimori")
-        for x in range(1, 10):
+        for x in range(1, 2500):
             animes = await self.parse_page_animes(x)
             if animes:
                 for anime in animes:

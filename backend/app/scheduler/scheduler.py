@@ -10,7 +10,7 @@ scheduler = AsyncIOScheduler()
 def start_scheduler(anime_service: AnimeService):
     scheduler.add_job(
         anime_service.save_anime_list_in_db,
-        trigger=IntervalTrigger(minutes=30),  # Кожні 3 години
+        trigger=IntervalTrigger(hours=3),  # Кожні 3 години
         id="update_anime_db",
         name="Update anime database from Shikimori API",
         replace_existing=True,

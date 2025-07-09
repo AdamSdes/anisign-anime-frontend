@@ -19,9 +19,10 @@ from app.repositories.anime_repository import AnimeRepository
 from app.repositories.genre_repository import GenreRepository
 from app.db.postgresql_connection import get_session
 from app.scheduler.scheduler import start_scheduler
+from app.db.postgresql_connection import async_session_worker
 from fastapi import FastAPI
 from app.services.anime_service import AnimeService
-
+import asyncio
 
 settings = Settings()
 app = FastAPI(debug=settings.debug)
@@ -48,11 +49,12 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
-    async with async_session() as db:
-        anime_service = AnimeService(db)
+    async def scheduler_runner():
+        async with async_session_worker() as db:
+            anime_service = AnimeService(db)
+            start_scheduler(anime_service)
 
-        # Стартуємо планувальник
-        start_scheduler(anime_service)
+    asyncio.create_task(scheduler_runner())
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host=settings.host, port=settings.port, reload=settings.debug)
