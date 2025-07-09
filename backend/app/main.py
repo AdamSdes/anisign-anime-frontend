@@ -53,6 +53,7 @@ async def startup_event():
         async with async_session_worker() as db:
             anime_service = AnimeService(db)
             start_scheduler(anime_service)
+    asyncio.create_task(scheduler_runner())
 
     asyncio.create_task(scheduler_runner())
 
