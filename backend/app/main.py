@@ -24,6 +24,7 @@ from fastapi import FastAPI
 from app.services.anime_service import AnimeService
 import asyncio
 
+
 settings = Settings()
 app = FastAPI(debug=settings.debug)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
@@ -53,8 +54,6 @@ async def startup_event():
         async with async_session_worker() as db:
             anime_service = AnimeService(db)
             start_scheduler(anime_service)
-    asyncio.create_task(scheduler_runner())
-
     asyncio.create_task(scheduler_runner())
 
 if __name__ == "__main__":
