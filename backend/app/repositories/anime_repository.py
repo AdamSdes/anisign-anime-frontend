@@ -23,7 +23,16 @@ from sqlalchemy.dialects.postgresql import insert
 class AnimeRepository():
     def __init__(self, db : AsyncSession):
         self.db = db
-        
+
+    async def get_animes_by_ids(self, anime_ids: List[str]) -> List[Anime]:
+        """Fetch anime records by a list of string anime_ids."""
+        if not anime_ids:
+            return []
+        result = await self.db.execute(
+            select(Anime).where(Anime.anime_id.in_(anime_ids))
+        )
+        return result.scalars().all()
+
     async def get_anime_list(self, page: int, limit: int):
         query = select(Anime).limit(limit).offset((page - 1) * limit)
         result = await self.db.execute(query)

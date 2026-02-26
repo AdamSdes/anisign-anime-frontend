@@ -29,7 +29,7 @@ class User(BaseTable):
     username = Column(String, index=True, unique=True, nullable=False)
     email = Column(String, index=True, unique=True, nullable=False)
     nickname = Column(String, index=True, unique=True)
-    password = Column(String, index=True ,nullable=False)
+    password = Column(String, nullable=False)
     user_avatar = Column(String, index=True, nullable=True)
     user_banner = Column(String, index=True, nullable=True)
     status = Column(user_status_enum, index=True, nullable=True)
@@ -93,8 +93,10 @@ class Character(BaseTable):
 class AnimeSaveList(BaseTable):
     __tablename__ = 'anime_save_list'
     list_name = Column(String, index=True, nullable=False)
-    anime_ids = Column(ARRAY(Text))
-    user_id = Column(UUID)
+    anime_ids = Column(ARRAY(Text), default=[])
+    user_id = Column(UUID, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    
+    user = relationship('User', backref='anime_save_lists')
     
 class Comment(BaseTable):
     __tablename__ = 'comment'

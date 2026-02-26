@@ -1,16 +1,14 @@
 from app.utils.utils import verify_password
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, timedelta , timezone
+from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from fastapi.security import HTTPBearer
 from fastapi import Depends
 from fastapi import HTTPException
-from typing import Annotated
 from app.core.config import Settings
-from app.schemas.auth_schemas import Token , RefreshToken
+from app.schemas.auth_schemas import Token
 import logging
-from fastapi import Response
 
 
 settings = Settings()
@@ -31,7 +29,7 @@ class JWTAuth():
     async def create_access_token(self, data: dict) -> Token:
         to_encode = data.copy()
         if self.access_token_expire_minutes:
-            expire = datetime.utcnow() + timedelta(minutes=self.access_token_expire_minutes)
+            expire = datetime.now(timezone.utc) + timedelta(minutes=self.access_token_expire_minutes)
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(
             to_encode, self.secret_key, algorithm=self.algorithm)
@@ -40,9 +38,9 @@ class JWTAuth():
     async def create_refresh_token(self, data: dict, remember_me: bool) -> Token:
         to_encode = data.copy()
         if remember_me == True:
-            expire = datetime.utcnow() + timedelta(days=self.refresh_token_expire_days_long)
+            expire = datetime.now(timezone.utc) + timedelta(days=self.refresh_token_expire_days_long)
         else:
-            expire = datetime.utcnow() + timedelta(days=self.refresh_token_expire_days)
+            expire = datetime.now(timezone.utc) + timedelta(days=self.refresh_token_expire_days)
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(
             to_encode, self.secret_key, algorithm=self.algorithm)

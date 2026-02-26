@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.exc import OperationalError
+from sqlalchemy import text
 from app.core.config import Settings
 
 settings = Settings()
@@ -43,7 +44,7 @@ async def check_connection():
     async with async_session() as session:
         try:
             # Проста перевірка через селект 1
-            await session.execute("SELECT 1")
+            await session.execute(text("SELECT 1"))
             return "Connected to PostgreSQL server"
         except OperationalError as e:
             return f"Failed to connect to PostgreSQL server. Error: {str(e)}"

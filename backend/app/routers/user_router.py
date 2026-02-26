@@ -5,21 +5,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.postgresql_connection import get_session
 from fastapi import APIRouter, HTTPException, status
 from app.services.user_service import UserService
-from app.services.anime_service import AnimeService
-from app.services.anime_save_list_service import AnimeSaveListService
-from app.schemas.user_schemas import SignUpRequestSchema ,UserDetailSchema
+from app.schemas.user_schemas import SignUpRequestSchema, UserDetailSchema
 from uuid import UUID
-from typing import List
-from pydantic import BaseModel
-from fastapi.security import OAuth2PasswordRequestForm
-from typing import Annotated
+from typing import List, Annotated
 from app.auth.jwt_auth import JWTAuth
-from fastapi import HTTPException , File, UploadFile
-from app.schemas.auth_schemas import Token , RefreshToken
+from fastapi import File, UploadFile
+from app.schemas.auth_schemas import Token, RefreshToken
+from app.schemas.anime_schemas import ChangePasswordRequest
 from app.db.models import User
 from app.services.user_service import get_current_user_from_token
-from app.repositories.anime_save_list_repository import  AnimeSaveListRepository
 from fastapi import Response, Request
+from fastapi.security import OAuth2PasswordRequestForm
 
 
 
@@ -160,8 +156,8 @@ async def get_my_banner(user_id: UUID, db: AsyncSession = Depends(get_session)):
     banner = await service.get_banner(user_id)
     return banner
 
-@user_router.get("/update-status")
-async def update_status(user_id: UUID,db: AsyncSession = Depends(get_session)):
+@user_router.put("/update-status")
+async def update_status(user_id: UUID, db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
     """
     Update the status of the user.
 
@@ -188,14 +184,14 @@ async def get_my_avatar(user_id: UUID,db: AsyncSession = Depends(get_session)):
     return avatar
 
 @user_router.post("/change-my-password")
-async def change_password(password: str, new_password: str, confirm_password: str,db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
+async def change_password(body: ChangePasswordRequest, db: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_from_token)):
     """
     Change the current user's password.
 
     Update the password for the current user.
     """
     service = UserService(db)
-    result = await service.change_password(current_user.id,password, new_password, confirm_password)
+    result = await service.change_password(current_user.id, body.password, body.new_password, body.confirm_password)
     return result
     
 

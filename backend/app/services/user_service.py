@@ -1,32 +1,21 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.user_repository import UserRepository
-from app.schemas.user_schemas import SignUpRequestSchema , UserDetailSchema
-from app.db.models import User
-from jose import jwt
-from fastapi import HTTPException, status
-from app.utils.utils import verify_password , hash_password
-from typing import List, Optional
-from app.repositories.user_repository import UserRepository
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.schemas.user_schemas import SignUpRequestSchema, UserDetailSchema ,UserSchema
-import bcrypt
-import logging
-from app.db.postgresql_connection import get_session 
-from fastapi import HTTPException , File, UploadFile
-from app.db.models import User ,UserStatusEnum
-from uuid import UUID
+from app.schemas.user_schemas import SignUpRequestSchema, UserDetailSchema, UserSchema
+from app.db.models import User, UserStatusEnum
+from jose import jwt, JWTError
+from fastapi import HTTPException, status, Depends, File, UploadFile
 from app.utils.utils import verify_password, hash_password
-from typing import Annotated
+from typing import List, Optional, Annotated
+from uuid import UUID
+import logging
+from app.db.postgresql_connection import get_session
 from app.auth.jwt_auth import oauth2_scheme
-from fastapi import Depends
 from app.core.config import Settings
 from app.schemas.auth_schemas import TokenData
-from jose import JWTError
 from app.repositories.anime_save_list_repository import AnimeSaveListRepository
 from app.repositories.viewhistory_repository import ViewHistoryRepository
 from app.repositories.user_friends_repository import UserFriendsRepository
-from datetime import datetime
-from fastapi import status
+from datetime import datetime, timezone
 import os
 import shutil
 from fastapi.responses import FileResponse
@@ -54,10 +43,10 @@ async def get_current_user_from_token(token: str = Depends(oauth2_scheme), db: A
             status_code=401, detail="Token has expired")
     old_user = await UserRepository(db).get_user_by_username(username=username)
     if not old_user:
-        return HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="User not found")
     else:
-        exp_date = datetime.fromtimestamp(token_data.exp)
-        current_date = datetime.now()
+        exp_date = datetime.fromtimestamp(token_data.exp, tz=timezone.utc)
+        current_date = datetime.now(timezone.utc)
         if current_date > exp_date:
             raise HTTPException(
                 status_code=401, detail="Token has expired")
@@ -122,7 +111,7 @@ class UserService:
             try:
                 history = await self.viewhistory_repository.initialize_anime_history(user_id)
             except:
-                return HTTPException(status_code=400, detail="Error creating view history")
+                raise HTTPException(status_code=400, detail="Error creating view history")
             try:
                 friend_list = await self.user_friends_repository.create_friend_list_for_user(user_id)
             except:
@@ -154,7 +143,7 @@ class UserService:
         file_location = f"{UPLOAD_DIR}{user_id}.png"
         with open(file_location, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        user = self.user_repository.get_user_by_id(user_id)
+        user = await self.user_repository.get_user_by_id(user_id)
         if user:
             result = await self.user_repository.update_avatar(user_id, file_location)
             return result
@@ -162,7 +151,7 @@ class UserService:
             raise HTTPException(status_code=404, detail="User not found")
         
     async def update_status(self, user_id: UUID, status: str = "pro"):
-        user = self.user_repository.get_user_by_id(user_id)
+        user = await self.user_repository.get_user_by_id(user_id)
         if user:
             result = await self.user_repository.update_status(user_id, status)
             return result
@@ -176,7 +165,7 @@ class UserService:
         file_location = f"{UPLOAD_DIR_BANNER}{user_id}.png"
         with open(file_location, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        user = self.user_repository.get_user_by_id(user_id)
+        user = await self.user_repository.get_user_by_id(user_id)
         if user:
             result = await self.user_repository.update_banner(user_id, file_location)
             return result
@@ -197,7 +186,7 @@ class UserService:
         return FileResponse(file_location)
 
     async def change_nickname(self, user_id: UUID, nickname: str):
-        user = self.user_repository.get_user_by_id(user_id)
+        user = await self.user_repository.get_user_by_id(user_id)
         if user:
             result = await self.user_repository.update_nickname(user_id, nickname)
             return result
